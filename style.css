@@ -676,3 +676,47 @@ body {
 
     .navbar, .entry-sidebar, .header-actions, .view-section.hidden, .hero, .nav-actions, #header-nav { display: none !important; }
 }
+
+/* Drivers Report Table (Image Style) */
+.drivers-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    font-size: 0.7rem;
+    font-family: 'Roboto Condensed', sans-serif;
+}
+
+.drivers-report-table th {
+    background-color: #fce8d5; /* Light orange/beige header as in image */
+    color: #431407;
+    padding: 10px 6px;
+    text-transform: uppercase;
+    border: 1px solid #84cc16; /* Light green border as in image */
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.drivers-report-table td {
+    padding: 6px 6px;
+    border: 1px solid #84cc16; /* Light green border as in image */
+    text-align: center;
+    white-space: nowrap;
+    color: #000;
+}
+
+.drivers-report-table tr:nth-child(even) td {
+    background-color: #fffbeb; /* Light yellow/beige stripe as in image */
+}
+
+/* Print specific for report */
+@media print {
+    #reports-view {
+        background: white !important;
+        padding: 0 !important;
+    }
+    #reports-view .entry-sidebar { display: none !important; }
+    #reports-view .table-area { width: 100% !important; padding: 0 !important; }
+    #reports-view .table-toolbar { display: none !important; }
+    .drivers-report-table { font-size: 8px !important; }
+    .report-entry-bar, .btn-cancel { display: none !important; }
+}

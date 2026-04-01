@@ -27,6 +27,7 @@
             </button>
 
             <div class="nav-actions" id="nav-actions-container">
+                <a href="javascript:void(0)" onclick="closeMenu(); showView('reports')" class="btn-calendar">DRIVERS REPORTS</a>
                 <a href="javascript:void(0)" onclick="closeMenu(); showView('releases')" class="btn-calendar">FORM RELEASES</a>
                 <a href="javascript:void(0)" onclick="closeMenu(); showView('docs')" class="btn-calendar">DOCS & RECEIPTS</a>
                 <a href="javascript:void(0)" onclick="closeMenu(); showView('calendar')" class="btn-calendar">FROM DELIVERY CALENDAR</a>
@@ -210,7 +211,7 @@
                         <div class="form-group"><label>18. DAY RATE</label><input type="number" id="in-dayrate"></div>
                         <div class="form-group">
                             <label>19. COMPANY</label>
-                            <select id="in-company" required>
+                            <select id="in-company" onchange="updateDriverCommission()" required>
                                 <option value="" disabled selected>Select Company</option>
                                 <option value="RP TULIPAN">RP TULIPAN</option>
                                 <option value="CONTRACTOR">CONTRACTOR</option>
@@ -279,9 +280,9 @@
                                 <option value="NO">NO</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>25. AMOUNT</label><input type="number" id="in-amount"></div>
+                        <div class="form-group"><label>25. AMOUNT</label><input type="number" id="in-amount" oninput="updateDriverCommission()"></div>
                         <div class="form-group"><label>26. PHONE #</label><input type="text" id="in-phone"></div>
-                        <div class="form-group"><label>27. PAID DRIVER</label><input type="text" id="in-paiddriver"></div>
+                        <div class="form-group"><label>27. PAID DRIVER</label><input type="number" id="in-paiddriver" oninput="updateDriverCommission()"></div>
                         <div class="form-group">
                             <label>28. STATUS</label>
                             <select id="in-status" required>
@@ -295,7 +296,7 @@
                         </div>
                         <div class="form-group">
                             <label>29. COMISSION</label>
-                            <select id="in-comission" required>
+                            <select id="in-comission" onchange="updateDriverCommission()" required>
                                 <option value="30%">30%</option>
                             </select>
                         </div>
@@ -797,6 +798,49 @@
                 </div>
             </div>
         </section>
+        <!-- DRIVERS REPORTS VIEW -->
+        <section id="reports-view" class="view-section hidden">
+            <div class="dashboard-split-container" style="display: block; padding: 20px;">
+                <div class="table-area" style="padding: 0;">
+                    <div class="table-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <h2 style="font-size: 1.8rem; letter-spacing: 1px;">Drivers Weekly Log & Payouts</h2>
+                            <p style="color: #64748b; font-size: 0.9rem;">Automatic summary from Delivery Calendar</p>
+                        </div>
+                        <button onclick="window.print()" class="btn-add-sidebar">Print Summary Report</button>
+                    </div>
+                    <div class="table-scroll-container">
+                        <table class="drivers-report-table">
+                            <thead>
+                                <tr>
+                                    <th>DATE</th>
+                                    <th>SIZE</th>
+                                    <th>N° CONT</th>
+                                    <th>ORDER #</th>
+                                    <th>CITY</th>
+                                    <th>PICK UP ADDRESS</th>
+                                    <th>DELIVERY PLACE</th>
+                                    <th>MILES</th>
+                                    <th>DRIVER</th>
+                                    <th>PAID DRIVER</th>
+                                    <th>CASH BALANCE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dl-body">
+                                <!-- Populated from storage -->
+                            </tbody>
+                            <tfoot style="background: #f1f5f9; font-weight: 900;">
+                                <tr>
+                                    <td colspan="9" style="text-align: right; padding-right: 20px;">WEEKLY TOTALS:</td>
+                                    <td id="dl-total-paid" style="color: #d32f2f;">$0.00</td>
+                                    <td id="dl-total-cash" style="color: #4338ca;">$0.00</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <script>
@@ -814,7 +858,9 @@
             calendarView.classList.add('hidden');
             docsView.classList.add('hidden');
             const releasesView = document.getElementById('releases-view');
+            const reportsView = document.getElementById('reports-view');
             if(releasesView) releasesView.classList.add('hidden');
+            if(reportsView) reportsView.classList.add('hidden');
             
             // Show requested view
             if (view === 'calendar') {
@@ -825,6 +871,9 @@
                 header.classList.add('navbar-fixed-solid');
             } else if (view === 'releases') {
                 if(releasesView) releasesView.classList.remove('hidden');
+                header.classList.add('navbar-fixed-solid');
+            } else if (view === 'reports') {
+                if(reportsView) reportsView.classList.remove('hidden');
                 header.classList.add('navbar-fixed-solid');
             } else {
                 heroView.classList.remove('hidden');
@@ -890,6 +939,7 @@
             saveTableData();
             if(window.updateReleaseDatalist) window.updateReleaseDatalist();
             if(window.updateAddressDatalist) window.updateAddressDatalist();
+            if(window.renderDriverLog) window.renderDriverLog();
 
             // Clear some fields and prep next ID
             ['in-ncont', 'in-release', 'in-order', 'in-delivery', 'in-miles'].forEach(id => {
@@ -935,12 +985,97 @@
             }
         }
 
+        function renderDriverLog() {
+            const body = document.getElementById('dl-body');
+            if(!body) return;
+            const saved = localStorage.getItem('logisticsTableData');
+            body.innerHTML = '';
+            
+            let grandTotalPaid = 0;
+            let grandTotalCash = 0;
+
+            if(saved) {
+                const rows = JSON.parse(saved);
+                // Group by driver (index 19 in logisticsTableData)
+                const driverGroups = {};
+                rows.forEach(r => {
+                    const driverName = r[19] || 'UNASSIGNED';
+                    if(!driverGroups[driverName]) driverGroups[driverName] = [];
+                    driverGroups[driverName].push(r);
+                });
+
+                // Indices to map: [1:Date, 2:Size, 3:N.Cont, 5:Order#, 6:City, 7:Pickup, 8:Delivery, 10:Miles, 19:Driver, 29:Comision Driver, 22:Sales (Cash)]
+                const mapIndices = [1, 2, 3, 5, 6, 7, 8, 10, 19, 29, 22];
+
+                Object.keys(driverGroups).sort().forEach(driver => {
+                    let driverSubPaid = 0;
+                    let driverSubCash = 0;
+
+                    // Header for driver group (optional, but subtotals are required)
+                    driverGroups[driver].forEach(r => {
+                        const tr = document.createElement('tr');
+                        mapIndices.forEach((idx, i) => {
+                            const td = document.createElement('td');
+                            let content = r[idx] || '---';
+                            
+                            if (i === 9 || i === 10) { 
+                                const val = parseFloat(content) || 0;
+                                td.textContent = `$${val.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                                if(i === 9) driverSubPaid += val;
+                                if(i === 10) driverSubCash += val;
+                            } else {
+                                td.textContent = content;
+                            }
+                            tr.appendChild(td);
+                        });
+                        body.appendChild(tr);
+                    });
+
+                    // Subtotal row for this driver
+                    const subtr = document.createElement('tr');
+                    subtr.style.backgroundColor = '#fecaca'; // Soft red highlight for subtotals
+                    subtr.style.fontWeight = 'bold';
+                    
+                    const labelTd = document.createElement('td');
+                    labelTd.setAttribute('colspan', '9');
+                    labelTd.style.textAlign = 'right';
+                    labelTd.style.paddingRight = '20px';
+                    labelTd.textContent = `SUBTOTAL ${driver}:`;
+                    subtr.appendChild(labelTd);
+
+                    const paidTd = document.createElement('td');
+                    paidTd.textContent = '---'; // "Solo se vea lo que hace en el dia", so subtotal here is blanked
+                    subtr.appendChild(paidTd);
+
+                    const cashTd = document.createElement('td');
+                    // "CASH Balance ahi es donde quiero el total a pagar de cada chofer"
+                    cashTd.textContent = `$${driverSubPaid.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                    cashTd.style.color = '#b91c1c';
+                    subtr.appendChild(cashTd);
+
+                    body.appendChild(subtr);
+
+                    grandTotalPaid += driverSubPaid;
+                    grandTotalCash += driverSubCash;
+                });
+            }
+            
+            document.getElementById('dl-total-paid').textContent = `$${grandTotalPaid.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            // Grand total footer update
+            const totalCashEl = document.getElementById('dl-total-cash');
+            if(totalCashEl) {
+                totalCashEl.previousElementSibling.textContent = 'GRAND TOTAL TO PAY (ALL DRIVERS):';
+                totalCashEl.textContent = `$${grandTotalPaid.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            }
+        }
+
         // Initialize state on load
         window.addEventListener('DOMContentLoaded', () => {
             const savedView = localStorage.getItem('activeView') || 'hero';
             showView(savedView);
             loadTableData();
             loadReleasesData();
+            renderDriverLog();
             updateReleaseDatalist();
             updateAddressDatalist();
             
@@ -1224,6 +1359,31 @@
             syncCheckboxes('u-move');
             syncCheckboxes('u-load');
             syncCheckboxes('u-cond');
+
+            // --- AUTO COMMISSION LOGIC ---
+            window.updateDriverCommission = function() {
+                const company = document.getElementById('in-company').value;
+                const commText = document.getElementById('in-comission').value;
+                const commPercent = parseFloat(commText) || 30; // Will parse '30%' as 30
+                const amount = parseFloat(document.getElementById('in-amount').value) || 0;
+                const paidBase = parseFloat(document.getElementById('in-paiddriver').value) || 0;
+                
+                let result = 0;
+                // Match the value "RP TULIPAN" exactly from the HTML select
+                if (company === 'RP TULIPAN') {
+                    result = amount * (commPercent / 100);
+                } else {
+                    result = paidBase * (commPercent / 100);
+                }
+                
+                const commEl = document.getElementById('in-comidriver');
+                if(commEl) {
+                    commEl.value = result.toFixed(2);
+                }
+            }
+
+            // Set initially
+            updateDriverCommission();
         });
 
         window.addEventListener('scroll', () => {
