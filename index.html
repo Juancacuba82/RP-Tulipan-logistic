@@ -27,6 +27,7 @@
             </button>
 
             <div class="nav-actions" id="nav-actions-container">
+                <a href="javascript:void(0)" onclick="closeMenu(); showView('releases')" class="btn-calendar">FORM RELEASES</a>
                 <a href="javascript:void(0)" onclick="closeMenu(); showView('docs')" class="btn-calendar">DOCS & RECEIPTS</a>
                 <a href="javascript:void(0)" onclick="closeMenu(); showView('calendar')" class="btn-calendar">FROM DELIVERY CALENDAR</a>
             </div>
@@ -715,6 +716,84 @@
                 </div>
             </div>
         </section>
+        <!-- FORM RELEASES View -->
+        <section id="releases-view" class="view-section hidden">
+            <div class="dashboard-split-container">
+                <aside class="entry-sidebar primary-entry" style="width: 450px;">
+                    <div class="sidebar-header">
+                        <h3>Release Management</h3>
+                        <div class="header-actions">
+                            <button onclick="addReleaseRow()" class="btn-add-sidebar">Add Release</button>
+                            <button onclick="showView('hero')" class="btn-cancel">Exit</button>
+                        </div>
+                    </div>
+                    <div class="sidebar-form">
+                        <div class="form-group"><label>ID</label><input type="text" id="rel-id" placeholder="ID"></div>
+                        <div class="form-group"><label>DATE</label><input type="date" id="rel-date"></div>
+                        <div class="form-group">
+                            <label>TYPE</label>
+                            <select id="rel-type">
+                                <option value="DRY">DRY</option>
+                                <option value="REEFER">REEFER</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>MEASURES</label>
+                            <select id="rel-measures">
+                                <option value="40' HC">40' HC</option>
+                                <option value="40' STD">40' STD</option>
+                                <option value="20' STD">20' STD</option>
+                                <option value="45' HC">45' HC</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>CITY</label><input type="text" id="rel-city" placeholder="City"></div>
+                        <div class="form-group"><label>SELLER</label><input type="text" id="rel-seller" placeholder="Seller Name"></div>
+                        <div class="form-group"><label>DEPOT</label><input type="text" id="rel-depot" placeholder="Depot Name"></div>
+                        <div class="form-group"><label>No RELEASES*</label><input type="text" id="rel-no-releases" placeholder="Rel # or Booking #"></div>
+                        <div class="form-group"><label>PAID BY</label><input type="text" id="rel-paidby" placeholder="Paid By"></div>
+                        <div class="form-group"><label>TRANSPORTATION</label><input type="text" id="rel-transp" placeholder="Transport Name"></div>
+                        <div class="form-group"><label>AMOUNT</label><input type="number" id="rel-qty" value="1"></div>
+                        <div class="form-group"><label>PRICE</label><input type="number" id="rel-price" value="0"></div>
+                        <div class="form-group"><label>TOTAL</label><input type="text" id="rel-total" value="$0,00" readonly style="background: #f1f5f9; font-weight: 700;"></div>
+                    </div>
+                </aside>
+
+                <div class="table-area">
+                    <div class="table-toolbar">
+                        <h2>Releases Data Grid</h2>
+                    </div>
+                    <div class="table-scroll-container">
+                        <table id="releases-table">
+                            <thead>
+                                <tr class="header-row">
+                                    <th>ID</th>
+                                    <th>DATE</th>
+                                    <th>TYPE</th>
+                                    <th>MEASURES</th>
+                                    <th>CITY</th>
+                                    <th>SELLER</th>
+                                    <th>DEPOT</th>
+                                    <th>No RELEASES*</th>
+                                    <th>PAID BY</th>
+                                    <th>TRANS.</th>
+                                    <th>AMOUNT</th>
+                                    <th>PRICE</th>
+                                    <th>TOTAL</th>
+                                    <th>INV. INICIAL</th>
+                                    <th>PICK UP</th>
+                                    <th>STOCK</th>
+                                    <th>DATE PICK UP</th>
+                                    <th>TRANSPORTATION</th>
+                                </tr>
+                            </thead>
+                            <tbody id="releases-body">
+                                <!-- Release data rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <script>
@@ -731,6 +810,8 @@
             heroView.classList.add('hidden');
             calendarView.classList.add('hidden');
             docsView.classList.add('hidden');
+            const releasesView = document.getElementById('releases-view');
+            if(releasesView) releasesView.classList.add('hidden');
             
             // Show requested view
             if (view === 'calendar') {
@@ -738,6 +819,9 @@
                 header.classList.add('navbar-fixed-solid');
             } else if (view === 'docs') {
                 docsView.classList.remove('hidden');
+                header.classList.add('navbar-fixed-solid');
+            } else if (view === 'releases') {
+                if(releasesView) releasesView.classList.remove('hidden');
                 header.classList.add('navbar-fixed-solid');
             } else {
                 heroView.classList.remove('hidden');
@@ -781,6 +865,77 @@
             const savedView = localStorage.getItem('activeView') || 'hero';
             showView(savedView);
             loadTableData();
+            loadReleasesData();
+
+            // New logic for Release Row addition
+            window.addReleaseRow = () => {
+                const fields = ['rel-id', 'rel-date', 'rel-type', 'rel-measures', 'rel-city', 'rel-seller', 'rel-depot', 'rel-no-releases', 'rel-paidby', 'rel-transp', 'rel-qty', 'rel-price', 'rel-total'];
+                const row = document.createElement('tr');
+                
+                // Existing fields (sidebar)
+                fields.forEach(f => {
+                    const td = document.createElement('td');
+                    const inputEl = document.getElementById(f);
+                    td.textContent = inputEl ? inputEl.value || '---' : '---';
+                    row.appendChild(td);
+                });
+
+                // Add empty cells for the subsequent columns kept in the table
+                for(let i=0; i<5; i++) {
+                    const td = document.createElement('td');
+                    td.textContent = '---';
+                    row.appendChild(td);
+                }
+
+                document.getElementById('releases-body').appendChild(row);
+                saveReleasesData();
+                
+                // Clear inputs partially
+                document.getElementById('rel-no-releases').value = '';
+                document.getElementById('rel-qty').value = '1';
+                document.getElementById('rel-price').value = '0';
+                updateRelTotal();
+            };
+
+            const updateRelTotal = () => {
+                const q = parseFloat(document.getElementById('rel-qty').value) || 0;
+                const p = parseFloat(document.getElementById('rel-price').value) || 0;
+                const total = q * p;
+                document.getElementById('rel-total').value = `$${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            };
+
+            ['rel-qty', 'rel-price'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.addEventListener('input', updateRelTotal);
+            });
+
+            function saveReleasesData() {
+                const body = document.getElementById('releases-body');
+                if(!body) return;
+                const rows = [];
+                body.querySelectorAll('tr').forEach(tr => {
+                    const data = Array.from(tr.querySelectorAll('td')).slice(0, 18).map(td => td.textContent);
+                    rows.push(data);
+                });
+                localStorage.setItem('releasesTableData', JSON.stringify(rows));
+            }
+
+            function loadReleasesData() {
+                const saved = localStorage.getItem('releasesTableData');
+                const body = document.getElementById('releases-body');
+                if (saved && body) {
+                    const rowsData = JSON.parse(saved);
+                    rowsData.forEach(rowData => {
+                        const tr = document.createElement('tr');
+                        rowData.forEach(text => {
+                            const td = document.createElement('td');
+                            td.textContent = text;
+                            tr.appendChild(td);
+                        });
+                        body.appendChild(tr);
+                    });
+                }
+            }
 
             // Mobile Menu Toggle
             const toggle = document.getElementById('hamburger-menu');
