@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="RP TULIPAN TRANSPORT INC - Professional Container Logistics Solutions. Minimalist and Reliable.">
+    <title>RP TULIPAN TRANSPORT INC | Container Logistics</title>
+    <!-- Modern Typography: Outfit from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navbar Navigation -->
+    <header class="navbar" id="header-nav">
+        <div class="container-nav">
+            <div class="logo" style="display: flex; align-items: center;">
+                <img src="assets/logo.jpg" alt="RP Tulipan Logo" style="height: 40px; margin-right: 12px; border-radius: 50%;">
+                <a href="javascript:void(0)" onclick="closeMenu(); showView('hero')" class="logo-text">RP TULIPAN</a>
+            </div>
+            
+            <button class="mobile-toggle" id="hamburger-menu" aria-label="Toggle Menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+
+            <div class="nav-actions" id="nav-actions-container">
+                <a href="javascript:void(0)" onclick="closeMenu(); showView('delivery-format')" class="btn-calendar">DELIVERY FORMAT</a>
+                <a href="javascript:void(0)" onclick="closeMenu(); showView('yard')" class="btn-calendar">YARD SERV RECEIPT</a>
+                <a href="javascript:void(0)" onclick="closeMenu(); showView('calendar')" class="btn-calendar">From Delivery Calendar</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Home / Hero View -->
+        <section class="hero" id="hero-view">
+            <div class="overlay"></div>
+            <div class="hero-content">
+                <div class="branding">
+                    <h1 class="company-name">RP TULIPAN <span class="accent-text">TRANSPORT INC</span></h1>
+                    <div class="red-accent-line"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Delivery Calendar View (Split Screen Workflow) -->
+        <section id="calendar-view" class="view-section hidden">
+            <div class="dashboard-split-container">
+                <!-- Left Panel: Data Entry Form (40%) -->
+                <aside class="entry-sidebar primary-entry">
+                    <div class="sidebar-header">
+                        <h3>New Trip Entry</h3>
+                        <div class="header-actions">
+                            <button onclick="addRow()" class="btn-add-sidebar">Confirm Delivery</button>
+                            <button onclick="showView('hero')" class="btn-cancel">Exit</button>
+                        </div>
+                    </div>
+                    <div class="sidebar-form">
+                        <div class="form-group"><label>ID</label><input type="text" id="in-id" placeholder="ID"></div>
+                        <div class="form-group"><label>2. DATE</label><input type="date" id="in-date"></div>
+                        <div class="form-group">
+                            <label>3. SIZE</label>
+                            <select id="in-size" required>
+                                <option value="" disabled selected>Select Size</option>
+                                <option value="40' HC">40' HC</option>
+                                <option value="40' STD">40' STD</option>
+                                <option value="20' STD">20' STD</option>
+                                <option value="45' HC">45' HC</option>
+                                <option value="40' OS">40' OS</option>
+                                <option value="40' DD">40' DD</option>
+                                <option value="20' DD">20' DD</option>
+                                <option value="20' OS">20' OS</option>
+                                <option value="20' HC">20' HC</option>
+                                <option value="2X20' STD">2X20' STD</option>
+                                <option value="2X20' DD">2X20' DD</option>
+                                <option value="HOST SHOT">HOST SHOT</option>
+                                <option value="20' FT">20' FT</option>
+                                <option value="2X20' FT">2X20' FT</option>
+                                <option value="40' FT">40' FT</option>
+                                <option value="45' FT">45' FT</option>
+                                <option value="TRAILER RENT">TRAILER RENT</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>4. N. CONT</label><input type="text" id="in-ncont" placeholder="N. Cont"></div>
+                        <div class="form-group"><label>5. RELEASE #</label><input type="text" id="in-release" placeholder="Release"></div>
+                        <div class="form-group"><label>6. ORDER - BOL CONT #</label><input type="text" id="in-order" placeholder="Order/BOL"></div>
+                        <div class="form-group">
+                            <label>7. CITY</label>
+                            <select id="in-city" required>
+                                <option value="" disabled selected>Select City</option>
+                                <option value="MIAMI">MIAMI</option>
+                                <option value="TAMPA">TAMPA</option>
+                                <option value="JACKSONVILLE">JACKSONVILLE</option>
+                                <option value="SAVANNAH">SAVANNAH</option>
+                                <option value="TITUSVILLE">TITUSVILLE</option>
+                                <option value="MASCOTTE">MASCOTTE</option>
+                                <option value="ORLANDO">ORLANDO</option>
+                                <option value="ATLANTA">ATLANTA</option>
+                                <option value="CHARLESTON">CHARLESTON</option>
+                                <option value="NEWARK">NEWARK</option>
+                                <option value="SUMMERVILLE">SUMMERVILLE</option>
+                                <option value="BALTIMORE">BALTIMORE</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>8. PICK UP ADDRESS</label>
+                            <select id="in-pickup" required>
+                                <option value="" disabled selected>Select Pick Up Address</option>
+                                <option value="10110 NW 95 AVE">10110 NW 95 AVE</option>
+                                <option value="10110 NW 105 AVE MEDLEY FL 33178">10110 NW 105 AVE MEDLEY FL 33178</option>
+                                <option value="10400 NW 95 AVE MEDLEY FL 33178">10400 NW 95 AVE MEDLEY FL 33178</option>
+                                <option value="10458 ALTA DR JACKSONVILLE FL 32226">10458 ALTA DR JACKSONVILLE FL 32226</option>
+                                <option value="14300 SW 194 AVE MIAMI FL 33196">14300 SW 194 AVE MIAMI FL 33196</option>
+                                <option value="18300 SW 158 ST MIAMI FL">18300 SW 158 ST MIAMI FL</option>
+                                <option value="19-3 HYATT AVE NEWARK NJ 07105">19-3 HYATT AVE NEWARK NJ 07105</option>
+                                <option value="219 SQUANKUM RD FAMINGDALE NJ 07727">219 SQUANKUM RD FAMINGDALE NJ 07727</option>
+                                <option value="230 GUN CLUB RD JACKSONVILLE FL 32218">230 GUN CLUB RD JACKSONVILLE FL 32218</option>
+                                <option value="2545 NW 35TH ST MIAMI FL 33142">2545 NW 35TH ST MIAMI FL 33142</option>
+                                <option value="2640 S 12 AVE TAMPA FL 33619">2640 S 12 AVE TAMPA FL 33619</option>
+                                <option value="295 DOREMUS AVE NEWARK 07105">295 DOREMUS AVE NEWARK 07105</option>
+                                <option value="32 SPIRIT LAKE RD WINTER HAVEN FL">32 SPIRIT LAKE RD WINTER HAVEN FL</option>
+                                <option value="321 GRANGE RD SAVANNAG GA 31407">321 GRANGE RD SAVANNAG GA 31407</option>
+                                <option value="3220 N COCOA BLVD COCOA FL 32926">3220 N COCOA BLVD COCOA FL 32926</option>
+                                <option value="3237CHEESEQUAKE RD OLD BRIDGE NJ 08857">3237CHEESEQUAKE RD OLD BRIDGE NJ 08857</option>
+                                <option value="340 COMMERCE DR RINCON GA 31326">340 COMMERCE DR RINCON GA 31326</option>
+                                <option value="3500 KING ST SUITE a, COCOA FL 32926">3500 KING ST SUITE a, COCOA FL 32926</option>
+                                <option value="4050 MARITIME BLVD TAMPA FL 33605">4050 MARITIME BLVD TAMPA FL 33605</option>
+                                <option value="4135 OLD MCDOUNGH RD GA">4135 OLD MCDOUNGH RD GA</option>
+                                <option value="5107 RAWLS RD TAMPA FL 33624">5107 RAWLS RD TAMPA FL 33624</option>
+                                <option value="6508 EAST LOMBARD ST BALTIMORE MD 21224">6508 EAST LOMBARD ST BALTIMORE MD 21224</option>
+                                <option value="6601 TICO RD TITUSVILLE FL 32780">6601 TICO RD TITUSVILLE FL 32780</option>
+                                <option value="6890 NW 25 ST MIAMI FL 33122">6890 NW 25 ST MIAMI FL 33122</option>
+                                <option value="8211 FISCHER RD BALTIMORE MD 21222">8211 FISCHER RD BALTIMORE MD 21222</option>
+                                <option value="8300 NW 87 AVE MEDLEY FL 33166">8300 NW 87 AVE MEDLEY FL 33166</option>
+                                <option value="8421 NW 70 ST MIAMI FL 33166">8421 NW 70 ST MIAMI FL 33166</option>
+                                <option value="8831 MONCRIEF-DISMORE RD JACKSONVILLE FL 32219">8831 MONCRIEF-DISMORE RD JACKSONVILLE FL 32219</option>
+                                <option value="9801 NW 106 ST MEDLEY FL 33178">9801 NW 106 ST MEDLEY FL 33178</option>
+                                <option value="9804 NW 80 AVE HIALEAH FL 33106">9804 NW 80 AVE HIALEAH FL 33106</option>
+                                <option value="ACE STEVEDORING">ACE STEVEDORING</option>
+                                <option value="BRADENTON">BRADENTON</option>
+                                <option value="CONGLOBAL JAX">CONGLOBAL JAX</option>
+                                <option value="CONT MAINTENANCE">CONT MAINTENANCE</option>
+                                <option value="DORAL">DORAL</option>
+                                <option value="FIT TERMINAL">FIT TERMINAL</option>
+                                <option value="FLCHR YARD">FLCHR YARD</option>
+                                <option value="GENERAL TRANS DEPO">GENERAL TRANS DEPO</option>
+                                <option value="MARITIME CONT">MARITIME CONT</option>
+                                <option value="MIAMI CONT">MIAMI CONT</option>
+                                <option value="OKECHOBEE">OKECHOBEE</option>
+                                <option value="QUALITY CONT">QUALITY CONT</option>
+                                <option value="SOLO DEPOT">SOLO DEPOT</option>
+                                <option value="ST CLOUD">ST CLOUD</option>
+                                <option value="TRUCK YARD">TRUCK YARD</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>9. DELIVERY PLACE</label><input type="text" id="in-delivery" placeholder="Delivery"></div>
+                        <div class="form-group">
+                            <label>10. DOORS DIRECTION</label>
+                            <select id="in-doors" required>
+                                <option value="" disabled selected>Select Orientation</option>
+                                <option value="FACING CAB">FACING CAB</option>
+                                <option value="FACING BACK">FACING BACK</option>
+                                <option value="FACING DRIVER">FACING DRIVER</option>
+                                <option value="FACING PASSENGER">FACING PASSENGER</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>11. MILES</label><input type="number" id="in-miles" placeholder="0"></div>
+                        <div class="form-group">
+                            <label>12. CUSTOMER</label>
+                            <select id="in-customer" required>
+                                <option value="" disabled selected>Select Customer</option>
+                                <option value="ANTONIO RENT">ANTONIO RENT</option>
+                                <option value="RICHARD HAYNES">RICHARD HAYNES</option>
+                                <option value="MARK MORRINSON">MARK MORRINSON</option>
+                                <option value="KEMOY">KEMOY</option>
+                                <option value="GLOBAL CONTAINER & CHASSIS">GLOBAL CONTAINER & CHASSIS</option>
+                                <option value="PROSTAR GROUP CONTAINER">PROSTAR GROUP CONTAINER</option>
+                                <option value="MAREX ROAD SERVICES">MAREX ROAD SERVICES</option>
+                                <option value="ZUM SHIPPING">ZUM SHIPPING</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>13. PAYMENT STATUS</label>
+                            <select id="in-paystatus" required>
+                                <option value="" disabled selected>Select Status</option>
+                                <option value="PAID">PAID</option>
+                                <option value="PENDING">PENDING</option>
+                                <option value="CANCELED">CANCELED</option>
+                                <option value="PENDING DELIVERY">PENDING DELIVERY</option>
+                                <option value="PENDING CONTAINER">PENDING CONTAINER</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>14. PAYMENT DATE</label><input type="date" id="in-paydate"></div>
+                        <div class="form-group">
+                            <label>15. YARD SERVICES</label>
+                            <select id="in-yard" required>
+                                <option value="" disabled selected>Yard Services?</option>
+                                <option value="YES">YES</option>
+                                <option value="NO">NO</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>16. YARD SERVICES RATE</label><input type="number" id="in-yardrate"></div>
+                        <div class="form-group"><label>17. DATE OUT</label><input type="date" id="in-dateout"></div>
+                        <div class="form-group"><label>18. DAY RATE</label><input type="number" id="in-dayrate"></div>
+                        <div class="form-group">
+                            <label>19. COMPANY</label>
+                            <select id="in-company" required>
+                                <option value="" disabled selected>Select Company</option>
+                                <option value="RP TULIPAN">RP TULIPAN</option>
+                                <option value="CONTRACTOR">CONTRACTOR</option>
+                                <option value="ONLY SALES">ONLY SALES</option>
+                                <option value="JR SUPER CRAME">JR SUPER CRAME</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>20. DRIVER</label>
+                            <select id="in-driver" required>
+                                <option value="" disabled selected>Select Driver</option>
+                                <option value="A & A TOWING">A & A TOWING</option>
+                                <option value="ANTHONY">ANTHONY</option>
+                                <option value="ANTONIO R">ANTONIO R</option>
+                                <option value="AYG TRANSPORT">AYG TRANSPORT</option>
+                                <option value="BRUNO">BRUNO</option>
+                                <option value="ELIER">ELIER</option>
+                                <option value="FLCHR">FLCHR</option>
+                                <option value="JAYDEN TRANSPORTATION">JAYDEN TRANSPORTATION</option>
+                                <option value="JOHN CARLOS">JOHN CARLOS</option>
+                                <option value="JORGE ANDY">JORGE ANDY</option>
+                                <option value="JOSE">JOSE</option>
+                                <option value="JR SUPER CRANE">JR SUPER CRANE</option>
+                                <option value="JRSC-ROBERT">JRSC-ROBERT</option>
+                                <option value="JUAN CARLOS">JUAN CARLOS</option>
+                                <option value="JUSTIN F.H">JUSTIN F.H</option>
+                                <option value="JY3 FREIGHT LLC">JY3 FREIGHT LLC</option>
+                                <option value="KELLY K">KELLY K</option>
+                                <option value="LUIS D">LUIS D</option>
+                                <option value="LUIS DELIVERY">LUIS DELIVERY</option>
+                                <option value="LUIS G">LUIS G</option>
+                                <option value="LUIS SOSA">LUIS SOSA</option>
+                                <option value="MARIO">MARIO</option>
+                                <option value="MIGUEL LL">MIGUEL LL</option>
+                                <option value="MILAY">MILAY</option>
+                                <option value="MOBILE UNITS TRANSPORT">MOBILE UNITS TRANSPORT</option>
+                                <option value="PERFECT TOUCH TRANSPORT">PERFECT TOUCH TRANSPORT</option>
+                                <option value="QUALITY CONT">QUALITY CONT</option>
+                                <option value="RAMONCITO">RAMONCITO</option>
+                                <option value="REYNA">REYNA</option>
+                                <option value="ROBERT">ROBERT</option>
+                                <option value="ROLY">ROLY</option>
+                                <option value="RONALD">RONALD</option>
+                                <option value="SIDE LOADER">SIDE LOADER</option>
+                                <option value="TRAVIS J">TRAVIS J</option>
+                                <option value="WS KINGDOM LLC">WS KINGDOM LLC</option>
+                                <option value="YADIER">YADIER</option>
+                                <option value="YANDY JAX">YANDY JAX</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>21. RATE</label><input type="number" id="in-rate"></div>
+                        <div class="form-group">
+                            <label>22. TYPE OF PAYMENT</label>
+                            <select id="in-paytype" required>
+                                <option value="" disabled selected>Select Payment Type</option>
+                                <option value="CASH">CASH</option>
+                                <option value="ACOUNT BANK">ACOUNT BANK</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>23. SALES PRICE</label><input type="number" id="in-sales"></div>
+                        <div class="form-group">
+                            <label>24. COLLECT PAYMENT</label>
+                            <select id="in-collect" required>
+                                <option value="" disabled selected>Collect?</option>
+                                <option value="YES">YES</option>
+                                <option value="NO">NO</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>25. AMOUNT</label><input type="number" id="in-amount"></div>
+                        <div class="form-group"><label>26. PHONE #</label><input type="text" id="in-phone"></div>
+                        <div class="form-group"><label>27. PAID DRIVER</label><input type="text" id="in-paiddriver"></div>
+                        <div class="form-group">
+                            <label>28. STATUS</label>
+                            <select id="in-status" required>
+                                <option value="" disabled selected>Select Status</option>
+                                <option value="DONE">DONE</option>
+                                <option value="PENDING">PENDING</option>
+                                <option value="CANCELED">CANCELED</option>
+                                <option value="REFUSED">REFUSED</option>
+                                <option value="ON HOLD">ON HOLD</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>29. COMISSION</label>
+                            <select id="in-comission" required>
+                                <option value="30%">30%</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>30. COMISION DRIVER</label><input type="number" id="in-comidriver"></div>
+                        <div class="form-group"><label>31. INCOME DIS FEE</label><input type="number" id="in-income"></div>
+                        <div class="form-group">
+                            <label>32. INVOICE</label>
+                            <select id="in-invoice" required>
+                                <option value="" disabled selected>Invoice?</option>
+                                <option value="YES">YES</option>
+                                <option value="NO">NO</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>33. NOTE</label><input type="text" id="in-note"></div>
+                        <div class="form-group">
+                            <label>34. STORAGE</label>
+                            <select id="in-storage" required>
+                                <option value="" disabled selected>Storage?</option>
+                                <option value="YES">YES</option>
+                                <option value="NO">NO</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>35. IN - OUT</label>
+                            <select id="in-inout" required>
+                                <option value="" disabled selected>Select In/Out</option>
+                                <option value="IN">IN</option>
+                                <option value="OUT">OUT</option>
+                            </select>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Right Panel: Trip History Table (60%) -->
+                <div class="table-area">
+                    <div class="table-toolbar">
+                        <h2>Trip History / Data grid</h2>
+                    </div>
+                    <div class="table-scroll-container">
+                        <table id="logistics-table">
+                            <thead>
+                                <tr class="header-row">
+                                    <th>ID</th>
+                                    <th>2. DATE</th>
+                                    <th>3. SIZE</th>
+                                    <th>4. N. CONT</th>
+                                    <th>5. RELEASE #</th>
+                                    <th>6. ORDER - BOL CONT #</th>
+                                    <th>7. CITY</th>
+                                    <th>8. PICK UP ADDRESS</th>
+                                    <th>9. DELIVERY PLACE</th>
+                                    <th>10. DOORS DIRECTION</th>
+                                    <th>11. MILES</th>
+                                    <th>12. CUSTOMER</th>
+                                    <th>13. PAYMENT STATUS</th>
+                                    <th>14. PAYMENT DATE</th>
+                                    <th>15. YARD SERVICES</th>
+                                    <th>16. YARD SERVICES RATE</th>
+                                    <th>17. DATE OUT</th>
+                                    <th>18. DAY RATE</th>
+                                    <th>19. COMPANY</th>
+                                    <th>20. DRIVER</th>
+                                    <th>21. RATE</th>
+                                    <th>22. TYPE OF PAYMENT</th>
+                                    <th>23. SALES PRICE</th>
+                                    <th>24. COLLECT PAYMENT</th>
+                                    <th>25. AMOUNT</th>
+                                    <th>26. PHONE #</th>
+                                    <th>27. PAID DRIVER</th>
+                                    <th>28. STATUS</th>
+                                    <th>29. COMISSION</th>
+                                    <th>30. COMISION DRIVER</th>
+                                    <th>31. INCOME DIS FEE</th>
+                                    <th>32. INVOICE</th>
+                                    <th>33. NOTE</th>
+                                    <th>34. STORAGE</th>
+                                    <th>35. IN - OUT</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                                <!-- Dynamic rows go here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Yard Service Receipt View -->
+        <!-- Yard Service Receipt View -->
+        <section id="yard-view" class="view-section hidden">
+            <div class="dashboard-split-container">
+                <!-- Left: Receipt Form -->
+                <aside class="entry-sidebar primary-entry" style="flex: 0 0 35%;">
+                    <div class="sidebar-header">
+                        <h3>Create Receipt</h3>
+                        <div class="header-actions">
+                            <button onclick="window.print()" class="btn-add-sidebar">Print Receipt</button>
+                            <button onclick="showView('hero')" class="btn-cancel">Exit</button>
+                        </div>
+                    </div>
+                    <div class="sidebar-form">
+                        <div class="form-group"><label>INITIAL DATE</label><input type="date" id="r-init-date"></div>
+                        <div class="form-group"><label>STATUS MOVEMENT</label>
+                            <select id="r-move">
+                                <option value="">None</option>
+                                <option value="IN">IN</option>
+                                <option value="OUT">OUT</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>LOAD STATUS</label>
+                            <select id="r-load">
+                                <option value="">None</option>
+                                <option value="EMPTY">EMPTY</option>
+                                <option value="FULL">FULL</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>CONTAINER TYPE</label>
+                            <select id="r-type" required>
+                                <option value="DRY">DRY</option>
+                                <option value="REEFER">REEFER</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>CONTAINER SIZE</label>
+                            <select id="r-size" required>
+                                <option value="" disabled selected>Select Size</option>
+                                <option value="40' HC">40' HC</option>
+                                <option value="40' STD">40' STD</option>
+                                <option value="20' STD">20' STD</option>
+                                <option value="45' HC">45' HC</option>
+                                <option value="40' OS">40' OS</option>
+                                <option value="40' DD">40' DD</option>
+                                <option value="20' DD">20' DD</option>
+                                <option value="20' OS">20' OS</option>
+                                <option value="20' HC">20' HC</option>
+                                <option value="2X20' STD">2X20' STD</option>
+                                <option value="2X20' DD">2X20' DD</option>
+                                <option value="HOST SHOT">HOST SHOT</option>
+                                <option value="20' FT">20' FT</option>
+                                <option value="2X20' FT">2X20' FT</option>
+                                <option value="40' FT">40' FT</option>
+                                <option value="45' FT">45' FT</option>
+                                <option value="TRAILER RENT">TRAILER RENT</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>EQUIPMENT CONDITION</label>
+                            <select id="r-cond">
+                                <option value="">None</option>
+                                <option value="AS IS">AS IS</option>
+                                <option value="WWT">WWT</option>
+                                <option value="CW">CW</option>
+                                <option value="NEW">NEW</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>BOOKING #</label><input type="text" id="r-booking"></div>
+                        <div class="form-group"><label>ORDER #</label><input type="text" id="r-order"></div>
+                        <div class="form-group"><label>CUSTOMER</label><input type="text" id="r-customer"></div>
+                        <div class="form-group"><label>PHONE</label><input type="text" id="r-phone"></div>
+                        <div class="form-group"><label>CONTAINER #</label><input type="text" id="r-cont-num"></div>
+                        <div class="form-group"><label>YARD FEE</label><input type="number" id="r-yard-fee" value="0"></div>
+                        <div class="form-group"><label>STORAGE FEE</label><input type="number" id="r-storage-fee" value="0"></div>
+                        <div class="form-group"><label>TRANS. FEE</label><input type="number" id="r-trans-fee" value="0"></div>
+                        <div class="form-group"><label>PICK UP ADDRESS</label><input type="text" id="r-pickup"></div>
+                        <div class="form-group"><label>DELIVERY PLACE</label><input type="text" id="r-delivery"></div>
+                        <div class="form-group"><label>NOTES</label><textarea id="r-notes" rows="3" style="width: 100%; border: 1px solid #ddd; padding: 10px; border-radius: 6px;">* SEND PICS TO THE CUSTOMER AND CALL FOR CONFIRMATION BEFORE DELIVERY</textarea></div>
+                    </div>
+                </aside>
+
+                <!-- Right: Receipt Preview (Professional Document Style) -->
+                <div class="table-area" style="flex: 0 0 65%; background: #e2e8f0; padding: 40px; overflow-y: auto;">
+                    <div class="receipt-paper" id="printable-receipt">
+                        <div class="receipt-header">
+                            <div class="header-left">
+                                <img src="assets/logo.jpg" alt="Logo" class="receipt-logo">
+                                <div class="company-info">
+                                    <h1>RP TULIPAN TRANSPORT, INC</h1>
+                                    <p>8421 NW 70th ST</p>
+                                    <p>MIAMI FLORIDA 33166</p>
+                                    <p>786 - 768 4409</p>
+                                </div>
+                            </div>
+                            <div class="header-right">
+                                <div class="status-box">STATUS: <span class="status-val">PENDING</span></div>
+                                <div class="id-box">ID: <span class="id-val">#6428</span></div>
+                            </div>
+                        </div>
+
+                        <div class="receipt-row-check">
+                            <div class="check-item"><span class="box" id="p-in-box"></span> IN</div>
+                            <div class="check-item"><span class="box" id="p-out-box"></span> OUT</div>
+                            <div class="check-item"><span class="box" id="p-empty-box"></span> EMPTY</div>
+                            <div class="check-item"><span class="box" id="p-full-box"></span> FULL</div>
+                            <div class="info-item">TYPE: <strong id="p-type">DRY</strong></div>
+                            <div class="info-item">SIZE: <strong id="p-size">40' HC</strong></div>
+                        </div>
+
+                        <div class="booking-order-container">
+                            <div class="bo-box">BOOKING#: <span id="p-booking">---</span></div>
+                            <div class="bo-box">ORDER #: <span id="p-order">---</span></div>
+                        </div>
+
+                        <div class="customer-data">
+                            <div class="data-row">
+                                <div class="data-cell">CUSTOMER: <span id="prev-customer">---</span></div>
+                                <div class="data-cell">CONTAINER NUMBER: <span id="prev-cont">---</span></div>
+                            </div>
+                            <div class="data-row">
+                                <div class="data-cell">CUSTOMER PHONE: <span id="prev-phone">---</span></div>
+                                <div class="data-cell">DAYS: <span id="prev-days">0</span></div>
+                            </div>
+                            <div class="data-row">
+                                <div class="data-cell">DATE IN: <span id="prev-datein">---</span></div>
+                                <div class="data-cell">DATE OUT: <span>---</span></div>
+                            </div>
+                        </div>
+
+                        <div class="condition-section">
+                            EQUIPMENT CONDITION: 
+                            <span class="cond-item"><span class="box" id="p-asis-box"></span> AS IS</span>
+                            <span class="cond-item"><span class="box" id="p-wwt-box"></span> WWT</span>
+                            <span class="cond-item"><span class="box" id="p-cw-box"></span> CW</span>
+                            <span class="cond-item"><span class="box" id="p-new-box"></span> NEW</span>
+                        </div>
+
+                        <div class="footer-split">
+                            <div class="footer-left">
+                                <div class="loc-item">PICK UP ADDRESS: <span id="prev-pickup">---</span></div>
+                                <div class="loc-item">DELIVERY: <span id="prev-delivery">---</span></div>
+                                
+                                <div class="inspection-list">
+                                    <p>DELIVERY DRIVER/COMPANY INSPECTION AT THE DEPOT:</p>
+                                    <ul>
+                                        <li>- Doors can open and close completely... ______</li>
+                                        <li>- Handle bars and brackets are not bent... ______</li>
+                                        <li>- There are no holes in the floor... ______</li>
+                                        <li>- There are no Holes in the container. ______</li>
+                                        <li>- Seals and gaskets are in acceptable condition. ______</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="footer-right">
+                                <div class="fees-box">
+                                    <div class="fee-line">YARD SERVICES FEE <span id="prev-yard-fee">$0,00</span></div>
+                                    <div class="fee-line">STORAGE FEE <span id="prev-storage-fee">$0,00</span></div>
+                                    <div class="fee-line">TRANSPORTATIONS <span id="prev-trans-fee">$550,00</span></div>
+                                    <div class="fee-line total">TOTAL <span id="prev-total">$550,00</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notes-area">
+                            <p>NOTES:</p>
+                            <div class="notes-box">* SEND PICS TO THE CUSTOMER AND CALL FOR CONFIRMATION</div>
+                        </div>
+
+                        <div class="signature-section">
+                            <div class="sig-col">
+                                <p>FOR DELIVERING CARRIER: THIS EQUIPMENT WAS DELIVERED IN SOUND CONDITION</p>
+                                <div class="sig-line"></div>
+                                <p>BY</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Delivery Format View -->
+        <section id="delivery-format-view" class="view-section hidden">
+            <div class="dashboard-split-container">
+                <!-- Left: Format Form -->
+                <aside class="entry-sidebar primary-entry" style="flex: 0 0 35%;">
+                    <div class="sidebar-header">
+                        <h3>Create Delivery Format</h3>
+                        <div class="header-actions">
+                            <button onclick="window.print()" class="btn-add-sidebar">Print Format</button>
+                            <button onclick="showView('hero')" class="btn-cancel">Exit</button>
+                        </div>
+                    </div>
+                    <div class="sidebar-form">
+                        <div class="form-group"><label>INITIAL DATE</label><input type="date" id="df-init-date"></div>
+                        <div class="form-group"><label>FINAL DATE</label><input type="date" id="df-final-date"></div>
+                        <div class="form-group"><label>STATUS MOVEMENT</label>
+                            <select id="df-move">
+                                <option value="">None</option>
+                                <option value="IN">IN</option>
+                                <option value="OUT">OUT</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>LOAD STATUS</label>
+                            <select id="df-load">
+                                <option value="">None</option>
+                                <option value="EMPTY">EMPTY</option>
+                                <option value="FULL">FULL</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>TYPE</label>
+                            <select id="df-type" required>
+                                <option value="DRY">DRY</option>
+                                <option value="REEFER">REEFER</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>SIZE</label>
+                            <select id="df-size">
+                                <option value="40' HC">40' HC</option>
+                                <option value="40' STD">40' STD</option>
+                                <option value="20' STD">20' STD</option>
+                                <option value="45' HC">45' HC</option>
+                                <option value="20' HC">20' HC</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>MILES</label><input type="number" id="df-miles"></div>
+                        <div class="form-group"><label>RELEASE #</label><input type="text" id="df-release"></div>
+                        <div class="form-group"><label>ORDER #</label><input type="text" id="df-order"></div>
+                        <div class="form-group"><label>DRIVER NAME</label><input type="text" id="df-driver"></div>
+                        <div class="form-group"><label>CONTAINER #</label><input type="text" id="df-cont-num"></div>
+                        <div class="form-group"><label>PHONE</label><input type="text" id="df-phone"></div>
+                        <div class="form-group"><label>DELIVERY DATE</label><input type="date" id="df-del-date"></div>
+                        <div class="form-group"><label>CONDITION</label>
+                            <select id="df-cond">
+                                <option value="">None</option>
+                                <option value="AS IS">AS IS</option>
+                                <option value="WWT">WWT</option>
+                                <option value="CW">CW</option>
+                                <option value="NEW">NEW</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>CITY</label><input type="text" id="df-city"></div>
+                        <div class="form-group"><label>PICK UP ADDRESS</label><input type="text" id="df-pickup"></div>
+                        <div class="form-group"><label>DELIVERY PLACE</label><input type="text" id="df-delivery"></div>
+                        <div class="form-group"><label>DOORS</label><input type="text" id="df-doors"></div>
+                        <div class="form-group"><label>COLLECT PAYMENT</label>
+                            <select id="df-collect">
+                                <option value="YES">YES</option>
+                                <option value="NO">NO</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>AMOUNT</label><input type="number" id="df-amount"></div>
+                    </div>
+                </aside>
+
+                <!-- Right: Format Preview -->
+                <div class="table-area" style="flex: 0 0 65%; background: #cbd5e1; padding: 40px; overflow-y: auto;">
+                    <div class="receipt-paper" id="printable-format">
+                        <div class="receipt-header">
+                            <div class="header-left">
+                                <img src="assets/logo.jpg" alt="Logo" class="receipt-logo">
+                                <div class="company-info">
+                                    <h1>RP TULIPAN TRANSPORT, INC</h1>
+                                    <p>8421 NW 70th ST, MIAMI FL 33166</p>
+                                </div>
+                            </div>
+                            <div class="header-right">
+                                <div class="id-box">ID: <span class="id-val">#6539</span></div>
+                                <div class="date-box-simple" style="margin-top: 10px; font-size: 0.8rem; border: 1px solid #000; padding: 5px;">
+                                    INITIAL DATE: <span id="df-p-init">---</span><br>
+                                    FINAL DATE: <span id="df-p-final">---</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="receipt-row-check">
+                            <div class="check-item"><span class="box" id="df-p-in-box"></span> IN</div>
+                            <div class="check-item"><span class="box" id="df-p-out-box"></span> OUT</div>
+                            <div class="check-item"><span class="box" id="df-p-empty-box"></span> EMPTY</div>
+                            <div class="check-item"><span class="box" id="df-p-full-box"></span> FULL</div>
+                            <div class="info-item">TYPE: <strong id="df-p-type">DRY</strong></div>
+                            <div class="info-item">MILES: <strong id="df-p-miles">0</strong></div>
+                            <div class="info-item">SIZE: <strong id="df-p-size">20' STD</strong></div>
+                        </div>
+
+                        <div class="booking-order-container">
+                            <div class="bo-box">RELEASE #: <span id="df-p-release">---</span></div>
+                            <div class="bo-box">ORDER #: <span id="df-p-order">---</span></div>
+                        </div>
+
+                        <div class="customer-data">
+                            <div class="data-row">
+                                <div class="data-cell">DRIVER NAME: <span id="df-p-driver">---</span></div>
+                                <div class="data-cell">CONTAINER NUMBER: <span id="df-p-cont">---</span></div>
+                            </div>
+                            <div class="data-row">
+                                <div class="data-cell">CUSTOMER PHONE: <span id="df-p-phone">---</span></div>
+                                <div class="data-cell">DELIVERY DATE: <span id="df-p-deldate">---</span></div>
+                            </div>
+                        </div>
+
+                        <div class="condition-section">
+                            EQUIPMENT CONDITION: 
+                            <span class="cond-item"><span class="box" id="df-p-asis-box"></span> AS IS</span>
+                            <span class="cond-item"><span class="box" id="df-p-wwt-box"></span> WWT</span>
+                            <span class="cond-item"><span class="box" id="df-p-cw-box"></span> CW</span>
+                            <span class="cond-item"><span class="box" id="df-p-new-box"></span> NEW</span>
+                        </div>
+
+                        <div class="footer-split">
+                            <div class="footer-left">
+                                <div class="loc-item">CITY: <span id="df-p-city">---</span></div>
+                                <div class="loc-item">PICK UP ADDRESS: <span id="df-p-pickup">---</span></div>
+                                <div class="loc-item">DELIVERY: <span id="df-p-delivery">---</span></div>
+                                
+                                <div class="inspection-list">
+                                    <p>DELIVERY DRIVER/COMPANY INSPECTION AT THE DEPOT:</p>
+                                    <ul>
+                                        <li>- Doors can open and close completely, hinges and latches are not damaged. ______</li>
+                                        <li>- Handle bars and brackets are not bent or damaged. ______</li>
+                                        <li>- There are no holes in the floor, and the floor is not soft or damaged. ______</li>
+                                        <li>- There are no Holes in the container. ______</li>
+                                        <li>- Seals and gaskets are in acceptable condition. ______</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="footer-right">
+                                <div class="fees-box" style="margin-bottom: 10px;">
+                                    <div style="font-size: 0.7rem; font-weight: 700;">DOORS:</div>
+                                    <div id="df-p-doors" style="min-height: 20px; font-weight: 700;">---</div>
+                                </div>
+                                <div class="fees-box">
+                                    <div class="fee-line">COLLECT PAYMENT: <span id="df-p-collect">YES</span></div>
+                                    <div class="fee-line total">AMOUNT: <span id="df-p-amount">$0,00</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notes-area">
+                            <p>NOTES:</p>
+                            <div class="notes-box" style="font-size: 0.75rem; line-height: 1.4;">
+                                * INSPECT THE CONTAINER, SEND PICS OF IT AND OUTGATE RECEIPT FROM DEPOT WHEN LOADED.<br>
+                                * LET US KNOW THE ETA AND CALL CUSTOMER ALSO.<br>
+                                * CUSTOMER HAVE TO MARK THE CONTAINER INSPECTION.<br>
+                                * For Customer Information:<br>
+                                * RP Tulipan Transport is not responsible for any damage caused during loading or unloading.<br>
+                                * The customer must secure their cargo inside the container; we are not responsible for any damage.
+                            </div>
+                        </div>
+
+                        <div class="signature-section">
+                            <div class="sig-col" style="flex: 1;">
+                                <p>FOR DELIVERING CARRIER: THIS EQUIPMENT WAS DELIVERED IN SOUND CONDITION</p>
+                                <div class="sig-line"></div>
+                                <p>BY</p>
+                            </div>
+                            <div style="width: 40px;"></div>
+                            <div class="sig-col" style="flex: 1;">
+                                <p>FOR DELIVERING CARRIER: THIS EQUIPMENT WAS DELIVERED IN SOUND CONDITION</p>
+                                <div class="sig-line"></div>
+                                <p>BY</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const header = document.getElementById('header-nav');
+        const heroView = document.getElementById('hero-view');
+        const calendarView = document.getElementById('calendar-view');
+        const yardView = document.getElementById('yard-view');
+        const deliveryFormatView = document.getElementById('delivery-format-view');
+        const tableBody = document.getElementById('table-body');
+
+        function showView(view) {
+            localStorage.setItem('activeView', view);
+            
+            // Hide all views
+            heroView.classList.add('hidden');
+            calendarView.classList.add('hidden');
+            yardView.classList.add('hidden');
+            deliveryFormatView.classList.add('hidden');
+            
+            // Show requested view
+            if (view === 'calendar') {
+                calendarView.classList.remove('hidden');
+                header.classList.add('navbar-fixed-solid');
+            } else if (view === 'yard') {
+                yardView.classList.remove('hidden');
+                header.classList.add('navbar-fixed-solid');
+            } else if (view === 'delivery-format') {
+                deliveryFormatView.classList.remove('hidden');
+                header.classList.add('navbar-fixed-solid');
+            } else {
+                heroView.classList.remove('hidden');
+                header.classList.remove('navbar-fixed-solid');
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function saveTableData() {
+            const rows = [];
+            const trs = tableBody.querySelectorAll('tr');
+            trs.forEach(tr => {
+                const rowData = Array.from(tr.querySelectorAll('td')).map(td => td.textContent);
+                rows.push(rowData);
+            });
+            localStorage.setItem('logisticsTableData', JSON.stringify(rows));
+        }
+
+        function loadTableData() {
+            const saved = localStorage.getItem('logisticsTableData');
+            if (saved) {
+                const rows = JSON.parse(saved);
+                rows.forEach(rowData => {
+                    const tr = document.createElement('tr');
+                    rowData.forEach(text => {
+                        const td = document.createElement('td');
+                        td.textContent = text;
+                        tr.appendChild(td);
+                    });
+                    tableBody.appendChild(tr);
+                });
+            }
+        }
+
+        function addRow() {
+            const inputs = [
+                'in-id', 'in-date', 'in-size', 'in-ncont', 'in-release', 'in-order', 'in-city', 'in-pickup', 
+                'in-delivery', 'in-doors', 'in-miles', 'in-customer', 'in-paystatus', 'in-paydate', 'in-yard', 
+                'in-yardrate', 'in-dateout', 'in-dayrate', 'in-company', 'in-driver', 'in-rate', 'in-paytype', 
+                'in-sales', 'in-collect', 'in-amount', 'in-phone', 'in-paiddriver', 'in-status', 'in-comission', 
+                'in-comidriver', 'in-income', 'in-invoice', 'in-note', 'in-storage', 'in-inout'
+            ];
+
+            const tr = document.createElement('tr');
+            inputs.forEach(id => {
+                const td = document.createElement('td');
+                const inputEl = document.getElementById(id);
+                td.textContent = inputEl.value;
+                tr.appendChild(td);
+                // Clear the form field
+                if(inputEl.type !== 'date') {
+                    inputEl.value = '';
+                }
+            });
+
+            tableBody.appendChild(tr);
+            saveTableData();
+            
+            // Scroll to the new entry in the table
+            tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Initialize state on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedView = localStorage.getItem('activeView') || 'hero';
+            showView(savedView);
+            loadTableData();
+
+            // Mobile Menu Toggle
+            const toggle = document.getElementById('hamburger-menu');
+            const menu = document.getElementById('nav-actions-container');
+            
+            const toggleMenu = () => {
+                toggle.classList.toggle('active');
+                menu.classList.toggle('active');
+            };
+
+            window.closeMenu = () => {
+                toggle.classList.remove('active');
+                menu.classList.remove('active');
+            };
+
+            toggle.addEventListener('click', toggleMenu);
+
+            // Yard Receipt Live Preview Logic
+            const setupReceiptSync = (inputId, previewId, isFee = false) => {
+                const input = document.getElementById(inputId);
+                const prev = document.getElementById(previewId);
+                if (input && prev) {
+                    input.addEventListener('input', () => {
+                        let val = input.value || (isFee ? '0' : '---');
+                        if (isFee) {
+                            prev.textContent = `$${parseFloat(val).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                            updateTotal();
+                        } else {
+                            prev.textContent = val;
+                        }
+                    });
+                }
+            };
+
+            const updateTotal = () => {
+                const yard = parseFloat(document.getElementById('r-yard-fee').value) || 0;
+                const storage = parseFloat(document.getElementById('r-storage-fee').value) || 0;
+                const trans = parseFloat(document.getElementById('r-trans-fee').value) || 0;
+                const total = yard + storage + trans;
+                document.getElementById('prev-total').textContent = `$${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            };
+
+            const syncStatusBoxes = (selectId, prefix) => {
+                const select = document.getElementById(selectId);
+                select.addEventListener('change', () => {
+                    const val = select.value;
+                    // Reset all boxes in this category
+                    const boxes = {
+                        'r-move': ['p-in-box', 'p-out-box'],
+                        'r-load': ['p-empty-box', 'p-full-box'],
+                        'r-cond': ['p-asis-box', 'p-wwt-box', 'p-cw-box', 'p-new-box']
+                    }[selectId];
+                    
+                    boxes.forEach(id => document.getElementById(id).textContent = '');
+                    
+                    if (val === 'IN') document.getElementById('p-in-box').textContent = '✓';
+                    if (val === 'OUT') document.getElementById('p-out-box').textContent = '✓';
+                    if (val === 'EMPTY') document.getElementById('p-empty-box').textContent = '✓';
+                    if (val === 'FULL') document.getElementById('p-full-box').textContent = '✓';
+                    if (val === 'AS IS') document.getElementById('p-asis-box').textContent = '✓';
+                    if (val === 'WWT') document.getElementById('p-wwt-box').textContent = '✓';
+                    if (val === 'CW') document.getElementById('p-cw-box').textContent = '✓';
+                    if (val === 'NEW') document.getElementById('p-new-box').textContent = '✓';
+                });
+            };
+
+            setupReceiptSync('r-customer', 'prev-customer');
+            setupReceiptSync('r-cont-num', 'prev-cont');
+            setupReceiptSync('r-phone', 'prev-phone');
+            setupReceiptSync('r-init-date', 'prev-datein');
+            setupReceiptSync('r-pickup', 'prev-pickup');
+            setupReceiptSync('r-delivery', 'prev-delivery');
+            setupReceiptSync('r-yard-fee', 'prev-yard-fee', true);
+            setupReceiptSync('r-storage-fee', 'prev-storage-fee', true);
+            setupReceiptSync('r-trans-fee', 'prev-trans-fee', true);
+            setupReceiptSync('r-type', 'p-type');
+            setupReceiptSync('r-size', 'p-size');
+            setupReceiptSync('r-booking', 'p-booking');
+            setupReceiptSync('r-order', 'p-order');
+            
+            const notesInput = document.getElementById('r-notes');
+            const notesPrev = document.getElementById('p-notes-display');
+            if (notesInput && notesPrev) {
+                notesInput.addEventListener('input', () => {
+                    notesPrev.textContent = notesInput.value;
+                });
+            }
+
+            syncStatusBoxes('r-move');
+            syncStatusBoxes('r-load');
+            // Delivery Format Live Preview Logic
+            const setupDFSync = (inputId, previewId, isCurrency = false) => {
+                const input = document.getElementById(inputId);
+                const prev = document.getElementById(previewId);
+                if (input && prev) {
+                    input.addEventListener('input', () => {
+                        let val = input.value || '---';
+                        if (isCurrency) {
+                            prev.textContent = `$${parseFloat(val || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                        } else {
+                            prev.textContent = val;
+                        }
+                    });
+                }
+            };
+
+            const syncDFBoxes = (selectId) => {
+                const select = document.getElementById(selectId);
+                select.addEventListener('change', () => {
+                    const val = select.value;
+                    const map = {
+                        'df-move': { 'IN': 'df-p-in-box', 'OUT': 'df-p-out-box' },
+                        'df-load': { 'EMPTY': 'df-p-empty-box', 'FULL': 'df-p-full-box' },
+                        'df-cond': { 'AS IS': 'df-p-asis-box', 'WWT': 'df-p-wwt-box', 'CW': 'df-p-cw-box', 'NEW': 'df-p-new-box' }
+                    }[selectId];
+                    
+                    Object.values(map).forEach(id => document.getElementById(id).textContent = '');
+                    if (map[val]) document.getElementById(map[val]).textContent = '✓';
+                });
+            };
+
+            setupDFSync('df-init-date', 'df-p-init');
+            setupDFSync('df-final-date', 'df-p-final');
+            setupDFSync('df-miles', 'df-p-miles');
+            setupDFSync('df-size', 'df-p-size');
+            setupDFSync('df-type', 'df-p-type');
+            setupDFSync('df-release', 'df-p-release');
+            setupDFSync('df-order', 'df-p-order');
+            setupDFSync('df-driver', 'df-p-driver');
+            setupDFSync('df-cont-num', 'df-p-cont');
+            setupDFSync('df-phone', 'df-p-phone');
+            setupDFSync('df-del-date', 'df-p-deldate');
+            setupDFSync('df-city', 'df-p-city');
+            setupDFSync('df-pickup', 'df-p-pickup');
+            setupDFSync('df-delivery', 'df-p-delivery');
+            setupDFSync('df-doors', 'df-p-doors');
+            setupDFSync('df-collect', 'df-p-collect');
+            setupDFSync('df-amount', 'df-p-amount', true);
+
+            syncDFBoxes('df-move');
+            syncDFBoxes('df-load');
+            syncDFBoxes('df-cond');
+        });
+
+        window.addEventListener('scroll', () => {
+            if (!heroView.classList.contains('hidden')) {
+                if (window.scrollY > 50) {
+                    header.classList.add('navbar-scrolled');
+                } else {
+                    header.classList.remove('navbar-scrolled');
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
