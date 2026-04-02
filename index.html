@@ -334,7 +334,7 @@
                                 <option value="" disabled selected>Select Trailer</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>21. RATE (Transp)</label>
+                        <div class="form-group"><label>21. RATE</label>
                             <input type="number" id="in-rate" style="flex: 0.6;" oninput="updateDriverCommission()">
                             <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox" id="in-ratepaid"></label>
                         </div>
@@ -532,7 +532,6 @@
                         <div class="receipt-section-title">COSTS & FEES</div>
                         <div class="form-group"><label>Yard Fee ($)</label><input type="number" id="u-r-yard" oninput="drawReceipt()"></div>
                         <div class="form-group"><label>Storage / Interchange ($)</label><input type="number" id="u-r-storage" oninput="drawReceipt()"></div>
-                        <div class="form-group"><label>Transportation ($)</label><input type="number" id="u-r-transp" oninput="drawReceipt()"></div>
                         <div class="form-group"><label>Sales Price ($)</label><input type="number" id="u-r-sales" oninput="drawReceipt()"></div>
                         <div class="form-group"><label>Tax (%)</label><input type="number" id="u-r-tax" value="0" oninput="drawReceipt()"></div>
                         
@@ -578,29 +577,46 @@
                             </select>
                         </div>
                         <div class="form-group" style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
-                            <label style="color: var(--corporate-red); margin-bottom: 10px; font-weight: 800; font-size: 0.75rem;">INITIAL STOCK (QTY)</label>
-                            <div style="display: flex; gap: 8px;">
-                                <div style="flex:1;">
-                                    <label style="font-size: 0.6rem; display: block; margin-bottom: 4px;">20' QTY</label>
-                                    <input type="number" id="rel-qty-20" value="0" min="0" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                            <label style="color: var(--corporate-red); margin-bottom: 12px; font-weight: 800; font-size: 0.7rem; display: block; letter-spacing: 0.5px;">INVENTORY & PRICING</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                                <div style="background: white; padding: 6px; border-radius: 6px; border: 1px solid #f1f5f9; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    <label style="font-size: 0.6rem; font-weight: 900; color: #475569; display: block; margin-bottom: 2px;">20' FT</label>
+                                    <input type="number" id="rel-qty-20" placeholder="Qty" value="0" min="0" style="width: 100%; border:0; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; margin-bottom: 4px;">
+                                    <input type="number" id="rel-price-20" placeholder="Price $" value="0" style="width: 100%; border:0; font-size: 0.7rem; color: #16a34a; font-weight: bold;">
                                 </div>
-                                <div style="flex:1;">
-                                    <label style="font-size: 0.6rem; display: block; margin-bottom: 4px;">40' QTY</label>
-                                    <input type="number" id="rel-qty-40" value="0" min="0" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                                <div style="background: white; padding: 6px; border-radius: 6px; border: 1px solid #f1f5f9; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    <label style="font-size: 0.6rem; font-weight: 900; color: #475569; display: block; margin-bottom: 2px;">40' FT</label>
+                                    <input type="number" id="rel-qty-40" placeholder="Qty" value="0" min="0" style="width: 100%; border:0; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; margin-bottom: 4px;">
+                                    <input type="number" id="rel-price-40" placeholder="Price $" value="0" style="width: 100%; border:0; font-size: 0.7rem; color: #16a34a; font-weight: bold;">
                                 </div>
-                                <div style="flex:1;">
-                                    <label style="font-size: 0.6rem; display: block; margin-bottom: 4px;">45' QTY</label>
-                                    <input type="number" id="rel-qty-45" value="0" min="0" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                                <div style="background: white; padding: 6px; border-radius: 6px; border: 1px solid #f1f5f9; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    <label style="font-size: 0.6rem; font-weight: 900; color: #475569; display: block; margin-bottom: 2px;">45' FT</label>
+                                    <input type="number" id="rel-qty-45" placeholder="Qty" value="0" min="0" style="width: 100%; border:0; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; margin-bottom: 4px;">
+                                    <input type="number" id="rel-price-45" placeholder="Price $" value="0" style="width: 100%; border:0; font-size: 0.7rem; color: #16a34a; font-weight: bold;">
                                 </div>
                             </div>
                         </div>
                         <div class="form-group"><label>DATE</label><input type="date" id="rel-date"></div>
-                        <div class="form-group"><label>CITY</label><input type="text" id="rel-city" placeholder="City"></div>
+                        <div class="form-group">
+                            <label>CITY</label>
+                            <select id="rel-city">
+                                <option value="" disabled selected>Select City</option>
+                                <option value="MIAMI">MIAMI</option>
+                                <option value="TAMPA">TAMPA</option>
+                                <option value="JACKSONVILLE">JACKSONVILLE</option>
+                                <option value="SAVANNAH">SAVANNAH</option>
+                                <option value="TITUSVILLE">TITUSVILLE</option>
+                                <option value="MASCOTTE">MASCOTTE</option>
+                                <option value="ORLANDO">ORLANDO</option>
+                                <option value="ATLANTA">ATLANTA</option>
+                                <option value="CHARLESTON">CHARLESTON</option>
+                                <option value="NEWARK">NEWARK</option>
+                                <option value="SUMMERVILLE">SUMMERVILLE</option>
+                                <option value="BALTIMORE">BALTIMORE</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>DEPOT</label><input type="text" id="rel-depot" placeholder="Depot Name"></div>
                         <div class="form-group"><label>SELLER</label><input type="text" id="rel-seller" placeholder="Seller Name"></div>
-                        <div class="form-group"><label>PAID BY</label><input type="text" id="rel-paidby" placeholder="Paid By"></div>
-                        <div class="form-group"><label>TRANSPORT</label><input type="text" id="rel-transp" placeholder="Transport Name"></div>
-                        <div class="form-group"><label>PRICE PER UNIT ($)</label><input type="number" id="rel-price" value="0"></div>
                     </div>
                 </aside>
 
@@ -618,11 +634,12 @@
                                     <th>DEPOT</th>
                                     <th>CITY</th>
                                     <th>20' QTY</th>
+                                    <th>20' $</th>
                                     <th>40' QTY</th>
+                                    <th>40' $</th>
                                     <th>45' QTY</th>
-                                    <th>PRICE</th>
+                                    <th>45' $</th>
                                     <th>SELLER</th>
-                                    <th>TRANS.</th>
                                     <th>TOTAL STOCK</th>
                                 </tr>
                             </thead>
@@ -865,13 +882,6 @@
                         <div class="breakdown-list">
                             <div class="breakdown-item">
                                 <div class="item-label">
-                                    <span class="dot transport"></span>
-                                    Total Transporte
-                                </div>
-                                <div class="item-value" id="val-transport">$0.00</div>
-                            </div>
-                            <div class="breakdown-item">
-                                <div class="item-label">
                                     <span class="dot sales"></span>
                                     Total Ventas
                                 </div>
@@ -898,10 +908,6 @@
                         <!-- We can add a CSS chart or just a placeholder for visual excellence -->
                         <h3>Revenue Distribution</h3>
                         <div class="simple-bar-chart">
-                            <div class="bar-group">
-                                <label>Transp</label>
-                                <div class="bar-container"><div id="bar-transport" class="bar transport" style="width: 0%"></div></div>
-                            </div>
                             <div class="bar-group">
                                 <label>Ventas</label>
                                 <div class="bar-container"><div id="bar-sales" class="bar sales" style="width: 0%"></div></div>
@@ -954,6 +960,30 @@
                 } catch (e) {
                     console.error('Migration failed:', e);
                 }
+            }
+            
+            // --- RELEASES MIGRATION (Structural Upgrade to Pricing per Size) ---
+            const relKey = 'releasesTableData';
+            const relRaw = localStorage.getItem(relKey);
+            if(relRaw) {
+                try {
+                    let relRows = JSON.parse(relRaw);
+                    // Standard upgrade: 11 columns -> 13 columns
+                    if(relRows.length > 0 && relRows[0].length === 11) {
+                        relRows = relRows.map(r => {
+                            // Old structure: [0:NO, 1:DATE, 2:TYPE, 3:DEPOT, 4:CITY, 5:Q20, 6:Q40, 7:Q45, 8:PRICE, 9:SELLER, 10:TOTAL]
+                            const newRow = [
+                                r[0], r[1], r[2], r[3], r[4], 
+                                r[5], r[8], // 20 Qty, 20 Price
+                                r[6], r[8], // 40 Qty, 40 Price
+                                r[7], r[8], // 45 Qty, 45 Price
+                                r[9], r[10] // Seller, Total
+                            ];
+                            return newRow;
+                        });
+                        localStorage.setItem(relKey, JSON.stringify(relRows));
+                    }
+                } catch(e) {}
             }
         })();
 
@@ -1108,8 +1138,8 @@
                     if (rIdx !== -1) {
                         let stockIdx = -1;
                         if (selectedSize.includes("20'")) stockIdx = 5;
-                        else if (selectedSize.includes("40'")) stockIdx = 6;
-                        else if (selectedSize.includes("45'")) stockIdx = 7;
+                        else if (selectedSize.includes("40'")) stockIdx = 7;
+                        else if (selectedSize.includes("45'")) stockIdx = 9;
                         
                         if (stockIdx !== -1) {
                             const currentStock = parseInt(relRows[rIdx][stockIdx]) || 0;
@@ -1117,9 +1147,9 @@
                                 alert(`STOCK EXHAUSTED for Size ${selectedSize} in Release ${selectedRelease}`);
                                 return;
                             }
-                            // Decrement Stock
+                             // Decrement Stock
                             relRows[rIdx][stockIdx] = currentStock - 1;
-                            relRows[rIdx][11] = (parseInt(relRows[rIdx][5])||0) + (parseInt(relRows[rIdx][6])||0) + (parseInt(relRows[rIdx][7])||0);
+                            relRows[rIdx][12] = (parseInt(relRows[rIdx][5])||0) + (parseInt(relRows[rIdx][7])||0) + (parseInt(relRows[rIdx][9])||0);
                             localStorage.setItem('releasesTableData', JSON.stringify(relRows));
                             
                             // Re-render releases table and datalists
@@ -1205,7 +1235,7 @@
                 const rows = JSON.parse(saved);
                 // Filter: Show only releases that have at least 1 unit in total stock
                 const validReleases = rows.filter(r => {
-                    const total = (parseInt(r[5]) || 0) + (parseInt(r[6]) || 0) + (parseInt(r[7]) || 0);
+                    const total = (parseInt(r[5]) || 0) + (parseInt(r[7]) || 0) + (parseInt(r[9]) || 0);
                     return total > 0;
                 });
                 releaseList.innerHTML = '';
@@ -1231,8 +1261,8 @@
                 
                 if(relData) {
                     const stock20 = parseInt(relData[5]) || 0;
-                    const stock40 = parseInt(relData[6]) || 0;
-                    const stock45 = parseInt(relData[7]) || 0;
+                    const stock40 = parseInt(relData[7]) || 0;
+                    const stock45 = parseInt(relData[9]) || 0;
                     
                     // Filter options based on stock
                     Array.from(inSizeSelect.options).forEach(opt => {
@@ -1622,8 +1652,11 @@
                 if(!relNo) { alert('Please enter a Release Number'); return; }
                 
                 const q20 = parseInt(document.getElementById('rel-qty-20').value) || 0;
+                const p20 = document.getElementById('rel-price-20').value || '0';
                 const q40 = parseInt(document.getElementById('rel-qty-40').value) || 0;
+                const p40 = document.getElementById('rel-price-40').value || '0';
                 const q45 = parseInt(document.getElementById('rel-qty-45').value) || 0;
+                const p45 = document.getElementById('rel-price-45').value || '0';
                 const totalStock = q20 + q40 + q45;
                 
                 const data = [
@@ -1632,10 +1665,10 @@
                     document.getElementById('rel-type').value,
                     document.getElementById('rel-depot').value || '---',
                     document.getElementById('rel-city').value || '---',
-                    q20, q40, q45,
-                    document.getElementById('rel-price').value || '0',
+                    q20, p20,
+                    q40, p40,
+                    q45, p45,
                     document.getElementById('rel-seller').value || '---',
-                    document.getElementById('rel-transp').value || '---',
                     totalStock
                 ];
 
@@ -1651,9 +1684,9 @@
                 updateReleaseDatalist();
                 
                 // Clear inputs
-                ['rel-no-releases', 'rel-qty-20', 'rel-qty-40', 'rel-qty-45', 'rel-depot', 'rel-city', 'rel-seller', 'rel-transp'].forEach(id => {
+                ['rel-no-releases', 'rel-qty-20', 'rel-price-20', 'rel-qty-40', 'rel-price-40', 'rel-qty-45', 'rel-price-45', 'rel-depot', 'rel-city', 'rel-seller'].forEach(id => {
                     const el = document.getElementById(id);
-                    if(el) el.value = (id.includes('qty')) ? '0' : '';
+                    if(el) el.value = (id.includes('qty') || id.includes('price')) ? '0' : '';
                 });
             };
 
@@ -1795,7 +1828,6 @@
                 const expensesData = JSON.parse(localStorage.getItem('expensesData') || localStorage.getItem('expensesTableData') || '[]');
 
                 let totals = {
-                    transport: 0,
                     sales: 0,
                     rentals: 0,
                     yard: 0,
@@ -1806,7 +1838,6 @@
                 logisticsData.forEach(row => {
                     const rowDate = row[1];
                     if ((!dateFrom || rowDate >= dateFrom) && (!dateTo || rowDate <= dateTo)) {
-                        totals.transport += parseFloat(row[20]) || 0;
                         totals.sales += parseFloat(row[22]) || 0;
                         totals.yard += parseFloat(row[15]) || 0;
                         
@@ -1827,7 +1858,7 @@
                     }
                 });
 
-                const totalRevenue = totals.transport + totals.sales + totals.rentals + totals.yard;
+                const totalRevenue = totals.sales + totals.rentals + totals.yard;
                 const netProfit = totalRevenue - totals.expenses;
 
                 // 3. Update Summary Cards
@@ -1847,14 +1878,12 @@
                 }
 
                 // 4. Update Breakdown List
-                document.getElementById('val-transport').textContent = `$${totals.transport.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                 document.getElementById('val-sales').textContent = `$${totals.sales.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                 document.getElementById('val-rentals').textContent = `$${totals.rentals.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                 document.getElementById('val-yard').textContent = `$${totals.yard.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
 
                 // 5. Update Simple Bar Chart
-                const maxVal = Math.max(totals.transport, totals.sales, totals.rentals, totals.yard, 1);
-                document.getElementById('bar-transport').style.width = `${(totals.transport / maxVal) * 100}%`;
+                const maxVal = Math.max(totals.sales, totals.rentals, totals.yard, 1);
                 document.getElementById('bar-sales').style.width = `${(totals.sales / maxVal) * 100}%`;
                 document.getElementById('bar-rentals').style.width = `${(totals.rentals / maxVal) * 100}%`;
                 document.getElementById('bar-yard').style.width = `${(totals.yard / maxVal) * 100}%`;
@@ -1935,7 +1964,6 @@
                 // Fees
                 document.getElementById('u-r-yard').value = trip[15] || 0;
                 document.getElementById('u-r-storage').value = trip[36] || 0;
-                document.getElementById('u-r-transp').value = trip[20] || 0;
                 document.getElementById('u-r-sales').value = trip[22] || 0;
                 
                 // Conditions (simplified heuristic)
@@ -2052,7 +2080,6 @@
                 let billingRows = '';
                 if(data.yard > 0) billingRows += `<tr><td>Yard Loading / Interchange Fee</td><td style="text-align:right;">$${data.yard.toFixed(2)}</td></tr>`;
                 if(data.storage > 0) billingRows += `<tr><td>Storage / Rental Fee</td><td style="text-align:right;">$${data.storage.toFixed(2)}</td></tr>`;
-                if(data.transp > 0) billingRows += `<tr><td>Transportation Services</td><td style="text-align:right;">$${data.transp.toFixed(2)}</td></tr>`;
                 if(data.sales > 0) billingRows += `<tr><td>Container Sales</td><td style="text-align:right;">$${data.sales.toFixed(2)}</td></tr>`;
                 if(taxVal > 0) billingRows += `<tr><td>Taxes (${data.taxRate}%)</td><td style="text-align:right;">$${taxVal.toFixed(2)}</td></tr>`;
 
@@ -2124,7 +2151,6 @@
                 
                 data[idx][15] = document.getElementById('u-r-yard').value;
                 data[idx][36] = document.getElementById('u-r-storage').value;
-                data[idx][20] = document.getElementById('u-r-transp').value;
                 data[idx][22] = document.getElementById('u-r-sales').value;
                 data[idx][32] = document.getElementById('u-r-notes').value;
                 

@@ -1256,7 +1256,6 @@ main {
     border-radius: 50%;
 }
 
-.dot.transport { background: #6366f1; }
 .dot.sales { background: #f59e0b; }
 .dot.rentals { background: #ec4899; }
 .dot.yard { background: #06b6d4; }
@@ -1294,7 +1293,6 @@ main {
     transition: width 0.5s ease-out;
 }
 
-.bar.transport { background: #6366f1; }
 .bar.sales { background: #f59e0b; }
 .bar.rentals { background: #ec4899; }
 .bar.yard { background: #06b6d4; }
