@@ -65,6 +65,10 @@
                         <i class="fas fa-calendar-check"></i>
                         <span>DELIVERY CALENDAR</span>
                     </button>
+                    <button onclick="showView('expenses')" class="dash-card">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        <span>EXPENSES MANAGEMENT</span>
+                    </button>
                 </div>
             </div>
         </section>
@@ -651,6 +655,63 @@
                                     <th colspan="3" id="dl-total-paid" style="font-size: 1.2rem; color: #b91c1c;">$0.00</th>
                                 </tr>
                             </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- EXPENSE MANAGEMENT View -->
+        <section id="expenses-view" class="view-section hidden">
+            <div class="dashboard-split-container">
+                <aside class="entry-sidebar primary-entry" style="width: 450px;">
+                    <div class="sidebar-header">
+                        <h3>Expense Management</h3>
+                        <div class="header-actions">
+                            <button onclick="addExpenseRow()" class="btn-add-sidebar">Save Expense</button>
+                        </div>
+                    </div>
+                    <div class="sidebar-form">
+                        <div class="form-group"><label>DATE</label><input type="date" id="exp-date"></div>
+                        <div class="form-group">
+                            <label>CATEGORY</label>
+                            <select id="exp-category" onchange="toggleOtherExpense()">
+                                <option value="Fuel">Fuel (Diesel)</option>
+                                <option value="Service/Repairs">Service / Repairs</option>
+                                <option value="Tolls">Tolls / Sunpass</option>
+                                <option value="Insurance">Insurance</option>
+                                <option value="Payroll">Payroll (Workers)</option>
+                                <option value="Utilities">Utilities / Rent</option>
+                                <option value="Taxes/Licenses">Taxes / Licenses</option>
+                                <option value="Other">Other (Special)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="group-exp-other" style="display: none;">
+                            <label>DESCRIPTION (OTHER)</label>
+                            <input type="text" id="exp-other-desc" placeholder="Specify expense type">
+                        </div>
+                        <div class="form-group"><label>AMOUNT ($)</label><input type="number" id="exp-amount" value="0"></div>
+                        <div class="form-group"><label>DETAILS / NOTE</label><textarea id="exp-note" style="width: 100%; height: 80px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px;"></textarea></div>
+                    </div>
+                </aside>
+
+                <div class="table-area">
+                    <div class="table-toolbar" style="display:flex; justify-content: space-between; align-items:center;">
+                        <h2>Recent Expenses History</h2>
+                        <h3 id="exp-total-badge" style="background:#f1f5f9; padding: 10px 20px; border-radius: 8px; color: #b91c1c; font-weight:900;">Total: $0.00</h3>
+                    </div>
+                    <div class="table-scroll-container">
+                        <table class="drivers-report-table">
+                            <thead>
+                                <tr class="header-row">
+                                    <th>DATE</th>
+                                    <th>CATEGORY</th>
+                                    <th>DESCRIPTION</th>
+                                    <th>AMOUNT</th>
+                                    <th>NOTE</th>
+                                    <th>ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expenses-body"></tbody>
                         </table>
                     </div>
                 </div>
@@ -1331,6 +1392,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             loadTableData();
             loadReleasesData();
+            loadExpensesData();
             renderDriverLog();
             updateReleaseDatalist();
             updateAddressDatalist();
@@ -1387,10 +1449,7 @@
                 });
             };
 
-            ['rel-qty', 'rel-price'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.addEventListener('input', updateRelTotal);
-            });
+            // Release total logic handled within addReleaseRow directly now.
 
             function saveReleasesData() {
                 const body = document.getElementById('releases-body');
@@ -1419,14 +1478,105 @@
                     });
                 }
             }
+        // Mobile menu behavior is handled by global toggleMobileMenu and closeMenu functions.
 
-            // Logic for hamburger is already globally defined in toggleMobileMenu function 
-            // and attached via onclick in HTML to prevent double-toggle conflicts.
-
-            window.closeMenu = () => {
-                if(toggle) toggle.classList.remove('active');
-                if(menu) menu.classList.remove('active');
+            // EXPENSE MANAGEMENT LOGIC
+            window.toggleOtherExpense = () => {
+                const cat = document.getElementById('exp-category').value;
+                document.getElementById('group-exp-other').style.display = (cat === 'Other') ? 'block' : 'none';
             };
+
+            window.addExpenseRow = () => {
+                const date = document.getElementById('exp-date').value || '---';
+                const cat = document.getElementById('exp-category').value;
+                const otherVal = document.getElementById('exp-other-desc').value;
+                const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
+                const note = document.getElementById('exp-note').value || '---';
+                
+                const desc = (cat === 'Other') ? otherVal : cat;
+                
+                const data = [date, cat, desc, `$${amount.toLocaleString('en-US', {minimumFractionDigits: 2})}`, note];
+                const tr = document.createElement('tr');
+                
+                data.forEach(text => {
+                   const td = document.createElement('td');
+                   td.textContent = text;
+                   tr.appendChild(td);
+                });
+                
+                // Add Delete action
+                const actionsTd = document.createElement('td');
+                const delBtn = document.createElement('button');
+                delBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                delBtn.className = 'btn-cancel';
+                delBtn.style.padding = '5px 10px';
+                delBtn.onclick = (e) => {
+                    tr.remove();
+                    saveExpensesData();
+                    calculateExpenseTotal();
+                };
+                actionsTd.appendChild(delBtn);
+                tr.appendChild(actionsTd);
+                
+                document.getElementById('expenses-body').appendChild(tr);
+                saveExpensesData();
+                calculateExpenseTotal();
+                
+                // Reset form partially
+                document.getElementById('exp-amount').value = '0';
+                document.getElementById('exp-note').value = '';
+                document.getElementById('exp-other-desc').value = '';
+            };
+
+            function calculateExpenseTotal() {
+                let total = 0;
+                document.querySelectorAll('#expenses-body tr').forEach(row => {
+                    const amountStr = row.cells[3].textContent.replace('$', '').replace(',', '');
+                    total += parseFloat(amountStr) || 0;
+                });
+                document.getElementById('exp-total-badge').textContent = `Total: $${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            }
+
+            function saveExpensesData() {
+                const rows = [];
+                document.querySelectorAll('#expenses-body tr').forEach(tr => {
+                    const data = Array.from(tr.querySelectorAll('td')).slice(0, 5).map(td => td.textContent);
+                    rows.push(data);
+                });
+                localStorage.setItem('expensesTableData', JSON.stringify(rows));
+            }
+
+            function loadExpensesData() {
+                const saved = localStorage.getItem('expensesTableData');
+                const body = document.getElementById('expenses-body');
+                if (saved && body) {
+                    const rowsData = JSON.parse(saved);
+                    rowsData.forEach(rowData => {
+                        const tr = document.createElement('tr');
+                        rowData.forEach(text => {
+                            const td = document.createElement('td');
+                            td.textContent = text;
+                            tr.appendChild(td);
+                        });
+                        
+                        const actionsTd = document.createElement('td');
+                        const delBtn = document.createElement('button');
+                        delBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                        delBtn.className = 'btn-cancel';
+                        delBtn.style.padding = '5px 10px';
+                        delBtn.onclick = (e) => {
+                            tr.remove();
+                            saveExpensesData();
+                            calculateExpenseTotal();
+                        };
+                        actionsTd.appendChild(delBtn);
+                        tr.appendChild(actionsTd);
+                        
+                        body.appendChild(tr);
+                    });
+                    calculateExpenseTotal();
+                }
+            }
 
             // DOCS CENTER LOGIC
             const docSelector = document.getElementById('doc-type-selector');
@@ -1733,9 +1883,6 @@
             if(fromD) fromD.value = past30;
             if(toD) toD.value = today;
 
-            // Finally show correct view after all window functions are defined
-            const savedView = localStorage.getItem('activeView') || 'hero';
-            showView(savedView);
         });
 
         window.addEventListener('scroll', () => {
