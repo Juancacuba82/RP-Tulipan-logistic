@@ -1166,6 +1166,55 @@ main {
 #net-profit-val.positive { color: #10b981; }
 #net-profit-val.negative { color: #ef4444; }
 
+/* Fleet Tabs Styling */
+.btn-fleet-tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    font-weight: 800;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+.btn-fleet-tab.active {
+    background: white;
+    color: var(--navy-blue);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.fleet-table th {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.fleet-table td {
+    font-size: 0.8rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-badge.status-paid { background: #dcfce7; color: #15803d; } /* Available */
+.status-badge.status-pending { background: #fee2e2; color: #b91c1c; } /* In Shop/OOS */
+
+.maintenance-box .form-group label {
+    font-size: 0.75rem;
+    color: #1e293b;
+}
+
 .report-details-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
