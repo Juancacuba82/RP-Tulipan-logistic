@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Iconography: FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,10 +29,10 @@
             </button>
 
             <div class="nav-actions" id="nav-actions-container">
-                <button onclick="closeMenu(); showView('reports')" class="btn-calendar">DRIVERS REPORTS</button>
-                <button onclick="closeMenu(); showView('releases')" class="btn-calendar">FORM RELEASES</button>
-                <button onclick="closeMenu(); showView('docs')" class="btn-calendar">DOCS & RECEIPTS</button>
-                <button onclick="closeMenu(); showView('calendar')" class="btn-calendar">FROM DELIVERY CALENDAR</button>
+                <button onclick="closeMenu(); showView('reports')" class="btn-calendar"><i class="fas fa-truck-loading"></i> DRIVERS REPORTS</button>
+                <button onclick="closeMenu(); showView('releases')" class="btn-calendar"><i class="fas fa-file-signature"></i> FORM RELEASES</button>
+                <button onclick="closeMenu(); showView('docs')" class="btn-calendar"><i class="fas fa-receipt"></i> DOCS & RECEIPTS</button>
+                <button onclick="closeMenu(); showView('calendar')" class="btn-calendar"><i class="fas fa-calendar-check"></i> DELIVERY CALENDAR</button>
             </div>
         </div>
     </header>
@@ -43,6 +45,26 @@
                 <div class="branding">
                     <h1 class="company-name">RP TULIPAN <span class="accent-text">TRANSPORT INC</span></h1>
                     <div class="red-accent-line"></div>
+                </div>
+
+                <!-- Central Dashboard Grid -->
+                <div class="dashboard-grid">
+                    <button onclick="showView('reports')" class="dash-card">
+                        <i class="fas fa-truck-loading"></i>
+                        <span>DRIVERS REPORTS</span>
+                    </button>
+                    <button onclick="showView('releases')" class="dash-card">
+                        <i class="fas fa-file-signature"></i>
+                        <span>FORM RELEASES</span>
+                    </button>
+                    <button onclick="showView('docs')" class="dash-card">
+                        <i class="fas fa-receipt"></i>
+                        <span>DOCS & RECEIPTS</span>
+                    </button>
+                    <button onclick="showView('calendar')" class="dash-card">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>DELIVERY CALENDAR</span>
+                    </button>
                 </div>
             </div>
         </section>
@@ -57,9 +79,9 @@
                         <div class="header-actions">
                             <button onclick="filterTrips('pending')" class="btn-cancel" style="background: #fee2e2; color: #b91c1c;">Show Pending</button>
                             <button onclick="filterTrips('rentals')" class="btn-cancel" style="background: #ffedd5; color: #9a3412;">Show Rentals</button>
+                            <button onclick="filterTrips('sales')" class="btn-cancel" style="background: #e0f2fe; color: #0369a1;">Show Sales</button>
                             <button onclick="filterTrips('all')" class="btn-cancel">Show All</button>
                             <button onclick="addRow()" class="btn-add-sidebar">Confirm Operation</button>
-                            <button onclick="showView('hero')" class="btn-cancel">Exit</button>
                         </div>
                     </div>
                     <div class="sidebar-form">
@@ -407,6 +429,7 @@
                                     <th>ST_RATE</th>
                                     <th>ST_SALES</th>
                                     <th>BALANCE PENDING</th>
+                                    <th>DRIVER PAYOUT</th>
                                 </tr>
                             </thead>
                             <tbody id="table-body">
@@ -767,16 +790,18 @@
             const table = document.getElementById('logistics-table');
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(tr => {
-                const modeCell = tr.cells[33]; // Corrected index for MODE
-                const balanceCell = tr.cells[tr.cells.length - 1];
+                const modeCell = tr.cells[33]; // Index for MODE
+                const balanceCell = tr.cells[41]; // CORRECTED INDEX for BALANCE PENDING
                 const mode = modeCell ? modeCell.textContent : '';
-                const balanceStr = balanceCell ? balanceCell.textContent.replace('$', '').replace(',', '') : '0';
+                const balanceStr = balanceCell ? balanceCell.textContent.replace('$', '').replace(/,/g, '') : '0';
                 const balance = parseFloat(balanceStr) || 0;
 
                 if (type === 'pending') {
                     tr.style.display = (balance > 0) ? 'table-row' : 'none';
                 } else if (type === 'rentals') {
                     tr.style.display = (mode === 'RENT') ? 'table-row' : 'none';
+                } else if (type === 'sales') {
+                    tr.style.display = (mode === 'SALE') ? 'table-row' : 'none';
                 } else {
                     tr.style.display = 'table-row';
                 }

@@ -29,7 +29,7 @@ body {
 
 .view-section {
     width: 100%;
-    min-height: calc(100vh - 80px); /* Adjust based on navbar height */
+    min-height: calc(100vh - 60px); /* Adjust based on navbar height */
     position: relative;
     z-index: 1;
     overflow-x: hidden;
@@ -94,9 +94,10 @@ main {
 }
 
 .navbar-logo-img {
-    height: 50px; /* Slightly larger logo */
+    height: 45px; /* Scaled down logo */
     border-radius: 50%;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: height 0.3s ease;
 }
 
 .logo-text {
@@ -124,8 +125,16 @@ main {
     background-color: rgba(10, 25, 47, 0.98);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
-    padding: 25px 0; /* Enlarge vertical padding */
+    padding: 8px 0; /* Compact vertical padding */
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+.navbar-fixed-solid .navbar-logo-img {
+    height: 35px; /* Even smaller logo in management views */
+}
+
+.navbar-fixed-solid .logo-text {
+    font-size: 1.2rem; /* Reduced font-size for compact look */
 }
 
 .btn-calendar {
@@ -149,11 +158,7 @@ main {
 }
 
 .nav-actions {
-    display: flex;
-    gap: 15px; /* Gap between buttons */
-    align-items: center;
-    flex-wrap: wrap; /* Fluid layout if space is insufficient */
-    justify-content: flex-end;
+    display: none; /* Hidden on Desktop PC as requested */
 }
 
 /* Mobile Toggle (Hamburger) */
@@ -250,8 +255,85 @@ main {
     position: relative;
     z-index: 2;
     text-align: center;
-    padding: 35vh 20px 0; /* Shifted down to be approximately in the vertical middle */
+    padding: 0 20px;
     width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center everything vertically in the Hero */
+    align-items: center;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 columns in PC */
+    gap: 25px;
+    margin-top: 50px;
+    max-width: 900px;
+    width: 100%;
+}
+
+.dash-card {
+    background-color: var(--corporate-red);
+    color: white;
+    border: 2px solid var(--corporate-red);
+    padding: 25px 30px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: row; /* Icon to the left of text */
+    align-items: center;
+    justify-content: flex-start;
+    gap: 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    box-shadow: 0 10px 20px rgba(211, 47, 47, 0.15);
+}
+
+.dash-card i {
+    font-size: 1.8rem;
+    width: 45px;
+    text-align: center;
+}
+
+.dash-card span {
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.dash-card:hover {
+    background-color: #9e1a1a; /* Darker red on hover */
+    transform: translateX(10px); /* Slide slightly to the right */
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+    border-color: #ffffff;
+}
+
+@media screen and (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr; /* 1 column in Mobile */
+        padding: 0 20px;
+        margin-top: 40px;
+        gap: 15px;
+    }
+
+    .dash-card {
+        padding: 18px 25px;
+    }
+
+    .dash-card i {
+        font-size: 1.4rem;
+        width: 35px;
+    }
+
+    .dash-card span {
+        font-size: 0.9rem;
+    }
+    
+    .dash-card:hover {
+        transform: none; /* No side-slide on mobile */
+    }
 }
 
 /* Branding & Typography */
@@ -338,7 +420,7 @@ main {
 /* View Sections Base */
 .view-section {
     min-height: 100vh;
-    padding-top: 80px; 
+    padding-top: 60px; /* Reduced to match compact navbar height */
     background-color: #f0f2f5;
     color: var(--navy-blue);
     width: 100%;
@@ -347,7 +429,7 @@ main {
 /* Logistics Dashboard Redesign: 40/60 Split Worklow */
 .dashboard-split-container {
     display: flex;
-    height: calc(100vh - 80px);
+    height: calc(100vh - 60px); /* Synchronized with new compact padding */
     width: 100vw;
     background-color: #f0f2f5;
     overflow: hidden;
@@ -786,7 +868,7 @@ main {
 /* --- UNIVERSAL RECEIPT & DOCS CENTER --- */
 #docs-view .dashboard-split-container {
     display: flex;
-    height: calc(100vh - 80px);
+    height: calc(100vh - 60px);
     overflow: hidden;
     gap: 0;
 }
