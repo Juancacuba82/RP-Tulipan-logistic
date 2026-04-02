@@ -913,6 +913,7 @@ main {
     height: calc(100vh - 60px);
     overflow: hidden;
     gap: 0;
+    touch-action: pan-y; /* Enable vertical touch scroll on mobile devices */
 }
 
 /* 1. Trip Selector (Left) */
@@ -994,9 +995,10 @@ main {
 @media screen and (max-width: 1024px) {
     #docs-view .dashboard-split-container {
         flex-direction: column;
-        overflow-y: auto;
-        height: auto;
+        overflow-y: visible !important; /* Enable global scroll */
+        height: auto !important;
         min-height: calc(100vh - 60px);
+        position: relative !important; /* Ensure it flows with the document */
     }
 
     .trip-selector-panel, .receipt-form-panel {
@@ -1004,7 +1006,13 @@ main {
         border-right: none;
         border-bottom: 1px solid #cbd5e1;
         height: auto !important;
-        max-height: 400px; /* Limit height of list on mobile */
+        max-height: 400px; 
+        overflow-y: auto !important; /* Allow internal scroll if needed but don't block body */
+    }
+
+    .receipt-form-panel {
+        max-height: none !important; /* Form should be fully scrollable with the page */
+        padding-bottom: 150px !important; /* Extra space to avoid overlap with mobile nav bars */
     }
 
     .receipt-preview-panel {

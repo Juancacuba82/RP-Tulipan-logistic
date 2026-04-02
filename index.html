@@ -1798,9 +1798,10 @@
                     const date = trip[1] || ''; // Trip Date is Index 1
                     const cont = (trip[3] || '').toLowerCase();
                     const cust = (trip[11] || '').toLowerCase();
+                    const drv = (trip[19] || '').toLowerCase();
                     
-                    // Show all if search is empty, or match specific terms
-                    const matchesSearch = !search || id.includes(search) || cont.includes(search) || cust.includes(search);
+                    // Show all if search is empty, or match specific terms: ID, Container, Customer, Driver
+                    const matchesSearch = !search || id.includes(search) || cont.includes(search) || cust.includes(search) || drv.includes(search);
                     const matchesDate = (!fromDate || date >= fromDate) && (!toDate || date <= toDate);
 
                     if(matchesSearch && matchesDate) {
@@ -1808,8 +1809,8 @@
                         div.className = 'trip-item';
                         div.innerHTML = `
                             <h4>ID: ${trip[0]}</h4>
-                            <p>${trip[3] || 'No Container'} | ${trip[11] || 'No Customer'}</p>
-                            <p style="font-size:0.6rem; color:#94a3b8;">${trip[1] || ''}</p>
+                            <p>${trip[3] || 'No Cont'} | ${trip[19] || 'No Driver'}</p>
+                            <p style="font-size:0.6rem; color:#94a3b8;">${trip[11] || 'No Cust'} | ${trip[1] || ''}</p>
                         `;
                         div.onclick = () => fillReceiptFromTrip(trip, div);
                         list.appendChild(div);
