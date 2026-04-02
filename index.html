@@ -37,7 +37,7 @@
 
     <main>
         <!-- Home / Hero View -->
-        <section class="hero" id="hero-view">
+        <section class="view-section hero" id="hero-view">
             <div class="overlay"></div>
             <div class="hero-content">
                 <div class="branding">
@@ -55,11 +55,21 @@
                     <div class="sidebar-header">
                         <h3>New Trip Entry</h3>
                         <div class="header-actions">
-                            <button onclick="addRow()" class="btn-add-sidebar">Confirm Delivery</button>
+                            <button onclick="filterTrips('pending')" class="btn-cancel" style="background: #fee2e2; color: #b91c1c;">Show Pending</button>
+                            <button onclick="filterTrips('rentals')" class="btn-cancel" style="background: #ffedd5; color: #9a3412;">Show Rentals</button>
+                            <button onclick="filterTrips('all')" class="btn-cancel">Show All</button>
+                            <button onclick="addRow()" class="btn-add-sidebar">Confirm Operation</button>
                             <button onclick="showView('hero')" class="btn-cancel">Exit</button>
                         </div>
                     </div>
                     <div class="sidebar-form">
+                        <div class="form-group">
+                            <label>Service Mode</label>
+                            <select id="in-mode" onchange="toggleModeFields()">
+                                <option value="SALE">SALE (Venta)</option>
+                                <option value="RENT">RENT (Alquiler)</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>ID</label><input type="text" id="in-id" placeholder="TRIP-0000" readonly style="background: #f1f5f9; cursor: not-allowed;"></div>
                         <div class="form-group"><label>2. DATE</label><input type="date" id="in-date"></div>
                         <div class="form-group">
@@ -90,7 +100,7 @@
                             <input type="text" id="in-release" placeholder="Release" list="release-list">
                             <datalist id="release-list"></datalist>
                         </div>
-                        <div class="form-group"><label>6. ORDER - BOL CONT #</label><input type="text" id="in-order" placeholder="Order/BOL"></div>
+                        <div class="form-group"><label>6. ORDER - BOL CONT #</label><input type="text" id="in-order" placeholder="ORD-0000" readonly style="background: #f1f5f9; cursor: not-allowed;"></div>
                         <div class="form-group">
                             <label>7. CITY</label>
                             <select id="in-city" required>
@@ -206,9 +216,23 @@
                                 <option value="NO">NO</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>16. YARD SERVICES RATE</label><input type="number" id="in-yardrate"></div>
+                        <div class="form-group"><label>16. YARD RATE</label>
+                            <input type="number" id="in-yardrate" style="flex: 0.6;">
+                            <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox" id="in-yardpaid"></label>
+                        </div>
                         <div class="form-group"><label>17. DATE OUT</label><input type="date" id="in-dateout"></div>
                         <div class="form-group"><label>18. DAY RATE</label><input type="number" id="in-dayrate"></div>
+
+                        <!-- RENTAL SPECIFIC FIELDS -->
+                        <div id="rental-fields" style="display: none; background: #fff7ed; padding: 10px; border-radius: 8px; border: 1px solid #ffedd5; margin-bottom: 20px;">
+                            <h4 style="font-size: 0.8rem; margin-bottom: 10px; color: #9a3412;">RENTAL DETAILS</h4>
+                            <div class="form-group"><label>Monthly Rate</label>
+                                <input type="number" id="in-mrate" style="flex: 0.6;">
+                                <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox" id="in-rentpaid"></label>
+                            </div>
+                            <div class="form-group"><label>Start Date</label><input type="date" id="in-sdaterent" onchange="calcNextDue()"></div>
+                            <div class="form-group"><label>Next Due Date</label><input type="date" id="in-nextdue" readonly style="background: #fdf2f8;"></div>
+                        </div>
                         <div class="form-group">
                             <label>19. COMPANY</label>
                             <select id="in-company" onchange="updateDriverCommission()" required>
@@ -262,7 +286,10 @@
                                 <option value="YANDY JAX">YANDY JAX</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>21. RATE</label><input type="number" id="in-rate"></div>
+                        <div class="form-group"><label>21. RATE (Transp)</label>
+                            <input type="number" id="in-rate" style="flex: 0.6;" oninput="updateDriverCommission()">
+                            <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox" id="in-ratepaid"></label>
+                        </div>
                         <div class="form-group">
                             <label>22. TYPE OF PAYMENT</label>
                             <select id="in-paytype" required>
@@ -271,7 +298,10 @@
                                 <option value="ACOUNT BANK">ACOUNT BANK</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>23. SALES PRICE</label><input type="number" id="in-sales"></div>
+                        <div class="form-group"><label>23. SALES PRICE</label>
+                            <input type="number" id="in-sales" style="flex: 0.6;">
+                            <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox" id="in-salespaid"></label>
+                        </div>
                         <div class="form-group">
                             <label>24. COLLECT PAYMENT</label>
                             <select id="in-collect" required>
@@ -300,7 +330,17 @@
                                 <option value="30%">30%</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>30. COMISION DRIVER</label><input type="number" id="in-comidriver"></div>
+                        <div class="form-group">
+                            <label>30. COMISION DRIVER</label>
+                            <input type="text" id="in-comidriver" readonly style="background: #f1f5f9; font-weight: bold; color: #d32f2f;">
+                        </div>
+                        <div class="form-group">
+                            <label style="color: #b91c1c; font-weight: 900;">DRIVER Payout Status</label>
+                            <select id="in-driverpaid">
+                                <option value="PENDING">PENDING</option>
+                                <option value="PAID">PAID</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>31. INCOME DIS FEE</label><input type="number" id="in-income"></div>
                         <div class="form-group">
                             <label>32. INVOICE</label>
@@ -372,8 +412,17 @@
                                     <th>31. INCOME DIS FEE</th>
                                     <th>32. INVOICE</th>
                                     <th>33. NOTE</th>
-                                    <th>34. STORAGE</th>
+                                    <th>STORAGE</th>
                                     <th>35. IN - OUT</th>
+                                    <th>MODE</th>
+                                    <th>MONTHLY RATE</th>
+                                    <th>RENT START</th>
+                                    <th>NEXT DUE</th>
+                                    <th>ST_YARD</th>
+                                    <th>ST_RENT</th>
+                                    <th>ST_RATE</th>
+                                    <th>ST_SALES</th>
+                                    <th>BALANCE PENDING</th>
                                 </tr>
                             </thead>
                             <tbody id="table-body">
@@ -388,336 +437,88 @@
         <!-- Unified Docs Center View -->
         <section id="docs-view" class="view-section hidden">
             <div class="dashboard-split-container">
-                <!-- Left: Unified Document Form -->
-                <aside class="entry-sidebar primary-entry" style="width: 650px;">
-                    <div class="sidebar-header">
-                        <h3>Document Generator</h3>
-                        <div class="header-actions">
-                            <button onclick="window.print()" class="btn-add-sidebar">Print Document</button>
-                            <button onclick="showView('hero')" class="btn-cancel">Exit</button>
+                <!-- PANEL 1: Trip Selector (Left) -->
+                <aside class="trip-selector-panel">
+                    <div class="trip-search-box">
+                        <label style="font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; display: block;">DATE RANGE FILTER</label>
+                        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                            <input type="date" id="trip-from-date" class="form-input" style="padding: 4px; font-size: 0.75rem;" onchange="loadDocTrips()">
+                            <input type="date" id="trip-to-date" class="form-input" style="padding: 4px; font-size: 0.75rem;" onchange="loadDocTrips()">
                         </div>
+                        <label style="font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; display: block;">SEARCH TRIP ID / CONT#</label>
+                        <input type="text" id="trip-search-input" class="form-input" placeholder="Type ID or Cont#..." oninput="loadDocTrips()">
                     </div>
-                    <div class="sidebar-form">
-                        <!-- TYPE SELECTOR -->
-                        <div class="form-group doc-selector-group" style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
-                            <label style="font-weight: 900; color: #1e293b; display: block; margin-bottom: 8px;">SELECT DOCUMENT TYPE</label>
-                            <select id="doc-type-selector" class="doc-type-select" style="width: 100%; padding: 12px; border-radius: 6px; border: 2px solid #3b82f6; font-weight: 700;">
-                                <option value="delivery">DELIVERY FORMAT</option>
-                                <option value="yard">YARD SERV RECEIPT</option>
-                                <option value="sales">SALES RECEIPT</option>
-                            </select>
-                        </div>
-
-                        <!-- COMMON FIELDS -->
-                        <div class="form-group"><label>DATE</label><input type="date" id="u-init-date"></div>
-
-                        
-                        <div class="form-row-2" style="display: flex; gap: 10px;">
-                            <div class="form-group" style="flex: 1;"><label>MOVEMENT</label>
-                                <select id="u-move">
-                                    <option value="">None</option>
-                                    <option value="IN">IN</option>
-                                    <option value="OUT">OUT</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="flex: 1;"><label>LOAD</label>
-                                <select id="u-load">
-                                    <option value="">None</option>
-                                    <option value="EMPTY">EMPTY</option>
-                                    <option value="FULL">FULL</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-row-2" style="display: flex; gap: 10px;">
-                            <div class="form-group" style="flex: 1;"><label>TYPE</label>
-                                <select id="u-type">
-                                    <option value="DRY">DRY</option>
-                                    <option value="REEFER">REEFER</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="flex: 1;"><label>SIZE</label>
-                                <select id="u-size">
-                                    <option value="40' HC">40' HC</option>
-                                    <option value="40' STD">40' STD</option>
-                                    <option value="20' STD">20' STD</option>
-                                    <option value="45' HC">45' HC</option>
-                                    <option value="20' HC">20' HC</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group"><label>EQUIPMENT CONDITION</label>
-                            <select id="u-cond">
-                                <option value="">None</option>
-                                <option value="AS IS">AS IS</option>
-                                <option value="WWT">WWT</option>
-                                <option value="CW">CW</option>
-                                <option value="NEW">NEW</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group"><label>CUSTOMER NAME</label><input type="text" id="u-customer" placeholder="Client Name"></div>
-                        <div class="form-group"><label>PHONE #</label><input type="text" id="u-phone" placeholder="Phone"></div>
-                        <div class="form-group"><label>CONTAINER #</label><input type="text" id="u-cont-num" placeholder="XXXX 000000-0"></div>
-                        
-                        <div class="form-row-2" style="display: flex; gap: 10px;">
-                            <div class="form-group" style="flex: 1;"><label id="label-release">RELEASE #</label><input type="text" id="u-release" placeholder="Rel #"></div>
-                            <div class="form-group" style="flex: 1;"><label>ORDER #</label><input type="text" id="u-order" placeholder="Ord #"></div>
-                        </div>
-
-                        <!-- DELIVERY SPECIFIC -->
-                        <div class="field-delivery">
-                            <div class="form-group"><label>DRIVER NAME</label><input type="text" id="u-driver"></div>
-                            <div class="form-group"><label>DELIVERY DATE</label><input type="date" id="u-del-date"></div>
-                            <div class="form-group"><label>CITY</label><input type="text" id="u-city"></div>
-                            <div class="form-group"><label>PICK UP ADDRESS</label><input type="text" id="u-pickup"></div>
-                            <div class="form-group"><label>DELIVERY PLACE</label><input type="text" id="u-delivery"></div>
-                            <div class="form-group"><label>MILES</label><input type="number" id="u-miles"></div>
-                            <div class="form-group"><label>DOORS DIRECTION</label>
-                                <select id="u-doors">
-                                    <option value="" disabled selected>Select Orientation</option>
-                                    <option value="FACING CAB">FACING CAB</option>
-                                    <option value="FACING BACK">FACING BACK</option>
-                                    <option value="FACING DRIVER">FACING DRIVER</option>
-                                    <option value="FACING PASSENGER">FACING PASSENGER</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- YARD SPECIFIC -->
-                        <div class="field-yard" style="display: none;">
-                            <div class="form-group"><label>YARD FEE</label><input type="number" id="u-yard-fee" value="0"></div>
-                            <div class="form-group"><label>STORAGE FEE</label><input type="number" id="u-storage-fee" value="0"></div>
-                            <div class="form-group"><label>TRANS. FEE</label><input type="number" id="u-trans-fee" value="0"></div>
-                        </div>
-
-                        <!-- SALES SPECIFIC -->
-                        <div class="field-sales" style="display: none;">
-                            <div class="form-group"><label>SALES PRICE</label><input type="number" id="u-sales-price" value="0"></div>
-                            <div class="form-group"><label>DELIVERY PRICE</label><input type="number" id="u-delivery-price" value="0"></div>
-                        </div>
-                        
-                        <div class="field-yard field-sales" style="display: none;">
-                            <div class="form-group"><label>TAXES (%)</label><input type="number" id="u-taxes" value="1.07" step="0.01"></div>
-                        </div>
-
-                        <div class="form-group"><label>COLLECT PAYMENT?</label>
-                            <select id="u-collect">
-                                <option value="NO">NO</option>
-                                <option value="YES">YES</option>
-                            </select>
-                        </div>
-
-
-                        <div class="form-group"><label>NOTES</label><textarea id="u-notes" rows="4" style="width: 100%; border: 1px solid #ddd; padding: 10px; border-radius: 6px;"></textarea></div>
+                    <div id="trip-list-scroll" class="trip-list-scroll">
+                        <!-- Populated via JS -->
                     </div>
                 </aside>
 
-                <!-- Right: Preview Area with Dynamic Templates -->
-                <div class="table-area" style="flex: 1; background: #f1f5f9; padding: 40px; overflow: auto;">
-                    
-                    <!-- Template 1: DELIVERY FORMAT -->
-                    <div class="receipt-paper preview-template" id="tpl-delivery">
-                        <div class="receipt-header">
-                            <div class="header-left">
-                                <img src="assets/logo.jpg" alt="Logo" class="receipt-logo">
-                                <div class="company-info">
-                                    <h1>RP TULIPAN TRANSPORT, INC</h1>
-                                    <p>8421 NW 70th ST, MIAMI FL 33166</p>
-                                </div>
-                            </div>
-                            <div class="header-right">
-                                <div class="id-box">ID: <span class="id-val">#6539</span></div>
-                                <div class="date-box-simple">
-                                    DATE: <span class="p-init">---</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="receipt-row-check">
-                            <div class="check-item"><span class="box p-in-box"></span> IN</div>
-                            <div class="check-item"><span class="box p-out-box"></span> OUT</div>
-                            <div class="check-item"><span class="box p-empty-box"></span> EMPTY</div>
-                            <div class="check-item"><span class="box p-full-box"></span> FULL</div>
-                            <div class="info-item">TYPE: <strong class="p-type">DRY</strong></div>
-                            <div class="info-item">SIZE: <strong class="p-size">---</strong></div>
-                        </div>
-                        <div class="booking-order-container">
-                            <div class="bo-box">RELEASE #: <span class="p-release">---</span></div>
-                            <div class="bo-box">ORDER #: <span class="p-order">---</span></div>
-                        </div>
-                        <div class="customer-data">
-                            <div class="data-row">
-                                <div class="data-cell">DRIVER NAME: <span class="p-driver">---</span></div>
-                                <div class="data-cell">CONTAINER #: <span class="p-cont">---</span></div>
-                            </div>
-                            <div class="data-row">
-                                <div class="data-cell">CUSTOMER: <span class="p-customer">---</span></div>
-                                <div class="data-cell">PHONE: <span class="p-phone">---</span></div>
-                            </div>
-                            <div class="data-row">
-                                <div class="data-cell">CITY: <span class="p-city">---</span></div>
-                                <div class="data-cell">DELIVERY DATE: <span class="p-deldate">---</span></div>
-                            </div>
-                        </div>
-                        <div class="condition-section">
-                            EQUIPMENT CONDITION: 
-                            <span class="cond-item"><span class="box p-asis-box"></span> AS IS</span>
-                            <span class="cond-item"><span class="box p-wwt-box"></span> WWT</span>
-                            <span class="cond-item"><span class="box p-cw-box"></span> CW</span>
-                            <span class="cond-item"><span class="box p-new-box"></span> NEW</span>
-                        </div>
-                        <div class="footer-split">
-                            <div class="footer-left">
-                                <div class="loc-item">PICK UP ADDRESS: <span class="p-pickup">---</span></div>
-                                <div class="loc-item">DELIVERY: <span class="p-delivery">---</span></div>
-                                <div class="inspection-list">
-                                    <p>DRIVER INSPECTION AT THE DEPOT:</p>
-                                    <ul>
-                                        <li>- Doors can open and close completely ______</li>
-                                        <li>- Handle bars/brackets are not bent ______</li>
-                                        <li>- No holes in floor/container ______</li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="footer-right">
-                                <div class="fees-box">
-                                    <div class="fee-line">DOORS: <span class="p-doors">---</span></div>
-                                    <div class="fee-line">MILES: <span class="p-miles">0</span></div>
-                                    <div class="fee-line">COLLECT: <span class="p-collect">NO</span></div>
-
-                                </div>
-                            </div>
-                        </div>
-                        <div class="notes-area"><p>NOTES:</p><div class="notes-box p-notes">---</div></div>
-                        <div class="signature-section">
-                            <div class="sig-col"><div class="sig-line"></div><p>DRIVER SIGNATURE</p></div>
-                            <div class="sig-col"><div class="sig-line"></div><p>CUSTOMER SIGNATURE</p></div>
+                <!-- PANEL 2: Data Form (Center) -->
+                <aside class="receipt-form-panel">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; font-size: 1.1rem; color: #1e293b;">Universal Receipt</h3>
+                        <div style="display: flex; gap: 5px;">
+                            <button onclick="updateCalendarFromReceipt()" class="btn-cancel" style="background: #dcfce7; color: #166534; font-size: 0.7rem;">Sync Back</button>
+                            <button onclick="window.print()" class="btn-add-sidebar" style="font-size: 0.7rem;">Print A4</button>
                         </div>
                     </div>
+                    <div class="sidebar-form" style="padding: 0;">
+                        <div class="form-group"><label>Movement ID</label><input type="text" id="u-r-id" readonly placeholder="Select a trip..."></div>
+                        <div class="form-group"><label>Date</label><input type="date" id="u-r-date" oninput="drawReceipt()"></div>
+                        <div class="form-group"><label>Movement</label>
+                            <select id="u-r-move" onchange="drawReceipt()">
+                                <option value="IN">IN (Entry)</option>
+                                <option value="OUT">OUT (Release)</option>
+                                <option value="INTER">INTERCHANGE</option>
+                            </select>
+                        </div>
+                        
+                        <div class="receipt-section-title">EQUIPMENT DATA</div>
+                        <div class="form-group"><label>Container #</label><input type="text" id="u-r-cont" oninput="drawReceipt()"></div>
+                        <div class="form-group"><label>Size/Type</label><input type="text" id="u-r-size" oninput="drawReceipt()"></div>
+                        <div class="form-group"><label>Release / Booking #</label><input type="text" id="u-r-rel" oninput="drawReceipt()"></div>
+                        <div class="form-group"><label>Order #</label><input type="text" id="u-r-order" oninput="drawReceipt()"></div>
+                        
+                        <div class="receipt-section-title">LOGISTICS</div>
+                        <div class="form-group"><label>Customer</label><input type="text" id="u-r-customer" oninput="drawReceipt()"></div>
+                        <div class="form-group"><label>Phone</label><input type="text" id="u-r-phone" oninput="drawReceipt()"></div>
+                        <div class="form-group"><label>Delivery Place</label><input type="text" id="u-r-place" oninput="drawReceipt()"></div>
+                        
+                        <div class="receipt-section-title">INSPECTION & CONDITION</div>
+                        <label style="font-size: 0.7rem;">Check all that apply:</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.8rem; margin-top: 5px;">
+                            <label><input type="checkbox" id="chk-asis" onchange="drawReceipt()"> AS IS</label>
+                            <label><input type="checkbox" id="chk-wwt" onchange="drawReceipt()"> WWT</label>
+                            <label><input type="checkbox" id="chk-cw" onchange="drawReceipt()"> CW</label>
+                            <label><input type="checkbox" id="chk-new" onchange="drawReceipt()"> NEW</label>
+                            <label><input type="checkbox" id="chk-holes" onchange="drawReceipt()"> NO HOLES</label>
+                            <label><input type="checkbox" id="chk-doors" onchange="drawReceipt()"> DOORS OK</label>
+                        </div>
 
-                    <!-- Template 2: YARD SERV RECEIPT -->
-                    <div class="receipt-paper preview-template" id="tpl-yard" style="display: none;">
-                        <div class="receipt-header">
-                            <div class="header-left">
-                                <img src="assets/logo.jpg" alt="Logo" class="receipt-logo">
-                                <div class="company-info">
-                                    <h1>RP TULIPAN TRANSPORT, INC</h1>
-                                    <p>8421 NW 70th ST, MIAMI FL 33166</p>
-                                </div>
-                            </div>
-                            <div class="header-right">
-
-                                <div class="id-box">ID: <span class="id-val">#6428</span></div>
-                            </div>
-                        </div>
-                        <div class="receipt-row-check">
-                            <div class="check-item"><span class="box p-in-box"></span> IN</div>
-                            <div class="check-item"><span class="box p-out-box"></span> OUT</div>
-                            <div class="check-item"><span class="box p-empty-box"></span> EMPTY</div>
-                            <div class="check-item"><span class="box p-full-box"></span> FULL</div>
-                            <div class="info-item">TYPE: <strong class="p-type">DRY</strong></div>
-                            <div class="info-item">SIZE: <strong class="p-size">---</strong></div>
-                        </div>
-                        <div class="booking-order-container">
-                            <div class="bo-box">BOOKING #: <span class="p-release">---</span></div>
-                            <div class="bo-box">ORDER #: <span class="p-order">---</span></div>
-                        </div>
-                        <div class="customer-data">
-                            <div class="data-row">
-                                <div class="data-cell">CUSTOMER: <span class="p-customer">---</span></div>
-                                <div class="data-cell">CONTAINER #: <span class="p-cont">---</span></div>
-                            </div>
-                            <div class="data-row">
-                                <div class="data-cell">PHONE: <span class="p-phone">---</span></div>
-                                <div class="data-cell">DATE: <span class="p-init">---</span></div>
-                            </div>
-                        </div>
-                        <div class="condition-section">
-                            EQUIPMENT CONDITION: 
-                            <span class="cond-item"><span class="box p-asis-box"></span> AS IS</span>
-                            <span class="cond-item"><span class="box p-wwt-box"></span> WWT</span>
-                            <span class="cond-item"><span class="box p-cw-box"></span> CW</span>
-                            <span class="cond-item"><span class="box p-new-box"></span> NEW</span>
-                        </div>
-                        <div class="footer-split">
-                            <div class="footer-left">
-                                <div class="loc-item">NOTES:</div>
-                                <div class="notes-box p-notes" style="border:none; padding:0; font-size:0.75rem;">---</div>
-                            </div>
-                            <div class="footer-right">
-                                <div class="fees-box">
-                                    <div class="fee-line">YARD FEE <span class="p-yard-fee">$0,00</span></div>
-                                    <div class="fee-line">STORAGE FEE <span class="p-storage-fee">$0,00</span></div>
-                                    <div class="fee-line">TRANS. <span class="p-trans-fee">$0,00</span></div>
-                                    <div class="fee-line">TAX <span class="p-yard-tax">$0,00</span></div>
-                                    <div class="fee-line">COLLECT <span class="p-collect">NO</span></div>
-                                    <div class="fee-line total">TOTAL <span class="p-total-receipt">$0,00</span></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="signature-section" style="margin-top:40px;">
-                            <div class="sig-col"><div class="sig-line"></div><p>RECEIVED BY</p></div>
+                        <div class="receipt-section-title">COSTS & FEES</div>
+                        <div class="form-group"><label>Yard Fee ($)</label><input type="number" id="u-r-yard" oninput="drawReceipt()"></div>
+                        <div class="form-group"><label>Storage / Interchange ($)</label><input type="number" id="u-r-storage" oninput="drawReceipt()"></div>
+                        <div class="form-group"><label>Transportation ($)</label><input type="number" id="u-r-transp" oninput="drawReceipt()"></div>
+                        <div class="form-group"><label>Sales Price ($)</label><input type="number" id="u-r-sales" oninput="drawReceipt()"></div>
+                        <div class="form-group"><label>Tax (%)</label><input type="number" id="u-r-tax" value="0" oninput="drawReceipt()"></div>
+                        
+                        <div class="form-group" style="margin-top:15px;"><label>Notes</label><textarea id="u-r-notes" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;" oninput="drawReceipt()"></textarea></div>
+                        
+                        <div class="form-group" style="margin-top:25px; display:flex; gap:10px;">
+                            <button onclick="updateCalendarFromReceipt()" class="btn-add-sidebar" style="flex:1; background:#0f172a;">Sync Back</button>
+                            <button onclick="window.print()" class="btn-add-sidebar" style="flex:1; background:#b91c1c;">Print Doc</button>
                         </div>
                     </div>
+                </aside>
 
-                    <!-- Template 3: SALES RECEIPT -->
-                    <div class="receipt-paper preview-template" id="tpl-sales" style="display: none;">
-                        <div class="receipt-header">
-                            <div class="header-left">
-                                <img src="assets/logo.jpg" alt="Logo" class="receipt-logo">
-                                <div class="company-info">
-                                    <h1>RP TULIPAN TRANSPORT, INC</h1>
-                                    <p>SALES & SERVICES RECEIPT</p>
-                                </div>
-                            </div>
-                            <div class="header-right">
-                                <div class="date-box-simple">DATE: <span class="p-init">---</span></div>
-                                <div class="id-box">ID: <span class="id-val">#3-SALES</span></div>
-                            </div>
-                        </div>
-                        <div class="booking-order-container">
-                            <div class="bo-box">RELEASE #: <span class="p-release">---</span></div>
-                            <div class="bo-box">ORDER #: <span class="p-order">---</span></div>
-                        </div>
-                        <div class="customer-data" style="margin-top:20px;">
-                            <div class="data-row">
-                                <div class="data-cell">CUSTOMER: <span class="p-customer">---</span></div>
-                                <div class="data-cell">PHONE: <span class="p-phone">---</span></div>
-                            </div>
-                            <div class="data-row">
-                                <div class="data-cell">CONTAINER #: <span class="p-cont">---</span></div>
-                                <div class="data-cell">SIZE: <span class="p-size">---</span></div>
-                            </div>
-                        </div>
-                        <div class="receipt-row-check" style="border-top:1px solid #000; padding:10px 0;">
-                            <div class="info-item">TYPE: <strong class="p-type">DRY</strong></div>
-                            <div class="info-item">COND: <strong class="p-cond-text">---</strong></div>
-                        </div>
-                        <div class="footer-split" style="margin-top:10px;">
-                            <div class="footer-left">
-                                <div class="notes-area" style="margin:0;"><p>DESCRIPTION:</p><div class="notes-box p-notes" style="min-height:100px;">---</div></div>
-                            </div>
-                            <div class="footer-right">
-                                <div class="fees-box" style="border: 2px solid #000; padding: 15px; border-radius: 12px;">
-                                    <div class="fee-line">SALES PRICE <span class="p-sales-price">$0,00</span></div>
-                                    <div class="fee-line">DELIVERY PRICE <span class="p-delivery-price">$0,00</span></div>
-                                    <div class="fee-line">TAX <span class="p-sales-tax">$0,00</span></div>
-                                    <div class="fee-line">COLLECT <span class="p-collect">NO</span></div>
-                                    <div class="fee-line total" style="color: #0f172a; font-size: 1.2rem;">TOTAL <span class="p-total-sales">$0,00</span></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="notes-area" style="background:#fee2e2; padding:10px; border-radius:4px; margin-top:20px;">
-                            <p style="color:#b91c1c; font-weight:700;">* PAYMENT AT DELIVERY ONLY BY ZELLE, CREDIT CARD, OR CASHIER'S CHECK</p>
-                        </div>
-                        <div class="signature-section" style="margin-top:60px;">
-                            <div class="sig-col"><div class="sig-line"></div><p>AUTHORIZED BY</p></div>
-                            <div class="sig-col"><div class="sig-line"></div><p>ACCEPTED BY CUSTOMER</p></div>
+                <!-- PANEL 3: A4 Preview (Right) -->
+                <section class="receipt-preview-panel">
+                    <div id="receipt-a4" class="a4-paper">
+                        <div style="text-align: center; margin-top: 50% !important; color: #cbd5e1; font-style: italic;">
+                            Select a trip ID from the left list to generate a receipt preview.
                         </div>
                     </div>
-
-                </div>
+                </section>
             </div>
         </section>
         <!-- FORM RELEASES View -->
@@ -799,41 +600,47 @@
             </div>
         </section>
         <!-- DRIVERS REPORTS VIEW -->
-        <section id="reports-view" class="view-section hidden">
-            <div class="dashboard-split-container" style="display: block; padding: 20px;">
-                <div class="table-area" style="padding: 0;">
-                    <div class="table-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <div>
-                            <h2 style="font-size: 1.8rem; letter-spacing: 1px;">Drivers Weekly Log & Payouts</h2>
-                            <p style="color: #64748b; font-size: 0.9rem;">Automatic summary from Delivery Calendar</p>
+        <section id="reports-view" class="view-section hidden" style="padding-bottom: 150px;">
+            <div class="dashboard-split-container" style="display: block; padding: 20px; height: auto; min-height: 100vh; overflow: visible;">
+                <div class="table-area" style="padding: 0; height: auto; overflow: visible;">
+                    <div class="table-toolbar" style="display: block; margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div>
+                                <h2 style="font-size: 1.8rem; letter-spacing: 1px;">Drivers Settlement Panel</h2>
+                                <p style="color: #64748b; font-size: 0.9rem;">Financial control & weekly payroll</p>
+                            </div>
+                            <button onclick="window.print()" class="btn-add-sidebar">Print Payout Report</button>
                         </div>
-                        <button onclick="window.print()" class="btn-add-sidebar">Print Summary Report</button>
+                        
+                        <!-- Filter Panel -->
+                        <div style="background: #f1f5f9; padding: 15px; border-radius: 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; border: 1px solid #e2e8f0;">
+                            <input type="text" id="filter-search" class="form-input" placeholder="Search Driver/ID..." oninput="renderDriverLog()">
+                            <input type="date" id="filter-from" class="form-input" onchange="renderDriverLog()">
+                            <input type="date" id="filter-to" class="form-input" onchange="renderDriverLog()">
+                            <button id="btn-pending-only" onclick="togglePendingFilter()" class="btn-cancel" style="background: #fff; border: 1px solid #cbd5e1;">Show Unpaid Only</button>
+                            <button onclick="resetReportFilters()" class="btn-cancel" style="background: #cbd5e1;">Reset Filters</button>
+                        </div>
                     </div>
+                    
                     <div class="table-scroll-container">
                         <table class="drivers-report-table">
                             <thead>
                                 <tr>
                                     <th>DATE</th>
-                                    <th>SIZE</th>
-                                    <th>N° CONT</th>
-                                    <th>ORDER #</th>
-                                    <th>CITY</th>
-                                    <th>PICK UP ADDRESS</th>
-                                    <th>DELIVERY PLACE</th>
-                                    <th>MILES</th>
+                                    <th>TRIP ID</th>
                                     <th>DRIVER</th>
-                                    <th>PAID DRIVER</th>
-                                    <th>CASH BALANCE</th>
+                                    <th>COMPANY</th>
+                                    <th>NET AMOUNT</th>
+                                    <th>DRIVER COMISSION</th>
+                                    <th>PAYOUT STATUS</th>
+                                    <th>ACTION</th>
                                 </tr>
                             </thead>
-                            <tbody id="dl-body">
-                                <!-- Populated from storage -->
-                            </tbody>
-                            <tfoot style="background: #f1f5f9; font-weight: 900;">
+                            <tbody id="dl-body"></tbody>
+                            <tfoot>
                                 <tr>
-                                    <td colspan="9" style="text-align: right; padding-right: 20px;">WEEKLY TOTALS:</td>
-                                    <td id="dl-total-paid" style="color: #d32f2f;">$0.00</td>
-                                    <td id="dl-total-cash" style="color: #4338ca;">$0.00</td>
+                                    <th colspan="5" id="dl-footer-label" style="text-align: right; font-size: 1.2rem; padding-right: 20px;">Total Settlement:</th>
+                                    <th colspan="3" id="dl-total-paid" style="font-size: 1.2rem; color: #b91c1c;">$0.00</th>
                                 </tr>
                             </tfoot>
                         </table>
@@ -850,35 +657,58 @@
         const docsView = document.getElementById('docs-view');
         const tableBody = document.getElementById('table-body');
 
+        const hamburger = document.getElementById('hamburger-menu');
+        const navActions = document.getElementById('nav-actions-container');
+
+        if (hamburger && navActions) {
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                navActions.classList.toggle('active');
+            });
+        }
+
+        window.closeMenu = function() {
+            if (hamburger && navActions) {
+                hamburger.classList.remove('active');
+                navActions.classList.remove('active');
+            }
+        };
+
         function showView(view) {
             localStorage.setItem('activeView', view);
             
-            // Hide everything first
-            heroView.classList.add('hidden');
-            calendarView.classList.add('hidden');
-            docsView.classList.add('hidden');
-            const releasesView = document.getElementById('releases-view');
-            const reportsView = document.getElementById('reports-view');
-            if(releasesView) releasesView.classList.add('hidden');
-            if(reportsView) reportsView.classList.add('hidden');
+            // 1. Reset Scroll and forced cleanup
+            window.scrollTo(0, 0);
             
-            // Show requested view
-            if (view === 'calendar') {
-                calendarView.classList.remove('hidden');
-                header.classList.add('navbar-fixed-solid');
-            } else if (view === 'docs') {
-                docsView.classList.remove('hidden');
-                header.classList.add('navbar-fixed-solid');
-            } else if (view === 'releases') {
-                if(releasesView) releasesView.classList.remove('hidden');
-                header.classList.add('navbar-fixed-solid');
-            } else if (view === 'reports') {
-                if(reportsView) reportsView.classList.remove('hidden');
-                header.classList.add('navbar-fixed-solid');
-            } else {
-                heroView.classList.remove('hidden');
-                header.classList.remove('navbar-fixed-solid');
-                window.scrollTo(0, 0);
+            // 2. Hide ALL sections with strict display:none
+            document.querySelectorAll('.view-section').forEach(v => {
+                v.classList.add('hidden');
+                v.style.display = 'none'; 
+            });
+            
+            // 3. Identification of target section
+            const targetId = view.endsWith('-view') ? view : view + '-view';
+            const target = document.getElementById(targetId);
+            
+            if (target) {
+                target.classList.remove('hidden');
+                // All views use block or handle flex internally
+                target.style.display = 'block'; 
+                
+                // Special case for navbar styling
+                if (view === 'hero') {
+                    header.classList.remove('navbar-fixed-solid');
+                } else {
+                    header.classList.add('navbar-fixed-solid');
+                }
+                
+                // 4. Trigger specific loads
+                if (view === 'docs') {
+                    if(window.loadDocTrips) window.loadDocTrips();
+                    if(window.drawReceipt) window.drawReceipt();
+                } else if (view === 'reports') {
+                    if(window.renderDriverLog) window.renderDriverLog();
+                }
             }
         }
 
@@ -894,29 +724,48 @@
             localStorage.setItem('logisticsTableData', JSON.stringify(rows));
         }
 
-        function loadTableData() {
-            const logisticsBody = document.getElementById('table-body');
-            if(!logisticsBody) return;
-            const saved = localStorage.getItem('logisticsTableData');
-            if (saved) {
-                const rows = JSON.parse(saved);
-                rows.forEach(rowData => {
-                    const tr = document.createElement('tr');
-                    rowData.forEach(text => {
-                        const td = document.createElement('td');
-                        td.textContent = text;
-                        tr.appendChild(td);
-                    });
-                    logisticsBody.appendChild(tr);
-                });
-            }
+        function toggleModeFields() {
+            const mode = document.getElementById('in-mode').value;
+            const rentalGroup = document.getElementById('rental-fields');
+            if(rentalGroup) rentalGroup.style.display = (mode === 'RENT') ? 'block' : 'none';
         }
 
-        // --- NEW: TRIP HISTORY LOGIC ---
+        function calcNextDue() {
+            const startStr = document.getElementById('in-sdaterent').value;
+            if(!startStr) return;
+            const start = new Date(startStr + 'T00:00:00'); 
+            start.setDate(start.getDate() + 30);
+            document.getElementById('in-nextdue').value = start.toISOString().split('T')[0];
+        }
+
+        function filterTrips(type) {
+            const table = document.getElementById('logistics-table');
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(tr => {
+                const modeCell = tr.cells[36]; // in-mode
+                const balanceCell = tr.cells[tr.cells.length - 1];
+                const mode = modeCell ? modeCell.textContent : '';
+                const balanceStr = balanceCell ? balanceCell.textContent.replace('$', '').replace(',', '') : '0';
+                const balance = parseFloat(balanceStr) || 0;
+
+                if (type === 'pending') {
+                    tr.style.display = (balance > 0) ? 'table-row' : 'none';
+                } else if (type === 'rentals') {
+                    tr.style.display = (mode === 'RENT') ? 'table-row' : 'none';
+                } else {
+                    tr.style.display = 'table-row';
+                }
+            });
+        }
+
         function addRow() {
-            // Auto-generate ID if empty or always generate a new one
+            // Auto-generate ID and Order
             const nextId = 'TRIP-' + Date.now().toString().slice(-6);
             document.getElementById('in-id').value = nextId;
+            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            let ordSuffix = '';
+            for (let i = 0; i < 4; i++) ordSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+            document.getElementById('in-order').value = 'ORD-' + ordSuffix;
 
             const fields = [
                 'in-id', 'in-date', 'in-size', 'in-ncont', 'in-release', 'in-order', 'in-city', 'in-pickup', 
@@ -924,29 +773,48 @@
                 'in-yard', 'in-yardrate', 'in-dateout', 'in-dayrate', 'in-company', 'in-driver', 
                 'in-rate', 'in-paytype', 'in-sales', 'in-collect', 'in-amount', 'in-phone', 
                 'in-paiddriver', 'in-status', 'in-comission', 'in-comidriver', 'in-income', 
-                'in-invoice', 'in-note', 'in-storage', 'in-inout'
+                'in-invoice', 'in-note', 'in-storage', 'in-inout',
+                'in-mode', 'in-mrate', 'in-sdaterent', 'in-nextdue'
             ];
             
-            const tr = document.createElement('tr');
-            fields.forEach(id => {
-                const td = document.createElement('td');
+            const rowData = fields.map(id => {
                 const el = document.getElementById(id);
-                td.textContent = el ? el.value || '---' : '---';
-                tr.appendChild(td);
+                return el ? el.value || '---' : '---';
             });
 
-            tableBody.appendChild(tr);
-            saveTableData();
+            // Add Checkbox States (Index 39-42)
+            const stYard = document.getElementById('in-yardpaid').checked ? 'PAID' : 'PEND';
+            const stRent = document.getElementById('in-rentpaid').checked ? 'PAID' : 'PEND';
+            const stRate = document.getElementById('in-ratepaid').checked ? 'PAID' : 'PEND';
+            const stSales = document.getElementById('in-salespaid').checked ? 'PAID' : 'PEND';
+            rowData.push(stYard, stRent, stRate, stSales);
+
+            // Calculate Balance Pending (Index 43)
+            let pending = 0;
+            if(stYard === 'PEND') pending += parseFloat(document.getElementById('in-yardrate').value) || 0;
+            if(stRate === 'PEND') pending += parseFloat(document.getElementById('in-rate').value) || 0;
+            if(stSales === 'PEND') pending += parseFloat(document.getElementById('in-sales').value) || 0;
+            if(stRent === 'PEND' && document.getElementById('in-mode').value === 'RENT') pending += parseFloat(document.getElementById('in-mrate').value) || 0;
+            rowData.push(`$${pending.toFixed(2)}`);
+
+            // Index 44: Driver Payout Status
+            rowData.push(document.getElementById('in-driverpaid').value);
+
+            const saved = localStorage.getItem('logisticsTableData') ? JSON.parse(localStorage.getItem('logisticsTableData')) : [];
+            saved.push(rowData);
+            localStorage.setItem('logisticsTableData', JSON.stringify(saved));
+
+            loadTableData();
+            
             if(window.updateReleaseDatalist) window.updateReleaseDatalist();
             if(window.updateAddressDatalist) window.updateAddressDatalist();
             if(window.renderDriverLog) window.renderDriverLog();
 
-            // Clear some fields and prep next ID
-            ['in-ncont', 'in-release', 'in-order', 'in-delivery', 'in-miles'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.value = '';
+            // Clear entry fields partially
+            ['in-ncont', 'in-release', 'in-delivery', 'in-miles'].forEach(id => {
+               const el = document.getElementById(id);
+               if(el) el.value = '';
             });
-            document.getElementById('in-id').value = 'TRIP-' + (Date.now() + 1).toString().slice(-6);
         }
 
         function updateReleaseDatalist() {
@@ -954,12 +822,10 @@
             const releaseList = document.getElementById('release-list');
             if(saved && releaseList) {
                 const rows = JSON.parse(saved);
-                // Release index is 4 in the logistics table
                 const uniqueReleases = [...new Set(rows.map(r => r[4]).filter(val => val && val !== '---'))];
                 releaseList.innerHTML = '';
                 uniqueReleases.sort().forEach(rel => {
-                    const opt = document.createElement('option');
-                    opt.value = rel;
+                    const opt = document.createElement('option'); opt.value = rel;
                     releaseList.appendChild(opt);
                 });
             }
@@ -970,19 +836,124 @@
             const addressList = document.getElementById('address-list');
             if(saved && addressList) {
                 const rows = JSON.parse(saved);
-                // Address index is 7 in the logistics table
                 const storedValues = rows.map(r => r[7]).filter(val => val && val !== '---');
-                
-                // Keep initial hardcoded options
                 const existingOptions = Array.from(addressList.options).map(opt => opt.value);
                 const uniqueNewOnes = [...new Set(storedValues)].filter(val => !existingOptions.includes(val));
-                
                 uniqueNewOnes.forEach(addr => {
-                    const opt = document.createElement('option');
-                    opt.value = addr;
+                    const opt = document.createElement('option'); opt.value = addr;
                     addressList.appendChild(opt);
                 });
             }
+        }
+
+        function loadTableData() {
+            const logisticsBody = document.getElementById('table-body');
+            if(!logisticsBody) return;
+            logisticsBody.innerHTML = '';
+            const saved = localStorage.getItem('logisticsTableData');
+            if (saved) {
+                const rows = JSON.parse(saved);
+                rows.forEach(rowData => {
+                    const tr = document.createElement('tr');
+                    
+                    const mode = rowData[35];
+                    const nextDue = rowData[38];
+                    const stYard = rowData[39];
+                    const stRent = rowData[40];
+                    const stRate = rowData[41];
+                    const stSales = rowData[42];
+
+                    rowData.forEach((text, i) => {
+                        const td = document.createElement('td');
+                        td.textContent = text;
+                        
+                        // Amount coloring (Indices: 15=Yard, 20=Rate, 22=Sales, 36=Rent)
+                        if(i === 15 && text !== '---') td.style.backgroundColor = (stYard === 'PAID') ? '#dcfce7' : '#fee2e2';
+                        if(i === 20 && text !== '---') td.style.backgroundColor = (stRate === 'PAID') ? '#dcfce7' : '#fee2e2';
+                        if(i === 22 && text !== '---') td.style.backgroundColor = (stSales === 'PAID') ? '#dcfce7' : '#fee2e2';
+                        if(i === 36 && text !== '---') td.style.backgroundColor = (stRent === 'PAID') ? '#dcfce7' : '#fee2e2';
+                        
+                        if(i === 38 && mode === 'RENT' && text !== '---') {
+                           if(new Date(text + 'T00:00:00') < new Date()) td.style.color = 'red';
+                        }
+                        tr.appendChild(td);
+                    });
+
+                    if (mode === 'RENT' && nextDue !== '---' && new Date(nextDue + 'T00:00:00') < new Date()) {
+                        tr.style.backgroundColor = '#fff7ed';
+                        tr.style.border = '2px solid #f97316';
+                    }
+                    logisticsBody.appendChild(tr);
+                });
+            }
+        }
+
+        let reportShowUnpaidOnly = false;
+        function togglePendingFilter() {
+            reportShowUnpaidOnly = !reportShowUnpaidOnly;
+            const btn = document.getElementById('btn-pending-only');
+            btn.style.background = reportShowUnpaidOnly ? '#fee2e2' : '#fff';
+            btn.style.borderColor = reportShowUnpaidOnly ? '#ef4444' : '#cbd5e1';
+            renderDriverLog();
+        }
+
+        function resetReportFilters() {
+            document.getElementById('filter-search').value = '';
+            document.getElementById('filter-from').value = '';
+            document.getElementById('filter-to').value = '';
+            reportShowUnpaidOnly = false;
+            const btn = document.getElementById('btn-pending-only');
+            btn.style.background = '#fff';
+            btn.style.borderColor = '#cbd5e1';
+            renderDriverLog();
+        }
+
+        function markTripAsPaid(tripId) {
+            const saved = localStorage.getItem('logisticsTableData');
+            if(!saved) return;
+            const rows = JSON.parse(saved);
+            const rIdx = rows.findIndex(r => r[0] === tripId);
+            if(rIdx !== -1) {
+                // Toggle status (Index 44)
+                rows[rIdx][44] = (rows[rIdx][44] === 'PAID') ? 'PENDING' : 'PAID';
+                localStorage.setItem('logisticsTableData', JSON.stringify(rows));
+                renderDriverLog();
+                loadTableData(); // Sync calendar table too
+            }
+        }
+
+        function settleDriverGroup(driverName) {
+            if(!confirm(`Are you sure you want to mark ALL pending trips for ${driverName} as PAID?`)) return;
+            
+            const saved = localStorage.getItem('logisticsTableData');
+            if(!saved) return;
+            const rows = JSON.parse(saved);
+            rows.forEach(r => {
+                const rDriver = r[19] || 'UNASSIGNED';
+                if(rDriver === driverName) {
+                    r[44] = 'PAID';
+                }
+            });
+            localStorage.setItem('logisticsTableData', JSON.stringify(rows));
+            renderDriverLog();
+            loadTableData();
+        }
+
+        function revertDriverGroup(driverName) {
+            if(!confirm(`Do you want to REVERT all trips for ${driverName} back to PENDING?`)) return;
+
+            const saved = localStorage.getItem('logisticsTableData');
+            if(!saved) return;
+            const rows = JSON.parse(saved);
+            rows.forEach(r => {
+                const rDriver = r[19] || 'UNASSIGNED';
+                if(rDriver === driverName) {
+                    r[44] = 'PENDING';
+                }
+            });
+            localStorage.setItem('logisticsTableData', JSON.stringify(rows));
+            renderDriverLog();
+            loadTableData();
         }
 
         function renderDriverLog() {
@@ -991,96 +962,164 @@
             const saved = localStorage.getItem('logisticsTableData');
             body.innerHTML = '';
             
-            let grandTotalPaid = 0;
-            let grandTotalCash = 0;
+            const searchTerm = document.getElementById('filter-search').value.toLowerCase();
+            const dateFrom = document.getElementById('filter-from').value;
+            const dateTo = document.getElementById('filter-to').value;
+            
+            let globalTotal = 0;
 
             if(saved) {
-                const rows = JSON.parse(saved);
-                // Group by driver (index 19 in logisticsTableData)
-                const driverGroups = {};
-                rows.forEach(r => {
-                    const driverName = r[19] || 'UNASSIGNED';
-                    if(!driverGroups[driverName]) driverGroups[driverName] = [];
-                    driverGroups[driverName].push(r);
+                const allRows = JSON.parse(saved);
+                
+                // 1. Filter the rows first
+                const filtered = allRows.filter(r => {
+                    const rDate = r[1];
+                    const rId = r[0];
+                    const rDriver = r[19] || 'UNASSIGNED';
+                    const rStatus = r[44] || 'PENDING';
+                    
+                    const matchesSearch = rDriver.toLowerCase().includes(searchTerm) || rId.toLowerCase().includes(searchTerm);
+                    const matchesDate = (!dateFrom || rDate >= dateFrom) && (!dateTo || rDate <= dateTo);
+                    const matchesStatus = !reportShowUnpaidOnly || rStatus === 'PENDING';
+                    
+                    return matchesSearch && matchesDate && matchesStatus;
                 });
 
-                // Indices to map: [1:Date, 2:Size, 3:N.Cont, 5:Order#, 6:City, 7:Pickup, 8:Delivery, 10:Miles, 19:Driver, 29:Comision Driver, 22:Sales (Cash)]
-                const mapIndices = [1, 2, 3, 5, 6, 7, 8, 10, 19, 29, 22];
+                // 2. Group by Driver
+                const groups = {};
+                filtered.forEach(r => {
+                    const dName = r[19] || 'UNASSIGNED';
+                    if(!groups[dName]) groups[dName] = [];
+                    groups[dName].push(r);
+                });
 
-                Object.keys(driverGroups).sort().forEach(driver => {
-                    let driverSubPaid = 0;
-                    let driverSubCash = 0;
+                // 3. Render Groups with Subtotals
+                Object.keys(groups).sort().forEach(driverName => {
+                    let driverPendingTotal = 0;
 
-                    // Header for driver group (optional, but subtotals are required)
-                    driverGroups[driver].forEach(r => {
+                    groups[driverName].forEach(r => {
                         const tr = document.createElement('tr');
-                        mapIndices.forEach((idx, i) => {
+                        const rDate = r[1];
+                        const rId = r[0];
+                        const rCompany = r[18];
+                        const rAmount = parseFloat(r[24]) || 0;
+                        const rComi = parseFloat(r[29]) || 0;
+                        const rStatus = r[44] || 'PENDING';
+
+                        const cells = [rDate, rId, driverName, rCompany, `$${rAmount.toLocaleString()}`, `$${rComi.toLocaleString()}`, rStatus];
+                        cells.forEach((text, i) => {
                             const td = document.createElement('td');
-                            let content = r[idx] || '---';
-                            
-                            if (i === 9 || i === 10) { 
-                                const val = parseFloat(content) || 0;
-                                td.textContent = `$${val.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-                                if(i === 9) driverSubPaid += val;
-                                if(i === 10) driverSubCash += val;
-                            } else {
-                                td.textContent = content;
+                            td.textContent = text;
+                            if(i === 6) { 
+                                td.style.fontWeight = 'bold';
+                                td.style.color = (text === 'PAID') ? '#4ade80' : '#dc2626';
                             }
                             tr.appendChild(td);
                         });
+
+                        // Action Button
+                        const actionTd = document.createElement('td');
+                        const btn = document.createElement('button');
+                        btn.textContent = (rStatus === 'PAID') ? 'Set PENDING' : 'Mark PAID';
+                        btn.className = 'btn-add-sidebar';
+                        btn.style.fontSize = '0.65rem';
+                        btn.style.padding = '4px 8px';
+                        btn.style.background = (rStatus === 'PAID') ? '#94a3b8' : '#059669';
+                        btn.onclick = () => markTripAsPaid(rId);
+                        actionTd.appendChild(btn);
+                        tr.appendChild(actionTd);
+
                         body.appendChild(tr);
+                        
+                        // ONLY ADD TO TOTAL IF PENDING
+                        if (rStatus !== 'PAID') {
+                            driverPendingTotal += rComi;
+                        }
                     });
 
-                    // Subtotal row for this driver
+                    // Render Subtotal Row for this Driver (LIVE BALANCE)
                     const subtr = document.createElement('tr');
-                    subtr.style.backgroundColor = '#fecaca'; // Soft red highlight for subtotals
-                    subtr.style.fontWeight = 'bold';
+                    subtr.classList.add('subtotal-row');
                     
                     const labelTd = document.createElement('td');
-                    labelTd.setAttribute('colspan', '9');
+                    labelTd.setAttribute('colspan', '5');
                     labelTd.style.textAlign = 'right';
                     labelTd.style.paddingRight = '20px';
-                    labelTd.textContent = `SUBTOTAL ${driver}:`;
+                    labelTd.textContent = `PENDING TO PAY ${driverName}:`;
                     subtr.appendChild(labelTd);
 
-                    const paidTd = document.createElement('td');
-                    paidTd.textContent = '---'; // "Solo se vea lo que hace en el dia", so subtotal here is blanked
-                    subtr.appendChild(paidTd);
+                    const totalTd = document.createElement('td');
+                    totalTd.textContent = `$${driverPendingTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                    subtr.appendChild(totalTd);
 
-                    const cashTd = document.createElement('td');
-                    // "CASH Balance ahi es donde quiero el total a pagar de cada chofer"
-                    cashTd.textContent = `$${driverSubPaid.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-                    cashTd.style.color = '#b91c1c';
-                    subtr.appendChild(cashTd);
+                    const statusTd = document.createElement('td');
+                    statusTd.style.textAlign = 'center';
+                    statusTd.textContent = (driverPendingTotal > 0) ? 'DEBT' : 'CLEARED';
+                    subtr.appendChild(statusTd);
+
+                    // Group Action: Settle All / Revert
+                    const groupActionTd = document.createElement('td');
+                    if (driverPendingTotal > 0) {
+                        const settleBtn = document.createElement('button');
+                        settleBtn.textContent = 'SETTLE ALL';
+                        settleBtn.style.fontSize = '0.6rem';
+                        settleBtn.style.padding = '2px 6px';
+                        settleBtn.style.background = '#4338ca';
+                        settleBtn.style.color = 'white';
+                        settleBtn.style.borderRadius = '4px';
+                        settleBtn.onclick = () => settleDriverGroup(driverName);
+                        groupActionTd.appendChild(settleBtn);
+                    } else {
+                        // If balance is 0, offer REVERT ALL (Assuming there are paid trips)
+                        const revertBtn = document.createElement('button');
+                        revertBtn.textContent = 'REVERT ALL';
+                        revertBtn.style.fontSize = '0.55rem';
+                        revertBtn.style.padding = '2px 6px';
+                        revertBtn.style.background = '#ef4444'; // Red for revert
+                        revertBtn.style.color = 'white';
+                        revertBtn.style.borderRadius = '4px';
+                        revertBtn.onclick = () => revertDriverGroup(driverName);
+                        groupActionTd.appendChild(revertBtn);
+                    }
+                    subtr.appendChild(groupActionTd);
 
                     body.appendChild(subtr);
-
-                    grandTotalPaid += driverSubPaid;
-                    grandTotalCash += driverSubCash;
+                    globalTotal += driverPendingTotal;
                 });
+                
+                // 4. Add a spacer row at the very end to prevent the sticky footer from hiding data
+                const spacer = document.createElement('tr');
+                spacer.style.height = '100px';
+                body.appendChild(spacer);
             }
             
-            document.getElementById('dl-total-paid').textContent = `$${grandTotalPaid.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            // Grand total footer update
-            const totalCashEl = document.getElementById('dl-total-cash');
-            if(totalCashEl) {
-                totalCashEl.previousElementSibling.textContent = 'GRAND TOTAL TO PAY (ALL DRIVERS):';
-                totalCashEl.textContent = `$${grandTotalPaid.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            const footerLabel = document.getElementById('dl-footer-label');
+            const totalDisplay = document.getElementById('dl-total-paid');
+            
+            if(searchTerm) {
+                footerLabel.textContent = `Total Settlement for ${searchTerm.toUpperCase()}:`;
+            } else {
+                footerLabel.textContent = `Global Settlement Summary:`;
             }
+            
+            totalDisplay.textContent = `$${globalTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            totalDisplay.style.color = '#4ade80'; // Bright green for the final total in dark footer
         }
 
         // Initialize state on load
         window.addEventListener('DOMContentLoaded', () => {
-            const savedView = localStorage.getItem('activeView') || 'hero';
-            showView(savedView);
             loadTableData();
             loadReleasesData();
             renderDriverLog();
             updateReleaseDatalist();
             updateAddressDatalist();
             
-            // Set initial ID
+            // Set initial ID and Order
             document.getElementById('in-id').value = 'TRIP-' + Date.now().toString().slice(-6);
+            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            let initialOrd = '';
+            for (let i = 0; i < 4; i++) initialOrd += chars.charAt(Math.floor(Math.random() * chars.length));
+            document.getElementById('in-order').value = 'ORD-' + initialOrd;
 
             // New logic for Release Row addition
             window.addReleaseRow = () => {
@@ -1182,198 +1221,274 @@
                 'sales': document.querySelectorAll('.field-sales')
             };
 
-            function updateDocView() {
-                const type = docSelector.value;
+            // --- UNIVERSAL RECEIPT LOGIC ---
+            window.loadDocTrips = function() {
+                const search = document.getElementById('trip-search-input').value.toLowerCase();
+                const fromDate = document.getElementById('trip-from-date').value;
+                const toDate = document.getElementById('trip-to-date').value;
+                const list = document.getElementById('trip-list-scroll');
+                const data = JSON.parse(localStorage.getItem('logisticsTableData') || '[]');
                 
-                // Toggle Templates
-                Object.keys(templates).forEach(k => {
-                    if(templates[k]) {
-                        templates[k].style.display = (k === type) ? 'block' : 'none';
-                        // Add class for print helper
-                        templates[k].classList.toggle('hidden-preview', k !== type);
+                list.innerHTML = '';
+                data.slice().reverse().forEach(trip => {
+                    const id = (trip[0] || '').toLowerCase();
+                    const date = trip[1] || ''; // Trip Date is Index 1
+                    const cont = (trip[3] || '').toLowerCase();
+                    const cust = (trip[11] || '').toLowerCase();
+                    
+                    const matchesSearch = id.includes(search) || cont.includes(search) || cust.includes(search);
+                    const matchesDate = (!fromDate || date >= fromDate) && (!toDate || date <= toDate);
+
+                    if(matchesSearch && matchesDate) {
+                        const div = document.createElement('div');
+                        div.className = 'trip-item';
+                        div.innerHTML = `
+                            <h4>ID: ${trip[0]}</h4>
+                            <p>${trip[3] || 'No Container'} | ${trip[11] || 'No Customer'}</p>
+                            <p style="font-size:0.6rem; color:#94a3b8;">${trip[1] || ''}</p>
+                        `;
+                        div.onclick = () => fillReceiptFromTrip(trip, div);
+                        list.appendChild(div);
                     }
                 });
+            }
 
-                // Toggle Field visibility
-                Object.keys(fieldGroups).forEach(k => {
-                    fieldGroups[k].forEach(el => {
-                        el.style.display = el.classList.contains(`field-${type}`) ? 'block' : 'none';
-                    });
-                });
+            window.fillReceiptFromTrip = function(trip, el) {
+                // UI Active State
+                document.querySelectorAll('.trip-item').forEach(i => i.classList.remove('active'));
+                if(el) el.classList.add('active');
 
-                // Update Dynamic Label
-                const labelRel = document.getElementById('label-release');
-                if(labelRel) {
-                    labelRel.textContent = (type === 'yard') ? 'BOOKING #' : 'RELEASE #';
+                // Fill Form
+                document.getElementById('u-r-id').value = trip[0] || '';
+                document.getElementById('u-r-date').value = trip[1] || '';
+                document.getElementById('u-r-move').value = trip[34] || 'IN';
+                document.getElementById('u-r-cont').value = trip[3] || '';
+                document.getElementById('u-r-size').value = trip[2] || '';
+                document.getElementById('u-r-rel').value = trip[4] || '';
+                document.getElementById('u-r-order').value = trip[5] || '';
+                document.getElementById('u-r-customer').value = trip[11] || '';
+                document.getElementById('u-r-phone').value = trip[25] || '';
+                document.getElementById('u-r-place').value = trip[8] || '';
+                
+                // Fees
+                document.getElementById('u-r-yard').value = trip[15] || 0;
+                document.getElementById('u-r-storage').value = trip[36] || 0;
+                document.getElementById('u-r-transp').value = trip[20] || 0;
+                document.getElementById('u-r-sales').value = trip[22] || 0;
+                
+                // Conditions (simplified heuristic)
+                const note = (trip[32] || '').toUpperCase();
+                document.getElementById('chk-asis').checked = note.includes('AS IS');
+                document.getElementById('chk-wwt').checked = note.includes('WWT');
+                document.getElementById('chk-cw').checked = note.includes('CW');
+                document.getElementById('chk-new').checked = note.includes('NEW');
+                document.getElementById('chk-holes').checked = note.includes('NO HOLES');
+                document.getElementById('chk-doors').checked = note.includes('DOORS OK');
+                
+                drawReceipt();
+            }
+
+            window.drawReceipt = function() {
+                const preview = document.getElementById('receipt-a4');
+                
+                // Gather Data from Form
+                const data = {
+                    id: document.getElementById('u-r-id').value,
+                    date: document.getElementById('u-r-date').value,
+                    move: document.getElementById('u-r-move').value,
+                    cont: document.getElementById('u-r-cont').value,
+                    size: document.getElementById('u-r-size').value,
+                    rel: document.getElementById('u-r-rel').value,
+                    order: document.getElementById('u-r-order').value,
+                    cust: document.getElementById('u-r-customer').value,
+                    phone: document.getElementById('u-r-phone').value,
+                    place: document.getElementById('u-r-place').value,
+                    yard: parseFloat(document.getElementById('u-r-yard').value) || 0,
+                    storage: parseFloat(document.getElementById('u-r-storage').value) || 0,
+                    transp: parseFloat(document.getElementById('u-r-transp').value) || 0,
+                    sales: parseFloat(document.getElementById('u-r-sales').value) || 0,
+                    taxRate: parseFloat(document.getElementById('u-r-tax').value) || 0,
+                    notes: document.getElementById('u-r-notes').value,
+                    cond: {
+                        asis: document.getElementById('chk-asis').checked,
+                        wwt: document.getElementById('chk-wwt').checked,
+                        cw: document.getElementById('chk-cw').checked,
+                        new: document.getElementById('chk-new').checked,
+                        holes: document.getElementById('chk-holes').checked,
+                        doors: document.getElementById('chk-doors').checked
+                    }
+                };
+
+                const subtotal = data.yard + data.storage + data.transp + data.sales;
+                const taxVal = subtotal * (data.taxRate / 100);
+                const total = subtotal + taxVal;
+
+                // Base Header Template
+                const headerHtml = `
+                    <div class="receipt-header">
+                        <div class="receipt-logo-area">
+                            <h1 style="color:#b91c1c; font-size: 1.8rem; letter-spacing:-1px;">RP TULIPAN</h1>
+                            <p style="font-weight:900; color:#1e293b; margin-top:-5px;">TRANSPORT, INC.</p>
+                            <p style="font-size:0.7rem; color:#64748b;">8421 NW 70th ST, MIAMI FL 33166</p>
+                            <p style="font-size:0.7rem; color:#64748b;">Phone: (305) 510-6534 | (786) 280-9941</p>
+                        </div>
+                        ${data.id ? `
+                        <div class="receipt-meta-box">
+                            <h2 style="color:#1e293b; margin-bottom:5px; border-bottom: 2px solid #b91c1c; padding-bottom:5px;">RECEIPT</h2>
+                            <p>ID: <strong style="font-size:1.1rem; color:#b91c1c;">#${data.id}</strong></p>
+                            <p>DATE: <strong>${data.date || '---'}</strong></p>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+
+                if(!data.id) {
+                    preview.innerHTML = headerHtml;
+                    return;
                 }
-            }
 
-            if(docSelector) {
-                docSelector.addEventListener('change', updateDocView);
-                updateDocView(); // Initial call
-            }
+                // Helper to render field if not empty
+                const f = (label, val) => {
+                    if(!val || val === '---') return '';
+                    return `<div class="receipt-field"><label>${label}</label><span>${val}</span></div>`;
+                };
 
-            // Sync Logic
-            const setupDocsSync = (inputId, previewClass, isCurrency = false) => {
-                const input = document.getElementById(inputId);
-                if (!input) return;
+                // Helper to render section if has children
+                const s = (title, content) => {
+                    if(!content.trim()) return '';
+                    return `
+                        <div class="receipt-section-title">${title}</div>
+                        <div class="receipt-grid-3">${content}</div>
+                    `;
+                };
 
-                input.addEventListener('input', () => {
-                    const val = input.value || '---';
-                    const previews = document.querySelectorAll(`.${previewClass}`);
-                    previews.forEach(p => {
-                        if (isCurrency) {
-                            p.textContent = `$${parseFloat(val || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-                        } else {
-                            p.textContent = val;
-                        }
-                    });
-                    
-                    // Specific calculations
-                    if(inputId === 'u-yard-fee' || inputId === 'u-storage-fee' || inputId === 'u-trans-fee') updateYardTotal();
-                    if(inputId === 'u-sales-price' || inputId === 'u-delivery-price') updateSalesTotal();
-                });
-            };
-
-            function updateYardTotal() {
-                const y = parseFloat(document.getElementById('u-yard-fee').value) || 0;
-                const s = parseFloat(document.getElementById('u-storage-fee').value) || 0;
-                const t = parseFloat(document.getElementById('u-trans-fee').value) || 0;
-                const taxPercent = parseFloat(document.getElementById('u-taxes').value) || 0;
-
-                const subtotal = y + s + t;
-                const taxAmount = subtotal * (taxPercent / 100);
-                const total = subtotal + taxAmount;
-
-                const taxPrev = document.querySelector('.p-yard-tax');
-                if(taxPrev) taxPrev.textContent = `$${taxAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-
-                const prev = document.querySelector('.p-total-receipt');
-                if(prev) prev.textContent = `$${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            }
-
-            function updateSalesTotal() {
-                const s = parseFloat(document.getElementById('u-sales-price').value) || 0;
-                const d = parseFloat(document.getElementById('u-delivery-price').value) || 0;
-                const taxPercent = parseFloat(document.getElementById('u-taxes').value) || 0;
-
-                const subtotal = s + d;
-                const taxAmount = subtotal * (taxPercent / 100);
-                const total = subtotal + taxAmount;
-
-                const taxPrev = document.querySelector('.p-sales-tax');
-                if(taxPrev) taxPrev.textContent = `$${taxAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-
-                const prev = document.querySelector('.p-total-sales');
-                if(prev) prev.textContent = `$${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            }
-
-            function syncCheckboxes(selectId) {
-                const select = document.getElementById(selectId);
-                if(!select) return;
+                // Sections
+                const logisticContent = f('MOVEMENT TYPE', data.move) + f('RELEASE / BOOKING', data.rel) + f('ORDER / BOL', data.order);
+                const equipmentContent = f('CONTAINER #', data.cont) + f('SIZE & TYPE', data.size) + f('DELIVERY PLACE', data.place);
+                const clientContent = f('CUSTOMER NAME', data.cust) + f('PHONE', data.phone);
                 
-                select.addEventListener('change', () => {
-                    const val = select.value;
-                    // Reset all
-                    const prefix = selectId === 'u-move' ? 'p-in-box' : (selectId === 'u-load' ? 'p-empty-box' : 'p-asis-box');
-                    
-                    // Instead of a map, we just update all instances in all templates
-                    document.querySelectorAll('.p-in-box, .p-out-box, .p-empty-box, .p-full-box, .p-asis-box, .p-wwt-box, .p-cw-box, .p-new-box').forEach(b => {
-                        if(b.classList.contains(`p-${val.toLowerCase().replace(' ', '')}-box`)) {
-                            b.textContent = '✓';
-                        } else if(
-                            (selectId === 'u-move' && (b.classList.contains('p-in-box') || b.classList.contains('p-out-box'))) ||
-                            (selectId === 'u-load' && (b.classList.contains('p-empty-box') || b.classList.contains('p-full-box'))) ||
-                            (selectId === 'u-cond' && (b.classList.contains('p-asis-box') || b.classList.contains('p-wwt-box') || b.classList.contains('p-cw-box') || b.classList.contains('p-new-box')))
-                        ) {
-                            b.textContent = '';
-                        }
-                    });
+                // Inspection Section (Special because of grid layout)
+                let inspectionContent = '';
+                if(data.cond.asis) inspectionContent += `<div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; border:1px solid #000; display:inline-block; text-align:center; line-height:14px;">X</span> AS IS</div>`;
+                if(data.cond.wwt) inspectionContent += `<div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; border:1px solid #000; display:inline-block; text-align:center; line-height:14px;">X</span> WWT</div>`;
+                if(data.cond.cw) inspectionContent += `<div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; border:1px solid #000; display:inline-block; text-align:center; line-height:14px;">X</span> CW</div>`;
+                if(data.cond.new) inspectionContent += `<div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; border:1px solid #000; display:inline-block; text-align:center; line-height:14px;">X</span> NEW</div>`;
+                if(data.cond.holes) inspectionContent += `<div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; border:1px solid #000; display:inline-block; text-align:center; line-height:14px;">X</span> NO HOLES</div>`;
+                if(data.cond.doors) inspectionContent += `<div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; border:1px solid #000; display:inline-block; text-align:center; line-height:14px;">X</span> DOORS OK</div>`;
 
-                    // Update cond text (for sales receipt)
-                    if(selectId === 'u-cond') {
-                        document.querySelectorAll('.p-cond-text').forEach(t => t.textContent = val);
-                    }
-                });
-            }
+                let inspectionSectionHtml = '';
+                if(inspectionContent) {
+                    inspectionSectionHtml = `
+                        <div class="receipt-section-title">Inspection & Condition</div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; font-size: 0.8rem;">
+                            ${inspectionContent}
+                        </div>
+                    `;
+                }
 
-            // Bind Syncs
-            setupDocsSync('u-init-date', 'p-init');
-            setupDocsSync('u-final-date', 'p-final');
-            setupDocsSync('u-customer', 'p-customer');
-            setupDocsSync('u-phone', 'p-phone');
-            setupDocsSync('u-cont-num', 'p-cont');
-            setupDocsSync('u-release', 'p-release');
-            setupDocsSync('u-order', 'p-order');
-            setupDocsSync('u-driver', 'p-driver');
-            setupDocsSync('u-del-date', 'p-deldate');
-            setupDocsSync('u-city', 'p-city');
-            setupDocsSync('u-pickup', 'p-pickup');
-            setupDocsSync('u-delivery', 'p-delivery');
-            setupDocsSync('u-miles', 'p-miles');
-            setupDocsSync('u-doors', 'p-doors');
-            
-            // Fix sync for select elements
-            const doorsSelect = document.getElementById('u-doors');
-            if(doorsSelect) {
-                doorsSelect.addEventListener('change', () => {
-                    document.querySelectorAll('.p-doors').forEach(p => p.textContent = doorsSelect.value);
-                });
-            }
-            
-            setupDocsSync('u-collect', 'p-collect');
-            
-            // Ensure select triggers change immediately
-            const collectSelect = document.getElementById('u-collect');
-            if(collectSelect) {
-                collectSelect.addEventListener('change', () => {
-                    document.querySelectorAll('.p-collect').forEach(p => p.textContent = collectSelect.value);
-                });
-            }
-            setupDocsSync('u-yard-fee', 'p-yard-fee', true);
-            setupDocsSync('u-storage-fee', 'p-storage-fee', true);
-            setupDocsSync('u-trans-fee', 'p-trans-fee', true);
-            setupDocsSync('u-sales-price', 'p-sales-price', true);
-            setupDocsSync('u-delivery-price', 'p-delivery-price', true);
-            setupDocsSync('u-taxes', 'p-taxes');
-            
-            const taxesInput = document.getElementById('u-taxes');
-            if(taxesInput) {
-                taxesInput.addEventListener('input', () => {
-                    updateYardTotal();
-                    updateSalesTotal();
-                });
-            }
-            
-            setupDocsSync('u-type', 'p-type');
-            setupDocsSync('u-size', 'p-size');
-            
-            // Sync Textarea
-            const notesInput = document.getElementById('u-notes');
-            if(notesInput) {
-                notesInput.addEventListener('input', () => {
-                    document.querySelectorAll('.p-notes').forEach(p => p.textContent = notesInput.value);
-                });
+                // Billing Table
+                let billingRows = '';
+                if(data.yard > 0) billingRows += `<tr><td>Yard Loading / Interchange Fee</td><td style="text-align:right;">$${data.yard.toFixed(2)}</td></tr>`;
+                if(data.storage > 0) billingRows += `<tr><td>Storage / Rental Fee</td><td style="text-align:right;">$${data.storage.toFixed(2)}</td></tr>`;
+                if(data.transp > 0) billingRows += `<tr><td>Transportation Services</td><td style="text-align:right;">$${data.transp.toFixed(2)}</td></tr>`;
+                if(data.sales > 0) billingRows += `<tr><td>Container Sales</td><td style="text-align:right;">$${data.sales.toFixed(2)}</td></tr>`;
+                if(taxVal > 0) billingRows += `<tr><td>Taxes (${data.taxRate}%)</td><td style="text-align:right;">$${taxVal.toFixed(2)}</td></tr>`;
+
+                let billingSectionHtml = '';
+                if(total > 0) {
+                    billingSectionHtml = `
+                        <div class="receipt-section-title">Billing Summary</div>
+                        <table class="receipt-table">
+                            <thead>
+                                <tr><th>Description</th><th style="text-align:right;">Amount</th></tr>
+                            </thead>
+                            <tbody>${billingRows}</tbody>
+                            <tfoot>
+                                <tr class="receipt-total-row">
+                                    <td>TOTAL DUE</td>
+                                    <td style="text-align:right; font-size:1.4rem; color:#b91c1c;">$${total.toFixed(2)}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    `;
+                }
+
+                // Final Notes
+                const notesHtml = data.notes ? `
+                    <div style="margin-top:25px;">
+                        <label style="font-size:0.7rem; font-weight:bold; color:#64748b;">NOTES / DESCRIPTION:</label>
+                        <div style="min-height:60px; border:1px solid #e2e8f0; padding:10px; font-size:0.8rem; margin-top:5px; background:#f8fafc; border-left: 4px solid #b91c1c;">
+                            ${data.notes}
+                        </div>
+                    </div>
+                ` : '';
+
+                preview.innerHTML = `
+                    ${headerHtml}
+                    ${s('Logistics & Movement', logisticContent)}
+                    ${s('Equipment Information', equipmentContent)}
+                    ${s('Client Details', clientContent)}
+                    ${inspectionSectionHtml}
+                    ${billingSectionHtml}
+                    ${notesHtml}
+                    <div class="receipt-footer">
+                        <div class="signature-box" style="border-top:1px solid #94a3b8; padding-top:10px; text-align:center; font-size:0.7rem; color:#64748b;">AUTHORIZED BY (RP TULIPAN)</div>
+                        <div class="signature-box" style="border-top:1px solid #94a3b8; padding-top:10px; text-align:center; font-size:0.7rem; color:#64748b;">RECEIVED BY (CUSTOMER)</div>
+                    </div>
+                `;
             }
 
-            syncCheckboxes('u-move');
-            syncCheckboxes('u-load');
-            syncCheckboxes('u-cond');
+            window.updateCalendarFromReceipt = function() {
+                const id = document.getElementById('u-r-id').value;
+                if(!id) return alert('Select a trip first!');
+
+                const data = JSON.parse(localStorage.getItem('logisticsTableData') || '[]');
+                const idx = data.findIndex(t => t[0] === id);
+                
+                if(idx === -1) return alert('Trip ID not found in database.');
+
+                if(!confirm('This will update the main Delivery Calendar with these manual changes. Continue?')) return;
+
+                // Sync Back
+                data[idx][1] = document.getElementById('u-r-date').value;
+                data[idx][34] = document.getElementById('u-r-move').value;
+                data[idx][3] = document.getElementById('u-r-cont').value;
+                data[idx][2] = document.getElementById('u-r-size').value;
+                data[idx][4] = document.getElementById('u-r-rel').value;
+                data[idx][5] = document.getElementById('u-r-order').value;
+                data[idx][11] = document.getElementById('u-r-customer').value;
+                data[idx][25] = document.getElementById('u-r-phone').value;
+                data[idx][8] = document.getElementById('u-r-place').value;
+                
+                data[idx][15] = document.getElementById('u-r-yard').value;
+                data[idx][36] = document.getElementById('u-r-storage').value;
+                data[idx][20] = document.getElementById('u-r-transp').value;
+                data[idx][22] = document.getElementById('u-r-sales').value;
+                data[idx][32] = document.getElementById('u-r-notes').value;
+                
+                // Update LocalStorage
+                localStorage.setItem('logisticsTableData', JSON.stringify(data));
+                
+                // Refresh main calendar
+                if(window.loadTableData) window.loadTableData();
+                
+                alert('Success! Calendar and Report Panel have been updated with these values.');
+            }
 
             // --- AUTO COMMISSION LOGIC ---
             window.updateDriverCommission = function() {
                 const company = document.getElementById('in-company').value;
                 const commText = document.getElementById('in-comission').value;
-                const commPercent = parseFloat(commText) || 30; // Will parse '30%' as 30
-                const amount = parseFloat(document.getElementById('in-amount').value) || 0;
+                const commPercent = parseFloat(commText) || 30; // Default 30 if parsing fails
                 const paidBase = parseFloat(document.getElementById('in-paiddriver').value) || 0;
                 
                 let result = 0;
-                // Match the value "RP TULIPAN" exactly from the HTML select
-                if (company === 'RP TULIPAN') {
-                    result = amount * (commPercent / 100);
-                } else {
+                // If it's a company driver (RP Tulipan or JR Super Crame)
+                if (company === 'RP TULIPAN' || company === 'JR SUPER CRAME') {
                     result = paidBase * (commPercent / 100);
+                } else {
+                    // Independent driver gets the full amount listed in Paid Driver
+                    result = paidBase;
                 }
                 
                 const commEl = document.getElementById('in-comidriver');
@@ -1384,6 +1499,17 @@
 
             // Set initially
             updateDriverCommission();
+
+            // Initialize Docs Dates to Today
+            const today = new Date().toISOString().split('T')[0];
+            const fromD = document.getElementById('trip-from-date');
+            const toD = document.getElementById('trip-to-date');
+            if(fromD) fromD.value = today;
+            if(toD) toD.value = today;
+
+            // Finally show correct view after all window functions are defined
+            const savedView = localStorage.getItem('activeView') || 'hero';
+            showView(savedView);
         });
 
         window.addEventListener('scroll', () => {
