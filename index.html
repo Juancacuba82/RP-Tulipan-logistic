@@ -29,6 +29,7 @@
             </button>
 
             <div class="nav-actions" id="nav-actions-container">
+                <button onclick="closeMenu(); showView('profit-report')" class="btn-calendar"><i class="fas fa-chart-line"></i> PROFIT REPORT</button>
                 <button onclick="closeMenu(); showView('reports')" class="btn-calendar"><i class="fas fa-truck-loading"></i> DRIVERS REPORTS</button>
                 <button onclick="closeMenu(); showView('releases')" class="btn-calendar"><i class="fas fa-file-signature"></i> FORM RELEASES</button>
                 <button onclick="closeMenu(); showView('docs')" class="btn-calendar"><i class="fas fa-receipt"></i> DOCS & RECEIPTS</button>
@@ -49,6 +50,10 @@
 
                 <!-- Central Dashboard Grid -->
                 <div class="dashboard-grid">
+                    <button onclick="showView('profit-report')" class="dash-card">
+                        <i class="fas fa-chart-line"></i>
+                        <span>PROFIT REPORT</span>
+                    </button>
                     <button onclick="showView('reports')" class="dash-card">
                         <i class="fas fa-truck-loading"></i>
                         <span>DRIVERS REPORTS</span>
@@ -717,6 +722,111 @@
                 </div>
             </div>
         </section>
+        <!-- PROFIT REPORT View -->
+        <section id="profit-report-view" class="view-section hidden">
+            <div class="report-container">
+                <header class="report-header">
+                    <div class="report-title">
+                        <h2>Financial Profit Report</h2>
+                        <p>Consolidated business performance summary</p>
+                    </div>
+                    <div class="report-filters">
+                        <div class="filter-group">
+                            <label>From</label>
+                            <input type="date" id="profit-date-from" onchange="renderProfitReport()">
+                        </div>
+                        <div class="filter-group">
+                            <label>To</label>
+                            <input type="date" id="profit-date-to" onchange="renderProfitReport()">
+                        </div>
+                        <button onclick="resetProfitFilters()" class="btn-reset-report">Reset</button>
+                    </div>
+                </header>
+
+                <div class="profit-summary-grid">
+                    <div class="summary-card revenue">
+                        <div class="card-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                        <div class="card-info">
+                            <label>TOTAL REVENUE</label>
+                            <h2 id="total-revenue-val">$0.00</h2>
+                        </div>
+                    </div>
+                    <div class="summary-card expenses">
+                        <div class="card-icon"><i class="fas fa-money-bill-wave"></i></div>
+                        <div class="card-info">
+                            <label>TOTAL EXPENSES</label>
+                            <h2 id="total-expenses-val">$0.00</h2>
+                        </div>
+                    </div>
+                    <div class="summary-card profit" id="profit-card-status">
+                        <div class="card-icon"><i class="fas fa-wallet"></i></div>
+                        <div class="card-info">
+                            <label>NET PROFIT</label>
+                            <h2 id="net-profit-val">$0.00</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-details-grid">
+                    <div class="breakdown-panel">
+                        <h3>Revenue Breakdown by Service</h3>
+                        <div class="breakdown-list">
+                            <div class="breakdown-item">
+                                <div class="item-label">
+                                    <span class="dot transport"></span>
+                                    Total Transporte
+                                </div>
+                                <div class="item-value" id="val-transport">$0.00</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="item-label">
+                                    <span class="dot sales"></span>
+                                    Total Ventas
+                                </div>
+                                <div class="item-value" id="val-sales">$0.00</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="item-label">
+                                    <span class="dot rentals"></span>
+                                    Total Rentas
+                                </div>
+                                <div class="item-value" id="val-rentals">$0.00</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="item-label">
+                                    <span class="dot yard"></span>
+                                    Total Yard Services
+                                </div>
+                                <div class="item-value" id="val-yard">$0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-panel">
+                        <!-- We can add a CSS chart or just a placeholder for visual excellence -->
+                        <h3>Revenue Distribution</h3>
+                        <div class="simple-bar-chart">
+                            <div class="bar-group">
+                                <label>Transp</label>
+                                <div class="bar-container"><div id="bar-transport" class="bar transport" style="width: 0%"></div></div>
+                            </div>
+                            <div class="bar-group">
+                                <label>Ventas</label>
+                                <div class="bar-container"><div id="bar-sales" class="bar sales" style="width: 0%"></div></div>
+                            </div>
+                            <div class="bar-group">
+                                <label>Rentas</label>
+                                <div class="bar-container"><div id="bar-rentals" class="bar rentals" style="width: 0%"></div></div>
+                            </div>
+                            <div class="bar-group">
+                                <label>Yard</label>
+                                <div class="bar-container"><div id="bar-yard" class="bar yard" style="width: 0%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <script>
@@ -814,6 +924,8 @@
                     if(window.renderDriverLog) window.renderDriverLog();
                 } else if (view === 'calendar') {
                     if(window.loadTableData) window.loadTableData();
+                } else if (view === 'profit-report') {
+                    if(window.renderProfitReport) window.renderProfitReport();
                 }
             } else {
                 console.warn("View not found:", targetId);
@@ -1577,6 +1689,86 @@
                     calculateExpenseTotal();
                 }
             }
+
+            // PROFIT REPORT CALCULATIONS
+            window.renderProfitReport = function() {
+                const dateFrom = document.getElementById('profit-date-from').value;
+                const dateTo = document.getElementById('profit-date-to').value;
+                
+                const logisticsData = JSON.parse(localStorage.getItem('logisticsTableData') || '[]');
+                const expensesData = JSON.parse(localStorage.getItem('expensesData') || localStorage.getItem('expensesTableData') || '[]');
+
+                let totals = {
+                    transport: 0,
+                    sales: 0,
+                    rentals: 0,
+                    yard: 0,
+                    expenses: 0
+                };
+
+                // 1. Calculate Revenue from Logistics
+                logisticsData.forEach(row => {
+                    const rowDate = row[1];
+                    if ((!dateFrom || rowDate >= dateFrom) && (!dateTo || rowDate <= dateTo)) {
+                        totals.transport += parseFloat(row[20]) || 0;
+                        totals.sales += parseFloat(row[22]) || 0;
+                        totals.yard += parseFloat(row[15]) || 0;
+                        
+                        // Rentals: Sum Day Rate (17) and Monthly Rate (34)
+                        const dayRate = parseFloat(row[17]) || 0;
+                        const monthlyRate = parseFloat(row[34]) || 0;
+                        totals.rentals += (dayRate + monthlyRate);
+                    }
+                });
+
+                // 2. Calculate Expenses
+                expensesData.forEach(row => {
+                    const rowDate = row[0];
+                    if ((!dateFrom || rowDate >= dateFrom) && (!dateTo || rowDate <= dateTo)) {
+                        // Amount is in index 3, format "$1,234.56"
+                        const amountStr = row[3] ? row[3].replace('$', '').replace(/,/g, '') : '0';
+                        totals.expenses += parseFloat(amountStr) || 0;
+                    }
+                });
+
+                const totalRevenue = totals.transport + totals.sales + totals.rentals + totals.yard;
+                const netProfit = totalRevenue - totals.expenses;
+
+                // 3. Update Summary Cards
+                document.getElementById('total-revenue-val').textContent = `$${totalRevenue.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                document.getElementById('total-expenses-val').textContent = `$${totals.expenses.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                
+                const netEl = document.getElementById('net-profit-val');
+                const profitCard = document.getElementById('profit-card-status');
+                netEl.textContent = `$${netProfit.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                
+                if (netProfit >= 0) {
+                    netEl.className = 'positive';
+                    profitCard.className = 'summary-card profit positive';
+                } else {
+                    netEl.className = 'negative';
+                    profitCard.className = 'summary-card profit negative';
+                }
+
+                // 4. Update Breakdown List
+                document.getElementById('val-transport').textContent = `$${totals.transport.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                document.getElementById('val-sales').textContent = `$${totals.sales.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                document.getElementById('val-rentals').textContent = `$${totals.rentals.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                document.getElementById('val-yard').textContent = `$${totals.yard.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+
+                // 5. Update Simple Bar Chart
+                const maxVal = Math.max(totals.transport, totals.sales, totals.rentals, totals.yard, 1);
+                document.getElementById('bar-transport').style.width = `${(totals.transport / maxVal) * 100}%`;
+                document.getElementById('bar-sales').style.width = `${(totals.sales / maxVal) * 100}%`;
+                document.getElementById('bar-rentals').style.width = `${(totals.rentals / maxVal) * 100}%`;
+                document.getElementById('bar-yard').style.width = `${(totals.yard / maxVal) * 100}%`;
+            };
+
+            window.resetProfitFilters = function() {
+                document.getElementById('profit-date-from').value = '';
+                document.getElementById('profit-date-to').value = '';
+                renderProfitReport();
+            };
 
             // DOCS CENTER LOGIC
             const docSelector = document.getElementById('doc-type-selector');
