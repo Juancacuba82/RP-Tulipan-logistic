@@ -17,7 +17,7 @@
         <div class="container-nav">
             <div class="logo" style="display: flex; align-items: center;">
                 <img src="assets/logo.jpg" alt="RP Tulipan Logo" style="height: 40px; margin-right: 12px; border-radius: 50%;">
-                <a href="javascript:void(0)" onclick="closeMenu(); showView('hero')" class="logo-text">RP TULIPAN</a>
+                <button onclick="closeMenu(); showView('hero')" class="logo-text" style="background:none; border:none; color:inherit; font:inherit; cursor:pointer;">RP TULIPAN</button>
             </div>
             
             <button class="mobile-toggle" id="hamburger-menu" aria-label="Toggle Menu">
@@ -27,10 +27,10 @@
             </button>
 
             <div class="nav-actions" id="nav-actions-container">
-                <a href="javascript:void(0)" onclick="closeMenu(); showView('reports')" class="btn-calendar">DRIVERS REPORTS</a>
-                <a href="javascript:void(0)" onclick="closeMenu(); showView('releases')" class="btn-calendar">FORM RELEASES</a>
-                <a href="javascript:void(0)" onclick="closeMenu(); showView('docs')" class="btn-calendar">DOCS & RECEIPTS</a>
-                <a href="javascript:void(0)" onclick="closeMenu(); showView('calendar')" class="btn-calendar">FROM DELIVERY CALENDAR</a>
+                <button onclick="closeMenu(); showView('reports')" class="btn-calendar">DRIVERS REPORTS</button>
+                <button onclick="closeMenu(); showView('releases')" class="btn-calendar">FORM RELEASES</button>
+                <button onclick="closeMenu(); showView('docs')" class="btn-calendar">DOCS & RECEIPTS</button>
+                <button onclick="closeMenu(); showView('calendar')" class="btn-calendar">FROM DELIVERY CALENDAR</button>
             </div>
         </div>
     </header>
@@ -351,22 +351,6 @@
                             </select>
                         </div>
                         <div class="form-group"><label>33. NOTE</label><input type="text" id="in-note"></div>
-                        <div class="form-group">
-                            <label>34. STORAGE</label>
-                            <select id="in-storage" required>
-                                <option value="" disabled selected>Storage?</option>
-                                <option value="YES">YES</option>
-                                <option value="NO">NO</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>35. IN - OUT</label>
-                            <select id="in-inout" required>
-                                <option value="" disabled selected>Select In/Out</option>
-                                <option value="IN">IN</option>
-                                <option value="OUT">OUT</option>
-                            </select>
-                        </div>
                     </div>
                 </aside>
 
@@ -412,8 +396,8 @@
                                     <th>31. INCOME DIS FEE</th>
                                     <th>32. INVOICE</th>
                                     <th>33. NOTE</th>
-                                    <th>STORAGE</th>
-                                    <th>35. IN - OUT</th>
+                                    
+                                    
                                     <th>MODE</th>
                                     <th>MONTHLY RATE</th>
                                     <th>RENT START</th>
@@ -656,6 +640,35 @@
         const calendarView = document.getElementById('calendar-view');
         const docsView = document.getElementById('docs-view');
         const tableBody = document.getElementById('table-body');
+        
+        let editingIndex = null; // Track if we are editing an existing record
+
+        // --- PERMANENT DATA MIGRATION (One-time on startup) ---
+        (function() {
+            const dataKey = 'logisticsTableData';
+            const rawData = localStorage.getItem(dataKey);
+            if (rawData) {
+                try {
+                    let rows = JSON.parse(rawData);
+                    let migrationCount = 0;
+                    const migratedRows = rows.map(rowData => {
+                        // If it's the old 45-field format, normalize it to 43 fields
+                        if (rowData && rowData.length === 45) {
+                            rowData.splice(33, 2); // Remove old STORAGE (33) and IN-OUT (34)
+                            migrationCount++;
+                        }
+                        return rowData;
+                    });
+                    
+                    if (migrationCount > 0) {
+                        localStorage.setItem(dataKey, JSON.stringify(migratedRows));
+                        console.log(`Successfully migrated ${migrationCount} legacy records to the new 43-field structure.`);
+                    }
+                } catch (e) {
+                    console.error('Migration failed:', e);
+                }
+            }
+        })();
 
         const hamburger = document.getElementById('hamburger-menu');
         const navActions = document.getElementById('nav-actions-container');
@@ -675,13 +688,15 @@
         };
 
         function showView(view) {
+            console.log("Navigating to:", view);
             localStorage.setItem('activeView', view);
             
-            // 1. Reset Scroll and forced cleanup
+            // 1. Reset Scroll IMMEDIATELY
             window.scrollTo(0, 0);
             
-            // 2. Hide ALL sections with strict display:none
-            document.querySelectorAll('.view-section').forEach(v => {
+            // 2. Hide ALL sections with strict display:none and class hidden
+            const sections = document.querySelectorAll('.view-section');
+            sections.forEach(v => {
                 v.classList.add('hidden');
                 v.style.display = 'none'; 
             });
@@ -692,8 +707,8 @@
             
             if (target) {
                 target.classList.remove('hidden');
-                // All views use block or handle flex internally
-                target.style.display = 'block'; 
+                // Use block for most sections, or flex if needed by component
+                target.style.display = (view === 'hero') ? 'block' : 'block'; 
                 
                 // Special case for navbar styling
                 if (view === 'hero') {
@@ -705,10 +720,13 @@
                 // 4. Trigger specific loads
                 if (view === 'docs') {
                     if(window.loadDocTrips) window.loadDocTrips();
-                    if(window.drawReceipt) window.drawReceipt();
                 } else if (view === 'reports') {
                     if(window.renderDriverLog) window.renderDriverLog();
+                } else if (view === 'calendar') {
+                    if(window.loadTableData) window.loadTableData();
                 }
+            } else {
+                console.warn("View not found:", targetId);
             }
         }
 
@@ -742,7 +760,7 @@
             const table = document.getElementById('logistics-table');
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(tr => {
-                const modeCell = tr.cells[36]; // in-mode
+                const modeCell = tr.cells[33]; // Corrected index for MODE
                 const balanceCell = tr.cells[tr.cells.length - 1];
                 const mode = modeCell ? modeCell.textContent : '';
                 const balanceStr = balanceCell ? balanceCell.textContent.replace('$', '').replace(',', '') : '0';
@@ -759,13 +777,15 @@
         }
 
         function addRow() {
-            // Auto-generate ID and Order
-            const nextId = 'TRIP-' + Date.now().toString().slice(-6);
-            document.getElementById('in-id').value = nextId;
-            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            let ordSuffix = '';
-            for (let i = 0; i < 4; i++) ordSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
-            document.getElementById('in-order').value = 'ORD-' + ordSuffix;
+            // Auto-generate ID and Order ONLY if not editing
+            if (editingIndex === null) {
+                const nextId = 'TRIP-' + Date.now().toString().slice(-6);
+                document.getElementById('in-id').value = nextId;
+                const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                let ordSuffix = '';
+                for (let i = 0; i < 4; i++) ordSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+                document.getElementById('in-order').value = 'ORD-' + ordSuffix;
+            }
 
             const fields = [
                 'in-id', 'in-date', 'in-size', 'in-ncont', 'in-release', 'in-order', 'in-city', 'in-pickup', 
@@ -773,7 +793,7 @@
                 'in-yard', 'in-yardrate', 'in-dateout', 'in-dayrate', 'in-company', 'in-driver', 
                 'in-rate', 'in-paytype', 'in-sales', 'in-collect', 'in-amount', 'in-phone', 
                 'in-paiddriver', 'in-status', 'in-comission', 'in-comidriver', 'in-income', 
-                'in-invoice', 'in-note', 'in-storage', 'in-inout',
+                'in-invoice', 'in-note',
                 'in-mode', 'in-mrate', 'in-sdaterent', 'in-nextdue'
             ];
             
@@ -801,7 +821,23 @@
             rowData.push(document.getElementById('in-driverpaid').value);
 
             const saved = localStorage.getItem('logisticsTableData') ? JSON.parse(localStorage.getItem('logisticsTableData')) : [];
-            saved.push(rowData);
+            
+            if (editingIndex !== null) {
+                // UPDATE MODE
+                saved[editingIndex] = rowData;
+                editingIndex = null; // Reset
+                
+                // Reset Button
+                const btn = document.querySelector('.btn-add-sidebar');
+                if (btn) {
+                   btn.textContent = 'Confirm Operation';
+                   btn.classList.remove('btn-update');
+                }
+            } else {
+                // NEW MODE
+                saved.push(rowData);
+            }
+            
             localStorage.setItem('logisticsTableData', JSON.stringify(saved));
 
             loadTableData();
@@ -846,6 +882,56 @@
             }
         }
 
+        function loadTripToEdit(idx) {
+            const saved = localStorage.getItem('logisticsTableData');
+            if(!saved) return;
+            const rows = JSON.parse(saved);
+            const rowData = rows[idx];
+            if(!rowData) return;
+
+            editingIndex = idx; // Set Global Edit State
+
+            // Populate Fields (Map back from indices 0-38)
+            const fields = [
+                'in-id', 'in-date', 'in-size', 'in-ncont', 'in-release', 'in-order', 'in-city', 'in-pickup', 
+                'in-delivery', 'in-doors', 'in-miles', 'in-customer', 'in-paystatus', 'in-paydate', 
+                'in-yard', 'in-yardrate', 'in-dateout', 'in-dayrate', 'in-company', 'in-driver', 
+                'in-rate', 'in-paytype', 'in-sales', 'in-collect', 'in-amount', 'in-phone', 
+                'in-paiddriver', 'in-status', 'in-comission', 'in-comidriver', 'in-income', 
+                'in-invoice', 'in-note',
+                'in-mode', 'in-mrate', 'in-sdaterent', 'in-nextdue'
+            ];
+
+            fields.forEach((id, i) => {
+                const el = document.getElementById(id);
+                if(el) el.value = (rowData[i] === '---') ? '' : rowData[i];
+            });
+
+            // Set Checkboxes (Index 37-40)
+            document.getElementById('in-yardpaid').checked = (rowData[37] === 'PAID');
+            document.getElementById('in-rentpaid').checked = (rowData[38] === 'PAID');
+            document.getElementById('in-ratepaid').checked = (rowData[39] === 'PAID');
+            document.getElementById('in-salespaid').checked = (rowData[40] === 'PAID');
+            
+            // Driver Paid Status (Index 42)
+            document.getElementById('in-driverpaid').value = rowData[42] || 'PENDING';
+
+            // Refresh UI States
+            toggleModeFields();
+            updateDriverCommission();
+
+            // Update UI Button
+            const btn = document.querySelector('.btn-add-sidebar');
+            if (btn) {
+                btn.textContent = 'Update Trip';
+                btn.classList.add('btn-update');
+            }
+
+            // Highlighting Row
+            loadTableData();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         function loadTableData() {
             const logisticsBody = document.getElementById('table-body');
             if(!logisticsBody) return;
@@ -853,15 +939,20 @@
             const saved = localStorage.getItem('logisticsTableData');
             if (saved) {
                 const rows = JSON.parse(saved);
-                rows.forEach(rowData => {
+                rows.forEach((rowData, idx) => {
+                    // MIGRATION: If old format (45 fields), convert to 43 by removing old STORAGE (33) and IN-OUT (34)
+                    if (rowData.length === 45) {
+                        rowData.splice(33, 2);
+                    }
+
                     const tr = document.createElement('tr');
                     
-                    const mode = rowData[35];
-                    const nextDue = rowData[38];
-                    const stYard = rowData[39];
-                    const stRent = rowData[40];
-                    const stRate = rowData[41];
-                    const stSales = rowData[42];
+                    const mode = rowData[33];
+                    const nextDue = rowData[36];
+                    const stYard = rowData[37];
+                    const stRent = rowData[38];
+                    const stRate = rowData[39];
+                    const stSales = rowData[40];
 
                     rowData.forEach((text, i) => {
                         const td = document.createElement('td');
@@ -871,13 +962,21 @@
                         if(i === 15 && text !== '---') td.style.backgroundColor = (stYard === 'PAID') ? '#dcfce7' : '#fee2e2';
                         if(i === 20 && text !== '---') td.style.backgroundColor = (stRate === 'PAID') ? '#dcfce7' : '#fee2e2';
                         if(i === 22 && text !== '---') td.style.backgroundColor = (stSales === 'PAID') ? '#dcfce7' : '#fee2e2';
-                        if(i === 36 && text !== '---') td.style.backgroundColor = (stRent === 'PAID') ? '#dcfce7' : '#fee2e2';
+                        if(i === 34 && text !== '---') td.style.backgroundColor = (stRent === 'PAID') ? '#dcfce7' : '#fee2e2';
                         
-                        if(i === 38 && mode === 'RENT' && text !== '---') {
+                        if(i === 36 && mode === 'RENT' && text !== '---') {
                            if(new Date(text + 'T00:00:00') < new Date()) td.style.color = 'red';
                         }
                         tr.appendChild(td);
                     });
+
+                    // EDIT TRIGGER (On Highlight Rows or anywhere in the TR)
+                    tr.style.cursor = 'pointer';
+                    tr.onclick = () => loadTripToEdit(idx);
+                    
+                    if (editingIndex === idx) {
+                        tr.classList.add('editing-row');
+                    }
 
                     if (mode === 'RENT' && nextDue !== '---' && new Date(nextDue + 'T00:00:00') < new Date()) {
                         tr.style.backgroundColor = '#fff7ed';
@@ -1223,7 +1322,7 @@
 
             // --- UNIVERSAL RECEIPT LOGIC ---
             window.loadDocTrips = function() {
-                const search = document.getElementById('trip-search-input').value.toLowerCase();
+                const search = (document.getElementById('trip-search-input').value || '').toLowerCase();
                 const fromDate = document.getElementById('trip-from-date').value;
                 const toDate = document.getElementById('trip-to-date').value;
                 const list = document.getElementById('trip-list-scroll');
@@ -1236,7 +1335,8 @@
                     const cont = (trip[3] || '').toLowerCase();
                     const cust = (trip[11] || '').toLowerCase();
                     
-                    const matchesSearch = id.includes(search) || cont.includes(search) || cust.includes(search);
+                    // Show all if search is empty, or match specific terms
+                    const matchesSearch = !search || id.includes(search) || cont.includes(search) || cust.includes(search);
                     const matchesDate = (!fromDate || date >= fromDate) && (!toDate || date <= toDate);
 
                     if(matchesSearch && matchesDate) {
@@ -1500,11 +1600,15 @@
             // Set initially
             updateDriverCommission();
 
-            // Initialize Docs Dates to Today
-            const today = new Date().toISOString().split('T')[0];
+            // Initialize Docs Dates: From 30 days ago to Today (More useful default)
+            const dateObj = new Date();
+            const today = dateObj.toISOString().split('T')[0];
+            dateObj.setDate(dateObj.getDate() - 30);
+            const past30 = dateObj.toISOString().split('T')[0];
+            
             const fromD = document.getElementById('trip-from-date');
             const toD = document.getElementById('trip-to-date');
-            if(fromD) fromD.value = today;
+            if(fromD) fromD.value = past30;
             if(toD) toD.value = today;
 
             // Finally show correct view after all window functions are defined

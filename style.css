@@ -36,6 +36,20 @@ body {
     background-color: var(--navy-blue);
 }
 
+.editing-row {
+    background-color: #fef3c7 !important; /* Soft Amber Highlight */
+    border: 2px solid #f59e0b !important;
+    transform: scale(1.005);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-update {
+    background: #f59e0b !important; /* Amber Orange */
+    color: white !important;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+}
+
 main {
     width: 100%;
     overflow-x: hidden;
