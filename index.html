@@ -1606,7 +1606,19 @@
             applyAdvancedFilters();
         }
 
+        let isSaving = false;
         async function addRow() {
+            if (isSaving) return;
+
+            const btn = document.querySelector('.btn-add-sidebar');
+            const originalText = btn ? btn.textContent : 'Confirm Operation';
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Saving... Wait';
+                btn.style.opacity = '0.7';
+            }
+            isSaving = true;
+
             // Auto-generate ID and Order ONLY if not editing
             if (editingIndex === null) {
                 const nextId = 'TRIP-' + Date.now().toString().slice(-6);
@@ -1733,10 +1745,16 @@
                 // Re-initialize ID for next entry
                 initNewTripId();
                 alert("Trip saved successfully in Supabase!");
-
             } catch (err) {
                 console.error("Failed to save trip:", err);
                 alert("DATABASE ERROR: " + (err.message || "Unknown error"));
+            } finally {
+                isSaving = false;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    btn.style.opacity = '1';
+                }
             }
         }
 
@@ -1866,24 +1884,32 @@
                 btn.classList.add('btn-update');
             }
 
-            // Highlighting Row
-            loadTableData();
+            // Highlighting Row (Removing redundant loadTableData call)
+            // loadTableData();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        let isLoadingTable = false;
         async function loadTableData() {
+            if (isLoadingTable) return;
+            isLoadingTable = true;
+
             const logisticsBody = document.getElementById('table-body');
-            if (!logisticsBody) return;
-            logisticsBody.innerHTML = '';
+            if (!logisticsBody) { isLoadingTable = false; return; }
 
-            // Populating dynamic filters
-            populateFilterPickers();
+            // Fetch from Supabase FIRST
+            try {
+                const data = await getTrips();
+                
+                // Clear ONLY when data is ready
+                logisticsBody.innerHTML = '';
+                
+                // Populating dynamic filters
+                populateFilterPickers();
 
-            // Fetch from Supabase
-            const data = await getTrips();
-            currentTrips = data.map(mapTripToArray);
+                currentTrips = data.map(mapTripToArray);
 
-            currentTrips.forEach((rowData, idx) => {
+                currentTrips.forEach((rowData, idx) => {
                 const tr = document.createElement('tr');
 
                 const mode = rowData[32];
@@ -1930,6 +1956,11 @@
             });
             // Apply existing filters if any (for real-time persistence)
             applyAdvancedFilters();
+            } catch (err) {
+                console.error("Error loading table:", err);
+            } finally {
+                isLoadingTable = false;
+            }
         }
 
         let reportShowUnpaidOnly = false;
