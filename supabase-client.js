@@ -16,12 +16,12 @@ try {
 
 // Localización: c:\Users\Juanca\Desktop\RP tulipan logistic\supabase-client.js
 
-// Busca y reemplaza la función getTrips por esta versión:
 async function getTrips() {
     try {
         const { data, error } = await db
             .from('trips')
-            .select('*'); // Quitamos el order() para evitar fallos con NULLs
+            .select('*')
+            .order('date', { ascending: false }); // <--- ¡Añade esta línea!
 
         if (error) throw error;
         console.log("Viajes obtenidos de Supabase:", data.length);
