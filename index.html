@@ -2774,15 +2774,13 @@
             window.updateDriverCommission = function () {
                 const company = document.getElementById('in-company').value;
                 const commText = document.getElementById('in-comission').value;
-                const commPercent = parseFloat(commText) || 30; // Default 30 if parsing fails
+                const commPercent = parseFloat(commText) || 30;
                 const paidBase = parseFloat(document.getElementById('in-paiddriver').value) || 0;
 
                 let result = 0;
-                // If it's a company driver (RP Tulipan or JR Super Crame)
                 if (company === 'RP TULIPAN' || company === 'JR SUPER CRAME') {
                     result = paidBase * (commPercent / 100);
                 } else {
-                    // Independent driver gets the full amount listed in Paid Driver
                     result = paidBase;
                 }
 
@@ -2791,20 +2789,59 @@
                     commEl.value = result.toFixed(2);
                 }
             }
-
-            // Set initially
             updateDriverCommission();
 
-            // Initialize Docs Dates: From 30 days ago to Today (More useful default)
-            const dateObj = new Date();
-            const today = dateObj.toISOString().split('T')[0];
-            dateObj.setDate(dateObj.getDate() - 30);
-            const past30 = dateObj.toISOString().split('T')[0];
-
+            // Init with empty dates to show all by default
             const fromD = document.getElementById('trip-from-date');
             const toD = document.getElementById('trip-to-date');
-            if (fromD) fromD.value = past30;
-            if (toD) toD.value = today;
+            if (fromD) fromD.value = '';
+            if (toD) toD.value = '';
+
+            // Update loadDocTrips to show all if no dates are provided
+            window.loadDocTrips = async function () {
+                const list = document.getElementById('trip-list-scroll');
+                if (!list) return;
+
+                const search = (document.getElementById('trip-search-input')?.value || '').toLowerCase();
+                const fromDate = document.getElementById('trip-from-date')?.value;
+                const toDate = document.getElementById('trip-to-date')?.value;
+
+                console.log("Loading doc trips... Search:", search, "From:", fromDate, "To:", toDate);
+
+                // Fetch if needed, otherwise use currentTrips
+                if (currentTrips.length === 0) {
+                    const data = await getTrips();
+                    currentTrips = data.map(mapTripToArray);
+                }
+
+                const filtered = currentTrips.filter(r => {
+                    const rDate = r[1];
+                    const rId = r[0];
+                    const rDriver = (r[18] || '---').toString().toLowerCase();
+                    const rCont = (r[3] || '---').toString().toLowerCase();
+
+                    const matchesSearch = rId.toLowerCase().includes(search) || 
+                                          rDriver.includes(search) || 
+                                          rCont.includes(search);
+                                          
+                    const matchesDate = (!fromDate || rDate >= fromDate) && 
+                                        (!toDate || rDate <= toDate);
+
+                    return matchesSearch && matchesDate;
+                });
+
+                list.innerHTML = '';
+                filtered.forEach(r => {
+                    const div = document.createElement('div');
+                    div.className = 'trip-item';
+                    div.innerHTML = `<strong>${r[0]}</strong> - ${r[1]}<br><small>${r[18]} | ${r[3]}</small>`;
+                    div.onclick = () => fillReceiptFromTrip(r, div);
+                    list.appendChild(div);
+                });
+            }
+
+            // Call loadDocTrips to populate initially
+            loadDocTrips();
 
             // --- FLEET MANAGEMENT LOGIC ---
             let currentFleetTab = 'truck';
