@@ -1413,7 +1413,7 @@
 
         function mapArrayToExpense(row) {
             return {
-                date: row[0] === '---' ? null : row[1],
+                date: (row[0] === '---' || !row[0]) ? null : row[0],
                 category: row[1],
                 description: row[2],
                 amount: parseFloat(row[3].replace('$', '').replace(/,/g, '')) || 0,
@@ -2834,10 +2834,13 @@
                 const salaryStr = resSalary ? resSalary.textContent : '$0,00';
                 const salaryVal = parseFloat(salaryStr.replace('$', '').replace(/\./g, '').replace(',', '.')) || 0;
 
+                // Date Fallback: Use selected final date or Today
+                const expenseDate = val_final || new Date().toISOString().split('T')[0];
+
                 const expData = [
-                    val_final,
+                    expenseDate,
                     'Driver Payment',
-                    `Liquidación de ${driverNameFinal} - ${val_final}`,
+                    `Liquidación de ${driverNameFinal} - ${expenseDate}`,
                     `$${salaryVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
                     `Auto-generated from Driver Settlement Archive`
                 ];
