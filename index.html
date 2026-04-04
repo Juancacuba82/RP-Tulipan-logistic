@@ -272,7 +272,7 @@
                         <div class="form-group" id="yard-rate-group"><label class="sidebar-label-btn">Yard Rate</label>
                             <input type="number" id="in-yardrate" style="flex: 0.6;">
                             <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox"
-                                    id="in-yardpaid"></label>
+                                    id="in-yardpaid" onchange="syncImmediate('st_yard', this.checked ? 'PAID' : 'PEND')"></label>
                         </div>
                         <div class="form-group"><label class="sidebar-label-btn">Date Out</label><input type="date" id="in-dateout"></div>
                         <!-- Removed DAY RATE as per user request -->
@@ -284,7 +284,7 @@
                             <div class="form-group"><label class="sidebar-label-btn">Monthly Rate</label>
                                 <input type="number" id="in-mrate" style="flex: 0.6;">
                                 <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox"
-                                        id="in-rentpaid"></label>
+                                        id="in-rentpaid" onchange="syncImmediate('st_rent', this.checked ? 'PAID' : 'PEND')"></label>
                             </div>
                             <div class="form-group"><label class="sidebar-label-btn">Start Date</label><input type="date" id="in-sdaterent"
                                     onchange="calcNextDue()"></div>
@@ -317,7 +317,7 @@
                         <div class="form-group"><label class="sidebar-label-btn">Trans. Pay</label>
                             <input type="number" id="in-rate" style="flex: 0.6;" oninput="updateDriverCommission()">
                             <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox"
-                                    id="in-ratepaid"></label>
+                                    id="in-ratepaid" onchange="syncImmediate('st_rate', this.checked ? 'PAID' : 'PEND')"></label>
                         </div>
                         <div class="form-group">
                             <label class="sidebar-label-btn">Type Of Payment</label>
@@ -330,7 +330,7 @@
                         <div class="form-group"><label class="sidebar-label-btn">Sales Price</label>
                             <input type="number" id="in-sales" style="flex: 0.6;">
                             <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox"
-                                    id="in-salespaid"></label>
+                                    id="in-salespaid" onchange="syncImmediate('st_sales', this.checked ? 'PAID' : 'PEND')"></label>
                         </div>
                         <div class="form-group">
                             <label class="sidebar-label-btn">Collect Payment</label>
@@ -344,7 +344,7 @@
                             <label class="sidebar-label-btn">Amount</label>
                             <input type="number" id="in-amount" style="flex: 0.6;" oninput="updateDriverCommission()">
                             <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox"
-                                    id="in-amountpaid"></label>
+                                    id="in-amountpaid" onchange="syncImmediate('st_amount', this.checked ? 'PAID' : 'PENDING')"></label>
                         </div>
                         <div class="form-group"><label class="sidebar-label-btn">Phone #</label><input type="text" id="in-phone"></div>
                         <div class="form-group"><label class="sidebar-label-btn">Paid Driver</label><input type="number" id="in-paiddriver"
@@ -486,6 +486,7 @@
                                     <th>Income Dis Fee</th>
                                     <th>Note</th>
                                     <th>Email</th>
+                                    <th style="width: 100px;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="table-body">
@@ -1246,6 +1247,27 @@
         // Supabase Instance is already 'db' from supabase-client.js
         // No redundant initialization needed here.
 
+        // --- REALTIME SUBSCRIPTION (Miami -> Argentina Sync) ---
+        (function setupRealtime() {
+            if (!db) return;
+            
+            const channels = ['trips', 'releases', 'expenses', 'fleet'];
+            channels.forEach(table => {
+                db.channel(`${table}_changes`)
+                    .on('postgres_changes', { event: '*', schema: 'public', table: table }, async payload => {
+                        console.log(`Realtime update on ${table}:`, payload.eventType);
+                        
+                        // Intelligent refresh:
+                        if (table === 'trips') await loadTableData();
+                        if (table === 'releases') await loadReleasesData();
+                        if (table === 'expenses') await loadExpensesData();
+                        if (table === 'fleet') await loadFleetData();
+                    })
+                    .subscribe();
+            });
+            console.log("Supabase Realtime channels active.");
+        })();
+
         // --- TRIP DATA MAPPING HELPERS ---
 
         // --- TRIP DATA MAPPING HELPERS ---
@@ -1741,6 +1763,28 @@
             initNewTripId();
         }
 
+        // --- IMMEDIATE SYNC FOR EDIT MODE ---
+        async function syncImmediate(fieldName, value) {
+            if (editingIndex === null) return;
+            const tripId = document.getElementById('in-id').value;
+            if (!tripId) return;
+
+            const updateData = {};
+            updateData[fieldName] = value;
+            if (fieldName === 'st_amount') updateData.paid = (value === 'PAID');
+
+            try {
+                console.log(`Syncing ${fieldName} -> ${value} for ${tripId}`);
+                await updateTrip(tripId, updateData);
+                // We don't necessarily need to reload everything if we just want UI feedback,
+                // but loadTableData ensures consistent state across the app.
+                await loadTableData(); 
+            } catch (err) {
+                console.error("Immediate sync failed:", err);
+            }
+        }
+        window.syncImmediate = syncImmediate;
+
         let isSaving = false;
         async function addRow() {
             if (isSaving) return;
@@ -2083,6 +2127,9 @@
 
                 currentTrips = data.map(mapTripToArray);
 
+                // --- CALC SYNC: Recalculate based on ALL Trips loaded (Initial Load) ---
+                if (window.renderDriverLog) window.renderDriverLog();
+
                 currentTrips.forEach((rowData, idx) => {
                     try {
                         const tr = document.createElement('tr');
@@ -2117,7 +2164,7 @@
                             rowData[23],  // 18: Paid Driver
                             rowData[24],  // 19: Income Dis Fee
                             rowData[25],  // 20: Note
-                            email         // 21: Email
+                            email,         // 21: Email
                         ];
 
                         displayData.forEach((text, i) => {
@@ -2132,14 +2179,63 @@
                                 td.textContent = text;
                             }
 
-                            // PAID Status Highlighting for Amount Column
-                            if (i === 16 && text !== '---') {
+                            // PAID Status Checkbox for Amount Column (Immediate Persistance)
+                            if (i === 16) {
+                                td.innerHTML = '';
+                                const container = document.createElement('div');
+                                container.style.display = 'flex';
+                                container.style.alignItems = 'center';
+                                container.style.gap = '8px';
+
+                                const chk = document.createElement('input');
+                                chk.type = 'checkbox';
+                                chk.checked = (stAmount === 'PAID');
+                                chk.onclick = async (e) => {
+                                    e.stopPropagation();
+                                    const newStatus = chk.checked ? 'PAID' : 'PENDING';
+                                    try {
+                                        await updateTrip(rowData[0], { st_amount: newStatus, paid: chk.checked });
+                                        // Update local cache to avoid re-fetch if possible, but loadTableData is safer
+                                        await loadTableData();
+                                    } catch (err) {
+                                        alert("Update failed: " + err.message);
+                                        chk.checked = !chk.checked; // revert
+                                    }
+                                };
+                                container.appendChild(chk);
+                                
+                                const span = document.createElement('span');
+                                const val = parseFloat(text) || 0;
+                                span.textContent = `$${val.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                                container.appendChild(span);
+                                
+                                td.appendChild(container);
                                 td.style.backgroundColor = (stAmount === 'PAID') ? '#dcfce7' : '#fee2e2';
                                 td.style.color = (stAmount === 'PAID') ? '#166534' : '#991b1b';
                             }
                             
                             tr.appendChild(td);
                         });
+
+                        // Action Column: Delete button
+                        const actionTd = document.createElement('td');
+                        const delBtn = document.createElement('button');
+                        delBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                        delBtn.className = 'btn-cancel';
+                        delBtn.style.padding = '4px 8px';
+                        delBtn.onclick = async (e) => {
+                            e.stopPropagation();
+                            if (!confirm('¿Seguro que quieres borrar este viaje? Esta acción no se puede deshacer.')) return;
+                            try {
+                                await deleteTrip(rowData[0]);
+                                alert("Viaje eliminado");
+                                await loadTableData();
+                            } catch (err) {
+                                alert("Error al borrar: " + err.message);
+                            }
+                        };
+                        actionTd.appendChild(delBtn);
+                        tr.appendChild(actionTd);
 
                         tr.style.cursor = 'pointer';
                         tr.onclick = () => loadTripToEdit(idx);
@@ -2265,14 +2361,17 @@
 
                 // AUTO-SUM FOR CALCULATOR (Link Amount to Cash Collected)
                 let totalAmountFiltered = 0;
+                let totalGrossFiltered = 0;
                 filtered.forEach(r => {
                     totalAmountFiltered += parseFloat(r[21]) || 0; // Index 21 is Amount
+                    totalGrossFiltered += parseFloat(r[23]) || 0;  // Index 23 is Paid Driver (Gross)
                 });
                 const cashCollInput = document.getElementById('calc-cash-coll');
-                if (cashCollInput) {
-                    cashCollInput.value = totalAmountFiltered.toFixed(2);
-                    if (window.updateWeeklyCalc) window.updateWeeklyCalc();
-                }
+                const grossInput = document.getElementById('calc-gross');
+                if (cashCollInput) cashCollInput.value = totalAmountFiltered.toFixed(2);
+                if (grossInput) grossInput.value = totalGrossFiltered.toFixed(2);
+                
+                if (window.updateWeeklyCalc) window.updateWeeklyCalc();
 
                 // --- DRIVER LOG LOGIC ---
                 let selectedIndices = new Set();

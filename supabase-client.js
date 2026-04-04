@@ -46,6 +46,11 @@ async function updateTrip(tripId, updateData) {
     return data;
 }
 
+async function deleteTrip(tripId) {
+    const { error } = await db.from('trips').delete().eq('trip_id', tripId);
+    if (error) { console.error('Error deleting trip:', error); throw error; }
+}
+
 // Helper for Releases
 async function getReleases() {
     const { data, error } = await db.from('releases').select('*');
