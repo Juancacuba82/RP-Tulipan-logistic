@@ -1,1260 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-        content="RP TULIPAN TRANSPORT INC - Professional Container Logistics Solutions. Minimalist and Reliable.">
-    <title>RP TULIPAN TRANSPORT INC | Container Logistics</title>
-    <!-- Modern Typography: Outfit from Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Roboto+Condensed:wght@400;700&display=swap"
-        rel="stylesheet">
-    <!-- Iconography: FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="./style.css">
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./supabase-client.js"></script>
-</head>
-
-<body>
-    <!-- Navbar Navigation -->
-    <header class="navbar" id="header-nav">
-        <div class="container-nav">
-            <div class="navbar-logo"
-                onclick="closeMenu(); sessionStorage.setItem('activeSection', 'hero'); showView('hero')"
-                style="cursor: pointer; display: flex; align-items: center; gap: 15px;">
-                <img src="./assets/logo.png" alt="RP Tulipan Logo" class="navbar-logo-img"
-                    style="width: 45px; height: auto; object-fit: contain;">
-                <span class="logo-text">RP TULIPAN</span>
-            </div>
-
-            <button class="mobile-toggle" id="hamburger-menu" aria-label="Toggle Menu"
-                onclick="toggleMobileMenu(event)">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </button>
-
-            <div class="nav-actions" id="nav-actions-container">
-                <button onclick="closeMenu(); showView('fleet')" class="btn-calendar"><i class="fas fa-truck"></i> FLEET
-                    & EQUIPMENT</button>
-                <button onclick="closeMenu(); showView('profit-report')" class="btn-calendar"><i
-                        class="fas fa-chart-line"></i> PROFIT REPORT</button>
-                <button onclick="closeMenu(); showView('reports')" class="btn-calendar"><i
-                        class="fas fa-truck-loading"></i> DRIVERS REPORTS</button>
-                <button onclick="closeMenu(); showView('releases')" class="btn-calendar"><i
-                        class="fas fa-file-signature"></i> FORM RELEASES</button>
-                <button onclick="closeMenu(); showView('docs')" class="btn-calendar"><i class="fas fa-receipt"></i> DOCS
-                    & RECEIPTS</button>
-                <button onclick="closeMenu(); showView('calendar')" class="btn-calendar"><i
-                        class="fas fa-calendar-check"></i> DELIVERY CALENDAR</button>
-            </div>
-        </div>
-    </header>
-
-    <main>
-        <!-- Home / Hero View -->
-        <section class="view-section hero" id="hero-view">
-            <div class="overlay"></div>
-            <div class="hero-content">
-                <div class="branding">
-                    <h1 class="company-name">RP TULIPAN <span class="accent-text">TRANSPORT INC</span></h1>
-                    <div class="red-accent-line"></div>
-                </div>
-
-                <!-- Central Dashboard Grid -->
-                <div class="dashboard-grid">
-                    <button onclick="showView('fleet')" class="dash-card">
-                        <i class="fas fa-truck"></i>
-                        <span>FLEET & EQUIPMENT</span>
-                    </button>
-                    <button onclick="showView('profit-report')" class="dash-card">
-                        <i class="fas fa-chart-line"></i>
-                        <span>PROFIT REPORT</span>
-                    </button>
-                    <button onclick="showView('reports')" class="dash-card">
-                        <i class="fas fa-truck-loading"></i>
-                        <span>DRIVERS REPORTS</span>
-                    </button>
-                    <button onclick="showView('releases')" class="dash-card">
-                        <i class="fas fa-file-signature"></i>
-                        <span>FORM RELEASES</span>
-                    </button>
-                    <button onclick="showView('docs')" class="dash-card">
-                        <i class="fas fa-receipt"></i>
-                        <span>DOCS & RECEIPTS</span>
-                    </button>
-                    <button onclick="showView('calendar')" class="dash-card">
-                        <i class="fas fa-calendar-check"></i>
-                        <span>DELIVERY CALENDAR</span>
-                    </button>
-                    <button onclick="showView('expenses')" class="dash-card">
-                        <i class="fas fa-file-invoice-dollar"></i>
-                        <span>EXPENSES MANAGEMENT</span>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Delivery Calendar View (Split Screen Workflow) -->
-        <section id="calendar-view" class="view-section hidden">
-            <div class="dashboard-split-container">
-                <!-- Left Panel: Data Entry Form (40%) -->
-                <aside class="entry-sidebar primary-entry">
-                    <div class="sidebar-header">
-                        <h3>New Trip Entry</h3>
-                        <div class="header-actions">
-                            <button onclick="addRow()" class="btn-add-sidebar">Confirm Operation</button>
-                        </div>
-                    </div>
-                    <div class="sidebar-form">
-                        <div class="form-group">
-                            <label class="sidebar-label-btn">Service Mode</label>
-                            <select id="in-mode" onchange="toggleModeFields()">
-                                <option value="SALE">SALE (Venta)</option>
-                                <option value="RENT">RENT (Alquiler)</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><label class="sidebar-label-btn">ID</label><input type="text" id="in-id" placeholder="TRIP-0000"
-                                readonly style="background: #f1f5f9; cursor: not-allowed;"></div>
-                        <div class="form-group"><label class="sidebar-label-btn">Date</label><input type="date" id="in-date"></div>
-                        <div class="form-group">
-                            <label class="sidebar-label-btn">Size</label>
-                            <select id="in-size" required>
-                                <option value="40' HC">40' HC</option>
-                                <option value="40' STD">40' STD</option>
-                                <option value="40' DD">40' DD</option>
-                                <option value="40' OS">40' OS</option>
-                                <option value="45' HC">45' HC</option>
-                                <option value="20' STD">20' STD</option>
-                                <option value="20' HC">20' HC</option>
-                                <option value="20' DD">20' DD</option>
-                                <option value="20' OS">20' OS</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><label class="sidebar-label-btn">N. Cont</label><input type="text" id="in-ncont"
-                                placeholder="N. Cont"></div>
-                        <div class="form-group"><label class="sidebar-label-btn">Release #</label>
-                            <input type="text" id="in-release" placeholder="Release" list="release-list">
-                            <datalist id="release-list"></datalist>
-                        </div>
-                        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                            <div>
-                                <label class="sidebar-label-btn">TYPE</label>
-                                <select id="in-rel-type" required>
-                                    <option value="" disabled selected>Select</option>
-                                    <option value="DRY">DRY (Calor 🔥)</option>
-                                    <option value="REEFER">REEFER (Frío ❄️)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="sidebar-label-btn">CONDITION</label>
-                                <select id="in-rel-condition" required>
-                                    <option value="" disabled selected>Select</option>
-                                    <option value="NEW">NEW (Sparkles ✨)</option>
-                                    <option value="USED">USED (Tools 🔧)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group"><label class="sidebar-label-btn">Order - Bol Cont #</label><input type="text" id="in-order"
-                                placeholder="ORD-XXXX"></div>
-                        <div class="form-group">
-                            <label class="sidebar-label-btn">City</label>
-                            <select id="in-city" required>
-                                <option value="" disabled selected>Select City</option>
-                                <option value="MIAMI">MIAMI</option>
-                                <option value="TAMPA">TAMPA</option>
-                                <option value="JACKSONVILLE">JACKSONVILLE</option>
-                                <option value="SAVANNAH">SAVANNAH</option>
-                                <option value="TITUSVILLE">TITUSVILLE</option>
-                                <option value="MASCOTTE">MASCOTTE</option>
-                                <option value="ORLANDO">ORLANDO</option>
-                                <option value="ATLANTA">ATLANTA</option>
-                                <option value="CHARLESTON">CHARLESTON</option>
-                                <option value="NEWARK">NEWARK</option>
-                                <option value="SUMMERVILLE">SUMMERVILLE</option>
-                                <option value="BALTIMORE">BALTIMORE</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="sidebar-label-btn">Pick Up Address</label>
-                            <input type="text" id="in-pickup" placeholder="Pick Up Address" list="address-list">
-                            <datalist id="address-list">
-                                <option value="10110 NW 95 AVE">
-                                <option value="10110 NW 105 AVE MEDLEY FL 33178">
-                                <option value="10400 NW 95 AVE MEDLEY FL 33178">
-                                <option value="10458 ALTA DR JACKSONVILLE FL 32226">
-                                <option value="14300 SW 194 AVE MIAMI FL 33196">
-                                <option value="18300 SW 158 ST MIAMI FL">
-                                <option value="19-3 HYATT AVE NEWARK NJ 07105">
-                                <option value="219 SQUANKUM RD FAMINGDALE NJ 07727">
-                                <option value="230 GUN CLUB RD JACKSONVILLE FL 32218">
-                                <option value="2545 NW 35TH ST MIAMI FL 33142">
-                                <option value="2640 S 12 AVE TAMPA FL 33619">
-                                <option value="295 DOREMUS AVE NEWARK 07105">
-                                <option value="32 SPIRIT LAKE RD WINTER HAVEN FL">
-                                <option value="321 GRANGE RD SAVANNAG GA 31407">
-                                <option value="3220 N COCOA BLVD COCOA FL 32926">
-                                <option value="3237CHEESEQUAKE RD OLD BRIDGE NJ 08857">
-                                <option value="340 COMMERCE DR RINCON GA 31326">
-                                <option value="3500 KING ST SUITE a, COCOA FL 32926">
-                                <option value="4050 MARITIME BLVD TAMPA FL 33605">
-                                <option value="4135 OLD MCDOUNGH RD GA">
-                                <option value="5107 RAWLS RD TAMPA FL 33624">
-                                <option value="6508 EAST LOMBARD ST BALTIMORE MD 21224">
-                                <option value="6601 TICO RD TITUSVILLE FL 32780">
-                                <option value="6890 NW 25 ST MIAMI FL 33122">
-                                <option value="8211 FISCHER RD BALTIMORE MD 21222">
-                                <option value="8300 NW 87 AVE MEDLEY FL 33166">
-                                <option value="8421 NW 70 ST MIAMI FL 33166">
-                                <option value="8831 MONCRIEF-DISMORE RD JACKSONVILLE FL 32219">
-                                <option value="9801 NW 106 ST MEDLEY FL 33178">
-                                <option value="9804 NW 80 AVE HIALEAH FL 33106">
-                                <option value="ACE STEVEDORING">
-                                <option value="BRADENTON">
-                                <option value="CONGLOBAL JAX">
-                                <option value="CONT MAINTENANCE">
-                                <option value="DORAL">
-                                <option value="FIT TERMINAL">
-                                <option value="FLCHR YARD">
-                                <option value="GENERAL TRANS DEPO">
-                                <option value="MARITIME CONT">
-                                <option value="MIAMI CONT">
-                                <option value="OKECHOBEE">
-                                <option value="QUALITY CONT">
-                                <option value="SOLO DEPOT">
-                                <option value="ST CLOUD">
-                                <option value="TRUCK YARD">
-                            </datalist>
-                        </div>
-                        <div class="form-group"><label class="sidebar-label-btn">Delivery Place</label><input type="text" id="in-delivery"
-                                placeholder="Delivery"></div>
-                        <div class="form-group">
-                            <label class="sidebar-label-btn">Doors Direction</label>
-                            <select id="in-doors" required>
-                                <option value="" disabled selected>Select Orientation</option>
-                                <option value="FACING CAB">FACING CAB</option>
-                                <option value="FACING BACK">FACING BACK</option>
-                                <option value="FACING DRIVER">FACING DRIVER</option>
-                                <option value="FACING PASSENGER">FACING PASSENGER</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><label class="sidebar-label-btn">Miles</label><input type="number" id="in-miles" placeholder="0">
-                        </div>
-                        <div class="form-group">
-                            <label class="sidebar-label-btn">Customer</label>
-                            <select id="in-customer" required>
-                                <option value="" disabled selected>Select Customer</option>
-                                <option value="ANTONIO RENT">ANTONIO RENT</option>
-                                <option value="RICHARD HAYNES">RICHARD HAYNES</option>
-                                <option value="MARK MORRINSON">MARK MORRINSON</option>
-                                <option value="KEMOY">KEMOY</option>
-                                <option value="GLOBAL CONTAINER & CHASSIS">GLOBAL CONTAINER & CHASSIS</option>
-                                <option value="PROSTAR GROUP CONTAINER">PROSTAR GROUP CONTAINER</option>
-                                <option value="MAREX ROAD SERVICES">MAREX ROAD SERVICES</option>
-                                <option value="ZUM SHIPPING">ZUM SHIPPING</option>
-                            </select>
-                        </div>
-                        <!-- Removed PAYMENT DATE as per user request -->
-                        <div class="form-group">
-                            <label class="sidebar-label-btn">Yard Services</label>
-                            <select id="in-yard" onchange="toggleYardRate()" required>
-                                <option value="" disabled selected>Yard Services?</option>
-                                <option value="YES">YES</option>
-                                <option value="NO">NO</option>
-                            </select>
-                        </div>
-                        <div class="form-group" id="yard-rate-group"><label class="sidebar-label-btn">Yard Rate</label>
-                            <input type="number" id="in-yardrate" style="flex: 0.6;">
-                            <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox"
-                                    id="in-yardpaid" onchange="syncImmediate('st_yard', this.checked ? 'PAID' : 'PEND')"></label>
-                        </div>
-                        <div class="form-group"><label class="sidebar-label-btn">Date Out</label><input type="date" id="in-dateout"></div>
-                        <!-- Removed DAY RATE as per user request -->
-
-                        <!-- RENTAL SPECIFIC FIELDS -->
-                        <div id="rental-fields"
-                            style="display: none; background: #fff7ed; padding: 10px; border-radius: 8px; border: 1px solid #ffedd5; margin-bottom: 20px;">
-                            <h4 style="font-size: 0.8rem; margin-bottom: 10px; color: #9a3412;">RENTAL DETAILS</h4>
-                            <div class="form-group"><label class="sidebar-label-btn">Monthly Rate</label>
-                                <input type="number" id="in-mrate" style="flex: 0.6;">
-                                <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox"
-                                        id="in-rentpaid" onchange="syncImmediate('st_rent', this.checked ? 'PAID' : 'PEND')"></label>
-                            </div>
-                            <div class="form-group"><label class="sidebar-label-btn">Start Date</label><input type="date" id="in-sdaterent"
-                                    onchange="calcNextDue()"></div>
-                            <div class="form-group"><label class="sidebar-label-btn">Next Due Date</label><input type="date" id="in-nextdue"
-                                    readonly style="background: #fdf2f8;"></div>
-                        </div>
-                        <div class="form-group">
-                            <label class="sidebar-label-btn">Company</label>
-                            <select id="in-company" onchange="updateDriverCommission(); if(window.updateNetPayInfo) updateNetPayInfo();" required>
-                                <option value="" disabled selected>Select Company</option>
-                                <option value="RP TULIPAN">RP TULIPAN</option>
-                                <option value="JR SUPER CRAME">JR SUPER CRAME</option>
-                                <option value="CONTRACTOR">CONTRACTOR</option>
-                                <option value="ONLY SALES">ONLY SALES</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="sidebar-label-btn">Driver</label>
-                            <select id="in-driver" required>
-                                <option value="" disabled selected>Select Driver</option>
-                                <option value="LUIS GARRIDO">Luis Garrido</option>
-                                <option value="ROBERT CORTEZ">Robert Cortez</option>
-                                <option value="MILAY MIRANDA">Milay Miranda</option>
-                                <option value="JORGE A RAMIREZ">Jorge A Ramirez</option>
-                                <option value="JOSE">Jose</option>
-                                <option value="ANTONIO R CUBA">Antonio R Cuba</option>
-                                <option value="TRAVIS JOSEY">Travis Josey</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><label class="sidebar-label-btn">Trans. Pay</label>
-                            <input type="number" id="in-rate" style="flex: 0.6;" oninput="updateDriverCommission()">
-                            <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox"
-                                    id="in-ratepaid" onchange="syncImmediate('st_rate', this.checked ? 'PAID' : 'PEND')"></label>
-                        </div>
-                        <div class="form-group">
-                            <label class="sidebar-label-btn">Type Of Payment</label>
-                            <select id="in-paytype" required>
-                                <option value="" disabled selected>Select Payment Type</option>
-                                <option value="CASH">CASH</option>
-                                <option value="ACOUNT BANK">ACOUNT BANK</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><label class="sidebar-label-btn">Sales Price</label>
-                            <input type="number" id="in-sales" style="flex: 0.6;">
-                            <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox"
-                                    id="in-salespaid" onchange="syncImmediate('st_sales', this.checked ? 'PAID' : 'PEND')"></label>
-                        </div>
-                        <div class="form-group">
-                            <label class="sidebar-label-btn">Collect Payment</label>
-                            <select id="in-collect" required>
-                                <option value="" disabled selected>Collect?</option>
-                                <option value="YES">YES</option>
-                                <option value="NO">NO</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="sidebar-label-btn">Amount</label>
-                            <input type="number" id="in-amount" style="flex: 0.6;" oninput="updateDriverCommission()">
-                            <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox"
-                                    id="in-amountpaid" onchange="syncImmediate('st_amount', this.checked ? 'PAID' : 'PENDING')"></label>
-                        </div>
-                        <div class="form-group"><label class="sidebar-label-btn">Phone #</label><input type="text" id="in-phone"></div>
-                        <div class="form-group">
-                            <label class="sidebar-label-btn">Paid Driver</label>
-                            <div style="flex: 1; display: flex; flex-direction: column;">
-                                <input type="number" id="in-paiddriver" oninput="updateDriverCommission(); if(window.updateNetPayInfo) updateNetPayInfo();">
-                                <small id="net-pay-info" style="color: #047857; font-weight: 700; font-size: 0.65rem; margin-top: 2px;"></small>
-                            </div>
-                        </div>
-                        <!-- Removed STATUS as per user request -->
-                        <!-- Removed COMISSION as per user request -->
-                        <!-- Removed COMISION DRIVER as per user request -->
-                        <!-- Removed DRIVER Payout Status as per user request -->
-                        <div class="form-group"><label class="sidebar-label-btn">Income Dis Fee</label><input type="number" id="in-income"></div>
-                        <!-- Removed INVOICE as per user request -->
-                        <div class="form-group"><label class="sidebar-label-btn">Note</label><input type="text" id="in-note"></div>
-                        <div class="form-group"><label class="sidebar-label-btn">Email</label><input type="email" id="in-email"
-                                placeholder="customer@email.com"></div>
-                        <input type="hidden" id="in-mode" value="SALE"> <!-- Fallback if JS missing -->
-
-                        <button onclick="addRow()" class="btn-add-sidebar"
-                            style="margin-top: 25px; width: 100%; padding: 15px; font-weight: 900; background: #b91c1c; color: white; border: none; border-radius: 8px; cursor: pointer;">Confirm
-                            Operation</button>
-                    </div>
-                </aside>
-
-                <!-- Right Panel: Trip History Table (60%) -->
-                <div class="table-area">
-                    <div class="table-toolbar">
-                        <h2>Trip History / Data grid</h2>
-                    </div>
-
-                    <!-- Advanced Filter Panel -->
-                    <div class="advanced-filter-panel">
-                        <div class="filter-grid">
-                            <!-- Select Data Driven Filters -->
-                            <div class="filter-item">
-                                <label>City</label>
-                                <select id="f-city" onchange="applyAdvancedFilters()">
-                                    <option value="">All Cities</option>
-                                </select>
-                            </div>
-                            <div class="filter-item">
-                                <label>Size</label>
-                                <select id="f-size" onchange="applyAdvancedFilters()">
-                                    <option value="">All Sizes</option>
-                                </select>
-                            </div>
-                            <div class="filter-item">
-                                <label>Customer</label>
-                                <select id="f-customer" onchange="applyAdvancedFilters()">
-                                    <option value="">All Customers</option>
-                                </select>
-                            </div>
-                            <div class="filter-item">
-                                <label>Driver</label>
-                                <select id="f-driver" onchange="applyAdvancedFilters()">
-                                    <option value="">Select Driver</option>
-                                    <option value="LUIS GARRIDO">Luis Garrido</option>
-                                    <option value="ROBERT CORTEZ">Robert Cortez</option>
-                                    <option value="MILAY MIRANDA">Milay Miranda</option>
-                                    <option value="JORGE A RAMIREZ">Jorge A Ramirez</option>
-                                    <option value="JOSE">Jose</option>
-                                    <option value="ANTONIO R CUBA">Antonio R Cuba</option>
-                                    <option value="TRAVIS JOSEY">Travis Josey</option>
-                                </select>
-                            </div>
-
-                            <div class="filter-item">
-                                <label>Company</label>
-                                <select id="f-company" onchange="applyAdvancedFilters()">
-                                    <option value="">All Companies</option>
-                                </select>
-                            </div>
-                            <!-- Removed STATUS filter as per user request -->
-                            <div class="filter-item">
-                                <label>Collect Payment</label>
-                                <select id="f-collect" onchange="applyAdvancedFilters()">
-                                    <option value="">Any Collect</option>
-                                    <option value="YES">YES</option>
-                                    <option value="NO">NO</option>
-                                </select>
-                            </div>
-
-                            <!-- Text Live Filters -->
-                            <div class="filter-item">
-                                <label>N° Cont</label>
-                                <input type="text" id="f-ncont" placeholder="Search..."
-                                    oninput="applyAdvancedFilters()">
-                            </div>
-                            <div class="filter-item">
-                                <label>Order - BOL #</label>
-                                <input type="text" id="f-order" placeholder="Search..."
-                                    oninput="applyAdvancedFilters()">
-                            </div>
-                            <div class="filter-item">
-                                <label>Release #</label>
-                                <input type="text" id="f-release" placeholder="Search..."
-                                    oninput="applyAdvancedFilters()">
-                            </div>
-                            <div class="filter-item">
-                                <label>Phone #</label>
-                                <input type="text" id="f-phone" placeholder="Search..."
-                                    oninput="applyAdvancedFilters()">
-                            </div>
-                            <!-- Date Range Filters -->
-                            <div class="filter-item" style="border-left: 2px solid #e2e8f0; padding-left: 15px;">
-                                <label style="color: #b91c1c;">FROM Date</label>
-                                <input type="date" id="f-from-date" onchange="applyAdvancedFilters()">
-                            </div>
-                            <div class="filter-item">
-                                <label style="color: #b91c1c;">TO Date</label>
-                                <input type="date" id="f-to-date" onchange="applyAdvancedFilters()">
-                            </div>
-                        </div>
-                        <div class="filter-actions">
-                            <button onclick="resetAdvancedFilters()" class="btn-reset-filters">Clear All
-                                Filters</button>
-                        </div>
-                    </div>
-                    <div class="table-scroll-container">
-                        <table id="logistics-table">
-                            <thead>
-                                <tr class="header-row">
-                                    <th>Service Mode</th>
-                                    <th>ID</th>
-                                    <th>Date</th>
-                                    <th>Size</th>
-                                    <th>N. Cont</th>
-                                    <th>Release #</th>
-                                    <th>Order - Bol Cont #</th>
-                                    <th>City</th>
-                                    <th>Pick Up Address</th>
-                                    <th>Delivery Place</th>
-                                    <th>Doors Direction</th>
-                                    <th>Miles</th>
-                                    <th>Customer</th>
-                                    <th>Yard Services</th>
-                                    <th>Yard Rate</th>
-                                    <th>Date Out</th>
-                                    <th>Company</th>
-                                    <th>Driver</th>
-                                    <th>Trans. Pay</th>
-                                    <th>Type of Payment</th>
-                                    <th>Sales Price</th>
-                                    <th>Collect Payment</th>
-                                    <th>Amount (PAID)</th>
-                                    <th>Phone #</th>
-                                    <th>Paid Driver</th>
-                                    <th>Income Dis Fee</th>
-                                    <th>Note</th>
-                                    <th>Email</th>
-                                    <th style="width: 100px;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="table-body">
-                                <!-- Dynamic rows go here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Unified Docs Center View -->
-        <section id="docs-view" class="view-section hidden">
-            <div class="dashboard-split-container">
-                <!-- PANEL 1: Trip Selector (Left) -->
-                <aside class="trip-selector-panel">
-                    <div class="trip-search-box">
-                        <label style="font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; display: block;">DATE
-                            RANGE FILTER</label>
-                        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                            <input type="date" id="trip-from-date" class="form-input"
-                                style="padding: 4px; font-size: 0.75rem;" onchange="loadDocTrips()">
-                            <input type="date" id="trip-to-date" class="form-input"
-                                style="padding: 4px; font-size: 0.75rem;" onchange="loadDocTrips()">
-                        </div>
-                        <label style="font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; display: block;">SEARCH
-                            TRIP ID / NAME / CONT#</label>
-                        <input type="text" id="trip-search-input" class="form-input" placeholder="Type ID or Name..."
-                            oninput="loadDocTrips()">
-                    </div>
-                    <div id="trip-list-scroll" class="trip-list-scroll">
-                        <!-- Populated via JS -->
-                    </div>
-                </aside>
-
-                <!-- PANEL 2: Data Form (Center) -->
-                <aside class="receipt-form-panel">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3 style="margin: 0; font-size: 1.1rem; color: #1e293b;">Universal Receipt</h3>
-                        <div style="display: flex; gap: 5px;">
-                            <button onclick="printA4Document()" class="btn-add-sidebar"
-                                style="font-size: 0.8rem; background: #b91c1c; padding: 5px 15px;">PRINT
-                                RECEIPT</button>
-                        </div>
-                    </div>
-                    <div class="sidebar-form" style="padding: 0;">
-                        <div class="form-group"><label>Movement ID</label><input type="text" id="u-r-id" readonly
-                                placeholder="Select a trip..."></div>
-                        <div class="form-group"><label>Date</label><input type="date" id="u-r-date"
-                                oninput="drawReceipt()"></div>
-                        <div class="form-group"><label>Movement</label>
-                            <select id="u-r-move" onchange="drawReceipt()">
-                                <option value="IN">IN (Entry)</option>
-                                <option value="OUT">OUT (Release)</option>
-                                <option value="INTER">INTERCHANGE</option>
-                            </select>
-                        </div>
-
-                        <div class="receipt-section-title">EQUIPMENT DATA</div>
-                        <div class="form-group"><label>Container #</label><input type="text" id="u-r-cont"
-                                oninput="drawReceipt()"></div>
-                        <div class="form-group"><label>Size/Type</label><input type="text" id="u-r-size"
-                                oninput="drawReceipt()"></div>
-                        <div class="form-group"><label>Release / Booking #</label><input type="text" id="u-r-rel"
-                                oninput="drawReceipt()"></div>
-                        <div class="form-group"><label>Order #</label><input type="text" id="u-r-order"
-                                oninput="drawReceipt()"></div>
-                        <div class="form-group"><label>Doors Direction</label><input type="text" id="u-r-doors"
-                                placeholder="FWD / AFT" oninput="drawReceipt()"></div>
-
-                        <div class="receipt-section-title">LOGISTICS</div>
-                        <div class="form-group"><label>Customer</label><input type="text" id="u-r-customer"
-                                oninput="drawReceipt()"></div>
-                        <div class="form-group"><label>Phone</label><input type="text" id="u-r-phone"
-                                oninput="drawReceipt()"></div>
-                        <div class="form-group"><label>Pick Up From</label><input type="text" id="u-r-pickup"
-                                oninput="drawReceipt()"></div>
-                        <div class="form-group"><label>Delivery Place</label><input type="text" id="u-r-place"
-                                oninput="drawReceipt()"></div>
-
-                        <div class="receipt-section-title">INSPECTION & CONDITION</div>
-                        <label style="font-size: 0.7rem;">Check all that apply:</label>
-                        <div
-                            style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.8rem; margin-top: 5px;">
-                            <label><input type="checkbox" id="chk-asis" onchange="drawReceipt()"> AS IS</label>
-                            <label><input type="checkbox" id="chk-wwt" onchange="drawReceipt()"> WWT</label>
-                            <label><input type="checkbox" id="chk-cw" onchange="drawReceipt()"> CW</label>
-                            <label><input type="checkbox" id="chk-new" onchange="drawReceipt()"> NEW</label>
-                            <label><input type="checkbox" id="chk-holes" onchange="drawReceipt()"> NO HOLES</label>
-                            <label><input type="checkbox" id="chk-doors" onchange="drawReceipt()"> DOORS OK</label>
-                        </div>
-
-                        <div class="receipt-section-title">COSTS & FEES</div>
-                        <div class="form-group"><label>Yard Fee ($)</label><input type="number" id="u-r-yard"
-                                oninput="drawReceipt()"></div>
-                        <div class="form-group"><label>Storage / Interchange ($)</label><input type="number"
-                                id="u-r-storage" oninput="drawReceipt()"></div>
-                        <div class="form-group"><label>Sales Price ($)</label><input type="number" id="u-r-sales"
-                                oninput="drawReceipt()"></div>
-                        <div class="form-group"><label>Tax (%)</label><input type="number" id="u-r-tax" value="0"
-                                oninput="drawReceipt()"></div>
-
-                        <div class="form-group" style="margin-top:15px;"><label>Notes</label><textarea id="u-r-notes"
-                                style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;"
-                                oninput="drawReceipt()"></textarea></div>
-
-                    </div>
-                </aside>
-
-                <!-- PANEL 3: A4 Preview (Right) -->
-                <section class="receipt-preview-panel">
-                    <div id="receipt-a4" class="a4-paper">
-                        <div
-                            style="text-align: center; margin-top: 50% !important; color: #cbd5e1; font-style: italic;">
-                            Select a trip ID from the left list to generate a receipt preview.
-                        </div>
-                    </div>
-                </section>
-            </div>
-        </section>
-        <!-- FORM RELEASES View -->
-        <section id="releases-view" class="view-section hidden">
-            <div class="dashboard-split-container">
-                <aside class="entry-sidebar primary-entry" style="width: 450px;">
-                    <div class="sidebar-header">
-                        <h3>Release Management</h3>
-                        <div class="header-actions">
-                            <button onclick="addReleaseRow()" class="btn-add-sidebar">Add Release</button>
-                        </div>
-                    </div>
-                    <div class="sidebar-form">
-                        <div class="form-group">
-                            <label>RELEASE / BK#</label>
-                            <input type="text" id="rel-no-releases" placeholder="Rel # or Booking #">
-                        </div>
-                        <div class="form-group"
-                            style="background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
-                            <label style="color: var(--corporate-red); margin-bottom: 12px; font-weight: 900; font-size: 0.75rem; display: block; letter-spacing: 0.8px; text-transform: uppercase;">
-                                Inventory & Hybrid Pricing
-                            </label>
-                            
-                            <!-- BATCH ENTRY CONTAINER -->
-                            <div style="display: flex; flex-direction: column; gap: 12px;">
-                                <!-- 20' FT BLOCK -->
-                                <div style="background: white; padding: 10px; border-radius: 8px; border: 1px solid #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                        <span style="font-weight: 900; font-size: 0.8rem; color: #1e293b;">20' FT</span>
-                                        <div style="display: flex; gap: 8px;">
-                                            <input type="number" id="rel-qty-20" placeholder="Qty" value="0" min="0" style="width: 50px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px;">
-                                            <input type="number" id="rel-price-20" placeholder="$ Price" value="0" style="width: 70px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px; color: #16a34a; font-weight: bold;">
-                                        </div>
-                                    </div>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                                        <div style="font-size: 0.65rem; border: 1px solid #f1f5f9; padding: 4px; border-radius:4px;">
-                                            <label style="display:block; margin-bottom:4px; font-weight:bold; color:#475569;">TYPE</label>
-                                            <input type="radio" name="rel-20-type" id="t20-d" value="DRY" checked> <label for="t20-d">🔥 DRY</label><br>
-                                            <input type="radio" name="rel-20-type" id="t20-r" value="REEFER"> <label for="t20-r">❄️ REF</label>
-                                        </div>
-                                        <div style="font-size: 0.65rem; border: 1px solid #f1f5f9; padding: 4px; border-radius:4px;">
-                                            <label style="display:block; margin-bottom:4px; font-weight:bold; color:#475569;">COND</label>
-                                            <input type="radio" name="rel-20-cond" id="c20-n" value="NEW" checked> <label for="c20-n">✨ NEW</label><br>
-                                            <input type="radio" name="rel-20-cond" id="c20-u" value="USED"> <label for="c20-u">🔧 USD</label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- 40' FT BLOCK -->
-                                <div style="background: white; padding: 10px; border-radius: 8px; border: 1px solid #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                        <span style="font-weight: 900; font-size: 0.8rem; color: #1e293b;">40' FT</span>
-                                        <div style="display: flex; gap: 8px;">
-                                            <input type="number" id="rel-qty-40" placeholder="Qty" value="0" min="0" style="width: 50px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px;">
-                                            <input type="number" id="rel-price-40" placeholder="$ Price" value="0" style="width: 70px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px; color: #16a34a; font-weight: bold;">
-                                        </div>
-                                    </div>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                                        <div style="font-size: 0.65rem; border: 1px solid #f1f5f9; padding: 4px; border-radius:4px;">
-                                            <label style="display:block; margin-bottom:4px; font-weight:bold; color:#475569;">TYPE</label>
-                                            <input type="radio" name="rel-40-type" id="t40-d" value="DRY" checked> <label for="t40-d">🔥 DRY</label><br>
-                                            <input type="radio" name="rel-40-type" id="t40-r" value="REEFER"> <label for="t40-r">❄️ REF</label>
-                                        </div>
-                                        <div style="font-size: 0.65rem; border: 1px solid #f1f5f9; padding: 4px; border-radius:4px;">
-                                            <label style="display:block; margin-bottom:4px; font-weight:bold; color:#475569;">COND</label>
-                                            <input type="radio" name="rel-40-cond" id="c40-n" value="NEW" checked> <label for="c40-n">✨ NEW</label><br>
-                                            <input type="radio" name="rel-40-cond" id="c40-u" value="USED"> <label for="c40-u">🔧 USD</label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- 45' FT BLOCK -->
-                                <div style="background: white; padding: 10px; border-radius: 8px; border: 1px solid #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                        <span style="font-weight: 900; font-size: 0.8rem; color: #1e293b;">45' FT</span>
-                                        <div style="display: flex; gap: 8px;">
-                                            <input type="number" id="rel-qty-45" placeholder="Qty" value="0" min="0" style="width: 50px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px;">
-                                            <input type="number" id="rel-price-45" placeholder="$ Price" value="0" style="width: 70px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px; color: #16a34a; font-weight: bold;">
-                                        </div>
-                                    </div>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                                        <div style="font-size: 0.65rem; border: 1px solid #f1f5f9; padding: 4px; border-radius:4px;">
-                                            <label style="display:block; margin-bottom:4px; font-weight:bold; color:#475569;">TYPE</label>
-                                            <input type="radio" name="rel-45-type" id="t45-d" value="DRY" checked> <label for="t45-d">🔥 DRY</label><br>
-                                            <input type="radio" name="rel-45-type" id="t45-r" value="REEFER"> <label for="t45-r">❄️ REF</label>
-                                        </div>
-                                        <div style="font-size: 0.65rem; border: 1px solid #f1f5f9; padding: 4px; border-radius:4px;">
-                                            <label style="display:block; margin-bottom:4px; font-weight:bold; color:#475569;">COND</label>
-                                            <input type="radio" name="rel-45-cond" id="c45-n" value="NEW" checked> <label for="c45-n">✨ NEW</label><br>
-                                            <input type="radio" name="rel-45-cond" id="c45-u" value="USED"> <label for="c45-u">🔧 USD</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group"><label>DATE</label><input type="date" id="rel-date"></div>
-                        <div class="form-group">
-                            <label>CITY</label>
-                            <select id="rel-city">
-                                <option value="" disabled selected>Select City</option>
-                                <option value="MIAMI">MIAMI</option>
-                                <option value="TAMPA">TAMPA</option>
-                                <option value="JACKSONVILLE">JACKSONVILLE</option>
-                                <option value="SAVANNAH">SAVANNAH</option>
-                                <option value="TITUSVILLE">TITUSVILLE</option>
-                                <option value="MASCOTTE">MASCOTTE</option>
-                                <option value="ORLANDO">ORLANDO</option>
-                                <option value="ATLANTA">ATLANTA</option>
-                                <option value="CHARLESTON">CHARLESTON</option>
-                                <option value="NEWARK">NEWARK</option>
-                                <option value="SUMMERVILLE">SUMMERVILLE</option>
-                                <option value="BALTIMORE">BALTIMORE</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><label>DEPOT</label><input type="text" id="rel-depot"
-                                placeholder="Depot Name"></div>
-                        <div class="form-group"><label>DEPOT ADDRESS</label><input type="text" id="rel-address"
-                                placeholder="Address"></div>
-                        <div class="form-group"><label>SELLER</label><input type="text" id="rel-seller"
-                                placeholder="Seller Name"></div>
-                    </div>
-                </aside>
-
-                <div class="table-area">
-                    <div class="table-toolbar">
-                        <h2>Releases Data Grid</h2>
-                    </div>
-                    <div class="table-scroll-container">
-                        <table id="releases-table">
-                            <thead>
-                                <tr class="header-row">
-                                    <th>RELEASE #</th>
-                                    <th>DATE</th>
-                                    <th style="width: 60px;">TYPE</th>
-                                    <th style="width: 60px;">COND</th>
-                                    <th style="width: 60px;">SIZE</th>
-                                    <th>CITY</th>
-                                    <th>DEPOT</th>
-                                    <th>DEPOT ADDRESS</th>
-                                    <th>IN</th>
-                                    <th>PICK UP</th>
-                                    <th>STOCK</th>
-                                    <th>SELLER</th>
-                                </tr>
-                            </thead>
-                            <tbody id="releases-body">
-                                <!-- Release data rows -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- FLEET MANAGEMENT VIEW -->
-        <section id="fleet-view" class="view-section hidden">
-            <div class="dashboard-split-container">
-                <aside class="entry-sidebar primary-entry" style="flex: 0 0 500px;">
-                    <div class="sidebar-header">
-                        <h3 id="fleet-form-title">Add Fleet Unit</h3>
-                        <div class="header-actions">
-                            <button onclick="saveFleetUnit()" class="btn-add-sidebar">Save Unit</button>
-                            <button onclick="resetFleetForm()" class="btn-cancel">Reset</button>
-                        </div>
-                    </div>
-
-                    <!-- Tabs -->
-                    <div class="fleet-tabs"
-                        style="display: flex; background: #e2e8f0; padding: 5px; gap: 5px; border-bottom: 2px solid #cbd5e1;">
-                        <button onclick="switchFleetTab('truck')" id="tab-truck"
-                            class="btn-fleet-tab active">TRUCKS</button>
-                        <button onclick="switchFleetTab('trailer')" id="tab-trailer"
-                            class="btn-fleet-tab">TRAILERS</button>
-                    </div>
-
-                    <div class="sidebar-form">
-                        <input type="hidden" id="f-id">
-                        <input type="hidden" id="f-type" value="truck">
-
-                        <div class="form-group"><label>UNIT #</label><input type="text" id="f-unit"
-                                placeholder="e.g. T-101"></div>
-                        <div class="form-group"><label>VIN</label><input type="text" id="f-vin" placeholder="VIN #">
-                        </div>
-                        <div class="form-group"><label>PLATE / TAG</label><input type="text" id="f-plate"
-                                placeholder="Plate #"></div>
-                        <div class="form-group"><label>YEAR</label><input type="number" id="f-year" placeholder="2024">
-                        </div>
-
-                        <div id="truck-only-fields">
-                            <div class="form-group"><label>CURRENT MILEAGE</label><input type="number" id="f-miles"
-                                    placeholder="0"></div>
-                        </div>
-
-                        <div class="maintenance-box"
-                            style="margin: 20px 0; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                            <h4
-                                style="font-size: 0.8rem; margin-bottom: 15px; color: #1e293b; border-bottom: 1px solid #ddd; padding-bottom: 5px;">
-                                PREVENTIVE MAINTENANCE</h4>
-                            <div class="form-group"><label>Last Service Date</label><input type="date" id="f-last-date">
-                            </div>
-                            <div class="form-group"><label>Last Service Miles</label><input type="number"
-                                    id="f-last-miles"></div>
-                            <div class="form-group"><label style="color: #b91c1c;">Next Service Due (Date)</label><input
-                                    type="date" id="f-due-date"></div>
-                            <div class="form-group"><label style="color: #b91c1c;">Next Service Due
-                                    (Miles)</label><input type="number" id="f-due-miles"></div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>OPERATIONAL STATUS</label>
-                            <select id="f-status">
-                                <option value="Available">Available</option>
-                                <option value="In Shop">In Shop</option>
-                                <option value="Out of Service">Out of Service</option>
-                            </select>
-                        </div>
-                    </div>
-                </aside>
-
-                <div class="table-area">
-                    <div class="table-toolbar">
-                        <h2 id="fleet-table-title">Trucks Inventory</h2>
-                    </div>
-                    <div class="table-scroll-container">
-                        <table class="drivers-report-table fleet-table">
-                            <thead>
-                                <tr>
-                                    <th>UNIT#</th>
-                                    <th>VIN / PLATE</th>
-                                    <th>YEAR</th>
-                                    <th>MILEAGE / TAG</th>
-                                    <th>NEXT SERVICE</th>
-                                    <th>STATUS</th>
-                                    <th style="width: 100px;">ACTIONS</th>
-                                </tr>
-                            </thead>
-                            <tbody id="fleet-table-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- DRIVERS REPORTS VIEW -->
-        <section id="reports-view" class="view-section hidden" style="padding-bottom: 150px;">
-            <div class="dashboard-split-container"
-                style="display: block; padding: 20px; height: auto; min-height: 100vh; overflow: visible;">
-                <div class="table-area" style="padding: 0; height: auto; overflow: visible;">
-                    <div class="table-toolbar" style="display: block; margin-bottom: 20px;">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <div>
-                                <h2 style="font-size: 1.8rem; letter-spacing: 1px;">Drivers Settlement Panel</h2>
-                                <p style="color: #64748b; font-size: 0.9rem;">Financial control & weekly payroll</p>
-                            </div>
-                        </div>
-
-                        <!-- NEW: Dual-Block Filter Panel (Excel Style) -->
-                        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                            <!-- Block 1: Report Data (Left) -->
-                            <div style="border-right: 1px solid #f1f5f9; padding-right: 20px;">
-                                <h4 style="margin-bottom: 15px; color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Report Data</h4>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
-                                    <!-- Driver Group -->
-                                    <div style="display: flex; flex-direction: column; gap: 5px;">
-                                        <label style="font-size: 0.7rem; font-weight: 800; color: #1e293b;">DRIVER</label>
-                                        <select id="filter-search" class="form-input" onchange="syncDriverNames(); renderDriverLog(); fetchHistory();" style="border: 1px solid #cbd5e1; height: 38px; border-radius: 6px; width: 100%;">
-                                            <option value="">Select Driver</option>
-                                            <option value="LUIS GARRIDO">Luis Garrido</option>
-                                            <option value="ROBERT CORTEZ">Robert Cortez</option>
-                                            <option value="MILAY MIRANDA">Milay Miranda</option>
-                                            <option value="JORGE A RAMIREZ">Jorge A Ramirez</option>
-                                            <option value="JOSE">Jose</option>
-                                            <option value="ANTONIO R CUBA">Antonio R Cuba</option>
-                                            <option value="TRAVIS JOSEY">Travis Josey</option>
-                                        </select>
-                                    </div>
-                                    <!-- Initial Date Group -->
-                                    <div style="display: flex; flex-direction: column; gap: 5px;">
-                                        <label style="font-size: 0.7rem; font-weight: 800; color: #1e293b;">INITIAL DATE</label>
-                                        <input type="date" id="filter-from" class="form-input" onchange="renderDriverLog(); fetchHistory();" style="border: 1px solid #cbd5e1; height: 38px; border-radius: 6px; width: 100%;">
-                                    </div>
-                                    <!-- Final Date Group -->
-                                    <div style="display: flex; flex-direction: column; gap: 5px;">
-                                        <label style="font-size: 0.7rem; font-weight: 800; color: #1e293b;">FINAL DATE</label>
-                                        <input type="date" id="filter-to" class="form-input" onchange="renderDriverLog(); fetchHistory();" style="border: 1px solid #cbd5e1; height: 38px; border-radius: 6px; width: 100%;">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Block 2: Payment Status (Right) -->
-                            <div style="padding-left: 10px;">
-                                <h4 style="margin-bottom: 15px; color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Payment Status</h4>
-                                <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.8rem;">
-                                    <!-- Status Pair -->
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <label style="font-weight: 700; color: #1e293b; min-width: 80px;">STATUS</label>
-                                        <select id="settlement-status" class="form-input" style="height: 32px; padding: 0 10px; font-size: 0.8rem; border-radius: 4px; border: 1px solid #e2e8f0; flex: 1;" onchange="renderDriverLog(); fetchHistory();">
-                                            <option value="ALL">ALL STATUS</option>
-                                            <option value="PENDING">PENDING</option>
-                                            <option value="PAID">PAID</option>
-                                            <option value="VOID">VOID</option>
-                                        </select>
-                                    </div>
-                                    <!-- Type Pair -->
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <label style="font-weight: 700; color: #1e293b; min-width: 80px;">METHOD</label>
-                                        <select id="settlement-payment-type" class="form-input" style="height: 32px; padding: 0 10px; font-size: 0.8rem; border-radius: 4px; border: 1px solid #e2e8f0; flex: 1;" onchange="fetchHistory()">
-                                            <option value="CASH">CASH</option>
-                                            <option value="ZELLE">ZELLE</option>
-                                            <option value="CHECK">CHECK</option>
-                                        </select>
-                                    </div>
-                                    <!-- Driver Sync Pair -->
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <label style="font-weight: 700; color: #1e293b; min-width: 80px;">DRIVER</label>
-                                        <div id="display-driver-sync" style="background: #f8fafc; padding: 6px 12px; border-radius: 4px; color: #b91c1c; font-weight: 900; text-transform: uppercase; flex: 1; text-align: center; font-size: 0.75rem; border: 1px solid #e2e8f0;">UNASSIGNED</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Action Toolbar (Modified: Reset Filters only here) -->
-                        <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
-                            <div style="display: flex; gap: 10px;">
-                                <button onclick="resetReportFilters()" class="btn-cancel" style="background: #cbd5e1; font-size: 0.8rem;">RESET FILTERS</button>
-                            </div>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <button onclick="toggleSelectAllDrivers()" class="btn-add-sidebar" style="background: #1e293b; font-size: 0.8rem; height: 38px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">SELECT ALL DISPLAYED</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="table-scroll-container">
-                        <table class="drivers-report-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Size</th>
-                                    <th>N. Cont</th>
-                                    <th>Order - Bol Cont #</th>
-                                    <th>City</th>
-                                    <th>Pick Up Address</th>
-                                    <th>Delivery Place</th>
-                                    <th>Miles</th>
-                                    <th>Driver</th>
-                                    <th>Paid Driver</th>
-                                    <th>Cash</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dl-body"></tbody>
-                            <tfoot>
-                                <tr>
-                                    <th colspan="5" id="dl-footer-label"
-                                        style="text-align: right; font-size: 1.2rem; padding-right: 20px;">Total
-                                        Settlement:</th>
-                                    <th colspan="3" id="dl-total-paid" style="font-size: 1.2rem; color: #b91c1c;">$0.00
-                                    </th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- NEW: Weekly Settlement Calculator (Based on Image Reference) -->
-            <div class="weekly-calculator-container">
-                <div class="calc-section">
-                    <table class="settlement-calc-table">
-                        <tr>
-                            <td class="calc-label">Cash Collected</td>
-                            <td class="calc-input-cell"><input type="number" id="calc-cash-coll" value="0" step="0.01"
-                                    oninput="updateWeeklyCalc()" onfocus="if(this.value=='0')this.value='';"
-                                    onblur="if(this.value=='')this.value='0';updateWeeklyCalc()"></td>
-                        </tr>
-                        <tr>
-                            <td class="calc-label">Last Week Balance</td>
-                            <td class="calc-input-cell"><input type="number" id="calc-last-bal" value="0" step="0.01"
-                                    oninput="updateWeeklyCalc()" onfocus="if(this.value=='0')this.value='';"
-                                    onblur="if(this.value=='')this.value='0';updateWeeklyCalc()"></td>
-                        </tr>
-                        <tr>
-                            <td class="calc-label">Driver Salary</td>
-                            <td class="calc-result-cell" id="res-linked-salary" 
-                                style="background: #f8fafc; font-weight: bold; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 4px; padding: 5px 10px; text-align: right;">
-                                $0.00</td>
-                        </tr>
-                        <tr>
-                            <td class="calc-label" style="font-weight: 800;">Cash Balance</td>
-                            <td class="calc-result-cell yellow-bg" id="res-cash-bal">$0.00</td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div class="calc-section">
-                    <table class="settlement-calc-table">
-                        <tr>
-                            <td class="calc-label">Gross</td>
-                            <td class="calc-input-cell"><input type="number" id="calc-gross" value="0" step="0.01"
-                                    oninput="updateWeeklyCalc()" onfocus="if(this.value=='0')this.value='';"
-                                    onblur="if(this.value=='')this.value='0';updateWeeklyCalc()"></td>
-                        </tr>
-                        <tr>
-                            <td class="calc-label">Factory</td>
-                            <td class="calc-input-cell" style="position: relative;">
-                                <input type="number" id="calc-factory" value="0" step="0.5"
-                                    oninput="updateWeeklyCalc()" onfocus="if(this.value=='0')this.value='';"
-                                    onblur="if(this.value=='')this.value='0';updateWeeklyCalc()"
-                                    style="padding-right: 25px;">
-                                <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; color: #64748b; pointer-events: none;">%</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="calc-label">Weekly Payment</td>
-                            <td class="calc-input-cell">
-                                <input type="number" id="calc-weekly" value="0" step="0.01"
-                                    oninput="updateWeeklyCalc()" onfocus="if(this.value=='0')this.value='';"
-                                    onblur="if(this.value=='')this.value='0';updateWeeklyCalc()">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="calc-label" style="font-weight: 800;">Driver Salary</td>
-                            <td class="calc-result-cell" id="res-driver-salary" style="background:#fbc7a4; color:#000;">
-                                $0.00</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-            </div>
-            </div>
-
-            <!-- COMPACT ARCHIVE ACTION (Clean & Professional) -->
-            <div style="text-align: center; margin: 20px 0;">
-                <button onclick="archiveSettlement()" class="btn-add-sidebar" 
-                    style="background: #10b981; font-weight: 800; padding: 12px 40px; font-size: 1rem; width: 300px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border-radius: 6px; text-transform: uppercase;">
-                    <i class="fas fa-file-invoice-dollar"></i> ARCHIVE SETTLEMENT
-                </button>
-            </div>
-
-            <div class="table-area" style="margin-top: 40px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="margin: 0; color: #1e293b; font-size: 1.4rem; border-left: 4px solid #10b981; padding-left: 15px;">Settlement History</h3>
-                    <div style="width: 300px;">
-                        <input type="text" id="history-local-filter" class="form-input" placeholder="Filter by driver..." oninput="renderSettlementHistory()" style="background: #f8fafc; border: 1px solid #e2e8f0; font-size: 0.9rem;">
-                    </div>
-                </div>
-                <div class="table-scroll-container">
-                    <table class="drivers-report-table fleet-table" style="min-width: 100%;">
-                        <thead style="background: #f8fafc;">
-                            <tr>
-                                <th style="color: #64748b;">ID</th>
-                                <th style="color: #64748b;">Driver</th>
-                                <th style="color: #64748b;">Initial Date</th>
-                                <th style="color: #64748b;">Final Date</th>
-                                <th style="color: #64748b;">Aging (Days)</th>
-                                <th style="color: #64748b;">Cash Balance</th>
-                                <th style="width: 100px; color: #64748b;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="settlement-history-body">
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-        <!-- EXPENSE MANAGEMENT View -->
-        <section id="expenses-view" class="view-section hidden">
-            <div class="dashboard-split-container">
-                <aside class="entry-sidebar primary-entry" style="width: 450px;">
-                    <div class="sidebar-header">
-                        <h3>Expense Management</h3>
-                        <div class="header-actions">
-                            <button onclick="addExpenseRow()" class="btn-add-sidebar">Save Expense</button>
-                        </div>
-                    </div>
-                    <div class="sidebar-form">
-                        <div class="form-group"><label>DATE</label><input type="date" id="exp-date"></div>
-                        <div class="form-group">
-                            <label>CATEGORY</label>
-                            <select id="exp-category" onchange="toggleOtherExpense()">
-                                <option value="Fuel">Fuel (Diesel)</option>
-                                <option value="Service/Repairs">Service / Repairs</option>
-                                <option value="Tolls">Tolls / Sunpass</option>
-                                <option value="Insurance">Insurance</option>
-                                <option value="Payroll">Payroll (Workers)</option>
-                                <option value="Utilities">Utilities / Rent</option>
-                                <option value="Taxes/Licenses">Taxes / Licenses</option>
-                                <option value="Other">Other (Special)</option>
-                            </select>
-                        </div>
-                        <div class="form-group" id="group-exp-other" style="display: none;">
-                            <label>DESCRIPTION (OTHER)</label>
-                            <input type="text" id="exp-other-desc" placeholder="Specify expense type">
-                        </div>
-                        <div class="form-group"><label>AMOUNT ($)</label><input type="number" id="exp-amount" value="0">
-                        </div>
-                        <div class="form-group"><label>DETAILS / NOTE</label><textarea id="exp-note"
-                                style="width: 100%; height: 80px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px;"></textarea>
-                        </div>
-                    </div>
-                </aside>
-
-                <div class="table-area">
-                    <div class="table-toolbar"
-                        style="display:flex; justify-content: space-between; align-items:center;">
-                        <h2>Recent Expenses History</h2>
-                        <h3 id="exp-total-badge"
-                            style="background:#f1f5f9; padding: 10px 20px; border-radius: 8px; color: #b91c1c; font-weight:900;">
-                            Total: $0.00</h3>
-                    </div>
-                    <div class="table-scroll-container">
-                        <table class="drivers-report-table">
-                            <thead>
-                                <tr class="header-row">
-                                    <th>DATE</th>
-                                    <th>CATEGORY</th>
-                                    <th>DESCRIPTION</th>
-                                    <th>AMOUNT</th>
-                                    <th>NOTE</th>
-                                    <th>ACTION</th>
-                                </tr>
-                            </thead>
-                            <tbody id="expenses-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- PROFIT REPORT View -->
-        <section id="profit-report-view" class="view-section hidden">
-            <div class="report-container">
-                <header class="report-header">
-                    <div class="report-title">
-                        <h2>Financial Profit Report</h2>
-                        <p>Consolidated business performance summary</p>
-                    </div>
-                    <div class="report-filters">
-                        <div class="filter-group">
-                            <label>From</label>
-                            <input type="date" id="profit-date-from" onchange="renderProfitReport()">
-                        </div>
-                        <div class="filter-group">
-                            <label>To</label>
-                            <input type="date" id="profit-date-to" onchange="renderProfitReport()">
-                        </div>
-                        <button onclick="resetProfitFilters()" class="btn-reset-report">Reset</button>
-                    </div>
-                </header>
-
-                <div class="profit-summary-grid">
-                    <div class="summary-card revenue">
-                        <div class="card-icon"><i class="fas fa-hand-holding-usd"></i></div>
-                        <div class="card-info">
-                            <label>TOTAL REVENUE</label>
-                            <h2 id="total-revenue-val">$0.00</h2>
-                        </div>
-                    </div>
-                    <div class="summary-card expenses">
-                        <div class="card-icon"><i class="fas fa-money-bill-wave"></i></div>
-                        <div class="card-info">
-                            <label>TOTAL EXPENSES</label>
-                            <h2 id="total-expenses-val">$0.00</h2>
-                        </div>
-                    </div>
-                    <div class="summary-card profit" id="profit-card-status">
-                        <div class="card-icon"><i class="fas fa-wallet"></i></div>
-                        <div class="card-info">
-                            <label>NET PROFIT</label>
-                            <h2 id="net-profit-val">$0.00</h2>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="report-details-grid">
-                    <div class="breakdown-panel">
-                        <h3>Revenue Breakdown by Service</h3>
-                        <div class="breakdown-list">
-                            <div class="breakdown-item">
-                                <div class="item-label">
-                                    <span class="dot sales"></span>
-                                    Total Ventas
-                                </div>
-                                <div class="item-value" id="val-sales">$0.00</div>
-                            </div>
-                            <div class="breakdown-item">
-                                <div class="item-label">
-                                    <span class="dot rentals"></span>
-                                    Total Rentas
-                                </div>
-                                <div class="item-value" id="val-rentals">$0.00</div>
-                            </div>
-                            <div class="breakdown-item">
-                                <div class="item-label">
-                                    <span class="dot yard"></span>
-                                    Total Yard Services
-                                </div>
-                                <div class="item-value" id="val-yard">$0.00</div>
-                            </div>
-                            <div class="breakdown-item" style="border-top: 1px dashed #e2e8f0; margin-top: 10px; padding-top: 10px;">
-                                <div class="item-label" style="color: #be185d; font-weight: 700;">
-                                    <span class="dot" style="background: #be185d;"></span>
-                                    Container Purchases
-                                </div>
-                                <div class="item-value" id="val-releases" style="color: #be185d; font-weight: 700;">$0.00</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="chart-panel">
-                        <!-- We can add a CSS chart or just a placeholder for visual excellence -->
-                        <h3>Revenue Distribution</h3>
-                        <div class="simple-bar-chart">
-                            <div class="bar-group">
-                                <label>Ventas</label>
-                                <div class="bar-container">
-                                    <div id="bar-sales" class="bar sales" style="width: 0%"></div>
-                                </div>
-                            </div>
-                            <div class="bar-group">
-                                <label>Rentas</label>
-                                <div class="bar-container">
-                                    <div id="bar-rentals" class="bar rentals" style="width: 0%"></div>
-                                </div>
-                            </div>
-                            <div class="bar-group">
-                                <label>Yard</label>
-                                <div class="bar-container">
-                                    <div id="bar-yard" class="bar yard" style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <script>
         // NOTE: If you experience CORS errors (Unsafe attempt to load script), 
         // please run this application using a local server (e.g., Live Server in VS Code, 
         // or 'python -m http.server' in your terminal) instead of opening the file directly.
@@ -1302,7 +46,8 @@
                 t.email || '---',
                 t.truck_unit || '---', t.trailer_unit || '---',
                 t.final_driver_pay || 0,
-                t.yard_rate_paid || false
+                t.yard_rate_paid || false,
+                t.status || 'PENDING'
             ];
         }
 
@@ -1348,8 +93,9 @@
                 email: row[36],
                 truck_unit: row[37] === '---' ? null : row[37],
                 trailer_unit: row[38] === '---' ? null : row[38],
-                final_driver_pay: calculateFinalPay(row[15], parseFloat(row[23]) || 0),
-                yard_rate_paid: row[30] === 'PAID'
+                final_driver_pay: row[39] || 0,
+                yard_rate_paid: row[40] || false,
+                status: row[41] || 'PENDING'
             };
         }
 
@@ -1809,13 +555,11 @@
                 console.error("Immediate sync failed:", err);
             }
         }
-        window.syncImmediate = syncImmediate;
-
         let isSaving = false;
-        async function addRow() {
+        async function addRow(shouldFinalize = false) {
             if (isSaving) return;
 
-            const btn = document.querySelector('.btn-add-sidebar');
+            const btn = document.querySelector('.sidebar-form .btn-add-sidebar');
             const originalText = btn ? btn.textContent : 'Confirm Operation';
             if (btn) {
                 btn.disabled = true;
@@ -1824,12 +568,9 @@
             }
             isSaving = true;
 
-            // Auto-generate ID and Order ONLY if not editing
             if (editingIndex === null) {
                 const nextId = 'TRIP-' + Date.now().toString().slice(-6);
                 document.getElementById('in-id').value = nextId;
-
-                // Only auto-generate Order if user hasn't typed one
                 const ordInput = document.getElementById('in-order');
                 if (!ordInput.value || ordInput.value.trim() === '') {
                     const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -1838,6 +579,7 @@
                     ordInput.value = 'ORD-' + ordSuffix;
                 }
             }
+
             const fields = [
                 'in-id', 'in-date', 'in-size', 'in-ncont', 'in-release', 'in-order', 'in-city', 'in-pickup',
                 'in-delivery', 'in-doors', 'in-miles', 'in-customer',
@@ -1847,167 +589,99 @@
                 'in-mode', 'in-mrate', 'in-sdaterent', 'in-nextdue'
             ];
 
-            // 1. GRANULAR INVENTORY VALIDATION (BLOQUEO POR MEDIDA + TIPO + CONDICIÓN)
+            let currentlyFinalized = false;
+            if (editingIndex !== null) {
+                const existingTrip = currentTrips[editingIndex];
+                currentlyFinalized = (existingTrip && existingTrip.status === 'FINALIZED');
+            }
+
             const selectedRelease = document.getElementById('in-release').value;
             const selectedSize = document.getElementById('in-size').value;
             const selectedRelType = document.getElementById('in-rel-type').value;
             const selectedRelCond = document.getElementById('in-rel-condition').value;
 
-            if (selectedRelease && selectedRelease !== '---' && editingIndex === null) {
-                // Must select type and condition
+            // PREPARE INVENTORY DEDUCTION (If Finalizing for first time)
+            if (shouldFinalize && !currentlyFinalized && selectedRelease && selectedRelease !== '---') {
                 if (!selectedRelType || !selectedRelCond) {
-                    alert("ERROR: Para movimientos con Release, debes seleccionar TIPO y CONDICIÓN para validar stock.");
+                    alert("ERROR: Para Finalizar una orden con Release, debes seleccionar TIPO y CONDICIÓN.");
                     isSaving = false; if (btn) { btn.disabled = false; btn.textContent = originalText; btn.style.opacity = '1'; }
                     return;
                 }
+                const matchingRows = currentReleases.filter(r => r[0] === selectedRelease && r[2] === selectedRelType && r[3] === selectedRelCond);
+                if (matchingRows.length > 0) {
+                    let dbField = '', stockIdx = -1;
+                    if (selectedSize.startsWith("20")) { stockIdx = 7; dbField = 'qty_20'; }
+                    else if (selectedSize.startsWith("40")) { stockIdx = 9; dbField = 'qty_40'; }
+                    else if (selectedSize.startsWith("45")) { stockIdx = 11; dbField = 'qty_45'; }
 
-                if (currentReleases.length > 0) {
-                    // SUM all rows that match Release #, Type, and Condition
-                    const matchingRows = currentReleases.filter(r => r[0] === selectedRelease && r[2] === selectedRelType && r[3] === selectedRelCond);
-                    
-                    if (matchingRows.length > 0) {
-                        let totalStockFound = 0;
-                        let dbField = '';
-                        let sizeBase = '';
-                        let stockIdx = -1;
-                        
-                        if (selectedSize.startsWith("20")) { stockIdx = 7; dbField = 'qty_20'; sizeBase = "20'"; }
-                        else if (selectedSize.startsWith("40")) { stockIdx = 9; dbField = 'qty_40'; sizeBase = "40'"; }
-                        else if (selectedSize.startsWith("45")) { stockIdx = 11; dbField = 'qty_45'; sizeBase = "45'"; }
-
-                        if (stockIdx !== -1) {
-                            totalStockFound = matchingRows.reduce((sum, r) => sum + (parseInt(r[stockIdx]) || 0), 0);
-                            
-                            if (totalStockFound <= 0) {
-                                alert(`Sin stock disponible para contenedores de ${sizeBase}.`);
-                                isSaving = false; if (btn) { btn.disabled = false; btn.textContent = originalText; btn.style.opacity = '1'; }
-                                return;
-                            }
-
-                            // For deduction, we use the first matching row as the "primary" to update, 
-                            // or ideally would distribute but standard is updating the first valid row for this release variant.
-                            window.calculatedNewStock = (parseInt(matchingRows[0][stockIdx]) || 0) - 1;
-                            window.stockUpdateField = dbField;
-                            window.targetReleaseNo = selectedRelease;
-                            window.targetReleaseType = selectedRelType;
-                            window.targetReleaseCond = selectedRelCond;
-                            window.targetReleaseId = matchingRows[0][14]; // Need ID for exact update
+                    if (stockIdx !== -1) {
+                        const totalStockFound = matchingRows.reduce((sum, r) => sum + (parseInt(r[stockIdx]) || 0), 0);
+                        if (totalStockFound <= 0) {
+                            alert("Sin stock disponible.");
+                            isSaving = false; if (btn) { btn.disabled = false; btn.textContent = originalText; btn.style.opacity = '1'; }
+                            return;
                         }
-                    } else {
-                        alert(`ERROR: No existe un Release ${selectedRelease} configurado como ${selectedRelType} / ${selectedRelCond}. Por favor, créalo en la sección Form Releases.`);
-                        isSaving = false; if (btn) { btn.disabled = false; btn.textContent = originalText; btn.style.opacity = '1'; }
-                        return;
+                        window.calculatedNewStock = (parseInt(matchingRows[0][stockIdx]) || 0) - 1;
+                        window.stockUpdateField = dbField;
+                        window.targetReleaseId = matchingRows[0][15];
                     }
                 }
             }
 
-            const rowData = fields.map(id => {
-                const el = document.getElementById(id);
-                return el ? el.value || '---' : '---';
-            });
+            const rowData = fields.map(id => document.getElementById(id)?.value || '---');
+            const finalStatus = (shouldFinalize || currentlyFinalized) ? 'FINALIZED' : 'PENDING';
 
-            // Add Checkbox States (Indices 36-40)
             const stYard = document.getElementById('in-yardpaid').checked ? 'PAID' : 'PEND';
             const stRent = document.getElementById('in-rentpaid').checked ? 'PAID' : 'PEND';
             const stRate = document.getElementById('in-ratepaid').checked ? 'PAID' : 'PEND';
             const stSales = document.getElementById('in-salespaid').checked ? 'PAID' : 'PEND';
-            const stAmount = document.getElementById('in-amountpaid').checked ? 'PAID' : 'PEND';
+            let stAmount = document.getElementById('in-amountpaid').checked ? 'PAID' : (shouldFinalize ? 'PAID' : 'PENDING');
 
-            // Indices 30-34: Checkbox States
             rowData.splice(30, 0, stYard, stRent, stRate, stSales, stAmount);
 
-            // Index 35: Balance Pending
             let pending = 0;
             if (stYard === 'PEND') pending += parseFloat(document.getElementById('in-yardrate').value) || 0;
             if (stRate === 'PEND') pending += parseFloat(document.getElementById('in-rate').value) || 0;
             if (stSales === 'PEND') pending += parseFloat(document.getElementById('in-sales').value) || 0;
-            if (stAmount === 'PEND') pending += parseFloat(document.getElementById('in-amount').value) || 0;
+            if (stAmount === 'PENDING') pending += parseFloat(document.getElementById('in-amount').value) || 0;
             if (stRent === 'PEND' && document.getElementById('in-mode').value === 'RENT') pending += parseFloat(document.getElementById('in-mrate').value) || 0;
 
-            rowData.push(pending.toFixed(2)); // Index 35
+            rowData.push(pending.toFixed(2)); // 35
+            rowData.push(document.getElementById('in-email').value || '---'); // 36
+            rowData.push('---', '---'); // 37, 38
+            rowData.push(calculateFinalPay(document.getElementById('in-company').value, parseFloat(document.getElementById('in-paiddriver').value) || 0)); // 39
+            rowData.push(stYard === 'PAID'); // 40
+            rowData.push(finalStatus); // 41
 
-            // Indices 36-38: Contact & Metadata
-            rowData.push(document.getElementById('in-email').value || '---'); // Index 36
-            rowData.push('---', '---'); // Index 37, 38 Truck/Trailer placeholders
-
-            // --- SUPABASE INTEGRATION ---
             const tripObj = mapArrayToTrip(rowData);
 
             try {
                 if (editingIndex !== null) {
-                    // UPDATE MODE
-                    const tripId = rowData[0];
-                    const { error } = await db.from('trips').update(tripObj).eq('trip_id', tripId);
-                    if (error) {
-                        console.error("SUPABASE UPDATE ERROR:", error.message, error.details);
-                        alert(`Error actualizando: ${error.message}`);
-                        isSaving = false; if (btn) { btn.disabled = false; btn.textContent = originalText; btn.style.opacity = '1'; }
-                        return;
-                    }
+                    const { error } = await db.from('trips').update(tripObj).eq('trip_id', rowData[0]);
+                    if (error) throw error;
                     editingIndex = null;
                 } else {
-                    // NEW MODE
                     const { error } = await db.from('trips').insert([tripObj]);
-                    if (error) {
-                        console.error("SUPABASE INSERT ERROR:", error.message, error.details, "Data:", tripObj);
-                        alert(`Error insertando en DB: ${error.message}. Revisa consola.`);
-                        isSaving = false; if (btn) { btn.disabled = false; btn.textContent = originalText; btn.style.opacity = '1'; }
-                        return;
-                    }
-                    
-                    // NEW: INVENTORY DEDUCTION ON SUCCESS (SELECTIVE BY TYPE/COND)
-                    if (window.stockUpdateField && window.calculatedNewStock !== undefined) {
-                        const upObj = {};
-                        upObj[window.stockUpdateField] = window.calculatedNewStock;
-                        
-                        await db.from('releases')
-                            .update(upObj)
-                            .eq('release_no', window.targetReleaseNo)
-                            .eq('type', window.targetReleaseType)
-                            .eq('condition', window.targetReleaseCond)
-                            .eq('id', window.targetReleaseId);
-                            
-                        // Clean up
-                        delete window.stockUpdateField;
-                        delete window.calculatedNewStock;
-                        delete window.targetReleaseNo;
-                        delete window.targetReleaseType;
-                        delete window.targetReleaseCond;
-                    }
+                    if (error) throw error;
                 }
 
-                alert('¡ORDEN CONFIRMADA CORRECTAMENTE!');
+                // If deductions were prepped, apply now
+                if (shouldFinalize && !currentlyFinalized && window.stockUpdateField) {
+                    const upObj = {}; upObj[window.stockUpdateField] = window.calculatedNewStock;
+                    await db.from('releases').update(upObj).eq('id', window.targetReleaseId);
+                    delete window.stockUpdateField; delete window.calculatedNewStock; delete window.targetReleaseId;
+                }
+
+                alert(shouldFinalize ? '¡ORDEN FINALIZADA E INVENTARIO DESCONTADO!' : '¡ORDEN ARCHIVADA CORRECTAMENTE!');
                 resetForm();
                 await loadTableData();
-                resetAdvancedFilters();
-
-                // Refresh data from database
-                await loadTableData();
-                if (window.loadReleasesData) window.loadReleasesData(); 
-
-                if (window.updateReleaseDatalist) window.updateReleaseDatalist();
-                if (window.updateAddressDatalist) window.updateAddressDatalist();
-                if (window.renderDriverLog) window.renderDriverLog();
-
-                // Clear entry fields partially
-                ['in-ncont', 'in-release', 'in-delivery', 'in-miles'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.value = '';
-                });
-
-                // Re-initialize ID for next entry
-                if (window.initNewTripId) window.initNewTripId();
-                alert("Trip saved successfully & Inventory Updated!");
+                if (window.loadReleasesData) window.loadReleasesData();
             } catch (err) {
-                console.error("Failed to save trip:", err);
-                alert("DATABASE ERROR: " + (err.message || "Unknown error"));
+                console.error("Save Error:", err);
+                alert("DATABASE ERROR: " + err.message);
             } finally {
                 isSaving = false;
-                if (btn) {
-                    btn.disabled = false;
-                    btn.textContent = originalText;
-                    btn.style.opacity = '1';
-                }
+                if (btn) { btn.disabled = false; btn.textContent = originalText; btn.style.opacity = '1'; }
             }
         }
 
@@ -3063,7 +1737,12 @@
                                     td.style.color = '#dc2626';
                                     td.style.border = '2px solid #ef4444';
                                 }
-                                // Removed specific PICKUP and IN colors to match other columns as requested
+                                if (idx === 'PICKUP' && valDisplay > 0) {
+                                    td.style.color = '#1e3a8a'; // Blue for Picked Up items
+                                }
+                                if (idx === 'IN') {
+                                    td.style.color = '#1e293b';
+                                }
                             }
                             // Explicit '0' for legacy indices if any remain (7, 9, 11) with RED ALERT
                             else if ([7, 9, 11].includes(idx)) {
@@ -3802,9 +2481,6 @@
 
             // Run initial load
             loadFleetData();
-
-        });
-
         document.addEventListener('DOMContentLoaded', async () => {
             const activeSection = sessionStorage.getItem('activeSection') || 'hero';
             
@@ -3842,8 +2518,4 @@
                 }
             }
         });
-    </script>
-
-</body>
-
-</html>
+    
