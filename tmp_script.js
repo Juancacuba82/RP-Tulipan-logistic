@@ -356,13 +356,6 @@
             });
             localStorage.setItem('logisticsTableData', JSON.stringify(rows));
         }
-
-        function toggleModeFields() {
-            const mode = document.getElementById('in-mode').value;
-            const rentalGroup = document.getElementById('rental-fields');
-            if (rentalGroup) rentalGroup.style.display = (mode === 'RENT') ? 'block' : 'none';
-        }
-
         function toggleYardRate() {
             const vy = document.getElementById('in-yard').value;
             const yr = document.getElementById('yard-rate-group');
@@ -374,14 +367,6 @@
                     yr.style.display = 'flex';
                 }
             }
-        }
-
-        function calcNextDue() {
-            const startStr = document.getElementById('in-sdaterent').value;
-            if (!startStr) return;
-            const start = new Date(startStr + 'T00:00:00');
-            start.setDate(start.getDate() + 30);
-            document.getElementById('in-nextdue').value = start.toISOString().split('T')[0];
         }
 
         // --- ADVANCED FILTERING LOGIC ---
@@ -467,15 +452,15 @@
                 if (cells.length < 20) return; 
 
                 // UPDATED INDICES FOR New 22-Column Structure
-                const valID = (cells[1].textContent || '').toLowerCase();
-                const valDate = (cells[2].textContent || '');
-                const valSize = (cells[3].textContent || '').toLowerCase();
-                const valNcont = (cells[4].textContent || '').toLowerCase();
-                const valRelease = (cells[5].textContent || '').toLowerCase();
-                const valOrder = (cells[6].textContent || '').toLowerCase();
-                const valCity = (cells[7].textContent || '').toLowerCase();
-                const valDriver = (cells[11].textContent || '').toLowerCase();
-                const valPhone = (cells[17].textContent || '').toLowerCase();
+                const valID = (cells[0].textContent || '').toLowerCase();
+                const valDate = (cells[1].textContent || '');
+                const valSize = (cells[2].textContent || '').toLowerCase();
+                const valNcont = (cells[3].textContent || '').toLowerCase();
+                const valRelease = (cells[4].textContent || '').toLowerCase();
+                const valOrder = (cells[5].textContent || '').toLowerCase();
+                const valCity = (cells[6].textContent || '').toLowerCase();
+                const valDriver = (cells[10].textContent || '').toLowerCase();
+                const valPhone = (cells[16].textContent || '').toLowerCase();
                 
                 const matchCity = !filters.city || valCity === filters.city.toLowerCase();
                 const matchSize = !filters.size || valSize.includes(filters.size);
@@ -631,20 +616,19 @@
             const rowData = fields.map(id => document.getElementById(id)?.value || '---');
             const finalStatus = (shouldFinalize || currentlyFinalized) ? 'FINALIZED' : 'PENDING';
 
-            const stYard = document.getElementById('in-yardpaid').checked ? 'PAID' : 'PEND';
-            const stRent = document.getElementById('in-rentpaid').checked ? 'PAID' : 'PEND';
-            const stRate = document.getElementById('in-ratepaid').checked ? 'PAID' : 'PEND';
-            const stSales = document.getElementById('in-salespaid').checked ? 'PAID' : 'PEND';
-            let stAmount = document.getElementById('in-amountpaid').checked ? 'PAID' : (shouldFinalize ? 'PAID' : 'PENDING');
+            const stYard = document.getElementById('in-yardpaid') ? (document.getElementById('in-yardpaid').checked ? 'PAID' : 'PEND') : 'PEND';
+            const stRent = 'PEND';
+            const stRate = document.getElementById('in-ratepaid') ? (document.getElementById('in-ratepaid').checked ? 'PAID' : 'PEND') : 'PEND';
+            const stSales = document.getElementById('in-salespaid') ? (document.getElementById('in-salespaid').checked ? 'PAID' : 'PEND') : 'PEND';
+            let stAmount = document.getElementById('in-amountpaid') ? (document.getElementById('in-amountpaid').checked ? 'PAID' : (shouldFinalize ? 'PAID' : 'PENDING')) : (shouldFinalize ? 'PAID' : 'PENDING');
 
             rowData.splice(30, 0, stYard, stRent, stRate, stSales, stAmount);
 
             let pending = 0;
-            if (stYard === 'PEND') pending += parseFloat(document.getElementById('in-yardrate').value) || 0;
-            if (stRate === 'PEND') pending += parseFloat(document.getElementById('in-rate').value) || 0;
-            if (stSales === 'PEND') pending += parseFloat(document.getElementById('in-sales').value) || 0;
-            if (stAmount === 'PENDING') pending += parseFloat(document.getElementById('in-amount').value) || 0;
-            if (stRent === 'PEND' && document.getElementById('in-mode').value === 'RENT') pending += parseFloat(document.getElementById('in-mrate').value) || 0;
+            if (stYard === 'PEND') pending += parseFloat(document.getElementById('in-yardrate')?.value || 0);
+            if (stRate === 'PEND') pending += parseFloat(document.getElementById('in-rate')?.value || 0);
+            if (stSales === 'PEND') pending += parseFloat(document.getElementById('in-sales')?.value || 0);
+            if (stAmount === 'PENDING') pending += parseFloat(document.getElementById('in-amount')?.value || 0);
 
             rowData.push(pending.toFixed(2)); // 35
             rowData.push(document.getElementById('in-email').value || '---'); // 36
@@ -833,16 +817,18 @@
             });
 
             // Re-trigger Toggles based on values loaded
-            if (window.toggleModeFields) window.toggleModeFields();
             if (window.toggleYardRate) window.toggleYardRate();
             else toggleYardRate(); // fallback if not on window
 
             // Set Checkboxes (Indices 34-38)
-            document.getElementById('in-yardpaid').checked = (rowData[34] === 'PAID');
-            document.getElementById('in-rentpaid').checked = (rowData[35] === 'PAID');
-            document.getElementById('in-ratepaid').checked = (rowData[36] === 'PAID');
-            document.getElementById('in-salespaid').checked = (rowData[37] === 'PAID');
-            document.getElementById('in-amountpaid').checked = (rowData[38] === 'PAID');
+            const elYardPaid = document.getElementById('in-yardpaid');
+            if (elYardPaid) elYardPaid.checked = (rowData[34] === 'PAID');
+            const elRatePaid = document.getElementById('in-ratepaid');
+            if (elRatePaid) elRatePaid.checked = (rowData[36] === 'PAID');
+            const elSalesPaid = document.getElementById('in-salespaid');
+            if (elSalesPaid) elSalesPaid.checked = (rowData[37] === 'PAID');
+            const elAmountPaid = document.getElementById('in-amountpaid');
+            if (elAmountPaid) elAmountPaid.checked = (rowData[38] === 'PAID');
 
             // Removed DRIVER Payout Status as requested
 
@@ -852,7 +838,6 @@
             // Truck / Trailer (Indices 44, 45 ignored for Trips UI)
 
             // Refresh UI States
-            toggleModeFields();
             updateDriverCommission();
 
             // Update UI Button
@@ -894,7 +879,6 @@
                 currentTrips.forEach((rowData, idx) => {
                     try {
                         const tr = document.createElement('tr');
-                        const mode = rowData[26];
                         const stYard = rowData[30];
                         const stRate = rowData[32];
                         const stSales = rowData[33];
@@ -902,57 +886,56 @@
                         const nextDueVal = rowData[29]; // Corrected Variable from rowData
                         const email = rowData[36];
 
-                        // Construct display array (Exact Load Flow Order - 28 Columns)
+                        // Construct display array (Exact Load Flow Order - 27 Columns)
                         const displayData = [
-                            mode,           // 0: Service Mode
-                            rowData[0],     // 1: ID
-                            rowData[1],     // 2: Date
-                            rowData[2],     // 3: Size
-                            rowData[3],     // 4: N. Cont
-                            rowData[4],     // 5: Release #
-                            rowData[5],     // 6: Order - Bol Cont #
-                            rowData[6],     // 7: City
-                            rowData[7],     // 8: Pick Up Address
-                            rowData[8],     // 9: Delivery Place
-                            rowData[9],     // 10: Doors Direction
-                            rowData[10],    // 11: Miles
-                            rowData[11],    // 12: Customer
-                            rowData[12],    // 13: Yard Services
-                            rowData[13],    // 14: Yard Rate
-                            rowData[14],    // 15: Date Out
-                            rowData[15],    // 16: Company
-                            rowData[16],    // 17: Driver
-                            rowData[17],    // 18: Trans Pay
-                            rowData[18],    // 19: Type Pay
-                            rowData[19],    // 20: Sales Price
-                            rowData[20],    // 21: Collect Pay
-                            rowData[21],    // 22: Amount
-                            rowData[22],    // 23: Phone #
-                            rowData[23],    // 24: Paid Driver
-                            rowData[24],    // 25: Income Fee
-                            rowData[25],    // 26: Note
-                            email,          // 27: Email
+                            rowData[0],     // 0: ID
+                            rowData[1],     // 1: Date
+                            rowData[2],     // 2: Size
+                            rowData[3],     // 3: N. Cont
+                            rowData[4],     // 4: Release #
+                            rowData[5],     // 5: Order - Bol Cont #
+                            rowData[6],     // 6: City
+                            rowData[7],     // 7: Pick Up Address
+                            rowData[8],     // 8: Delivery Place
+                            rowData[9],     // 9: Doors Direction
+                            rowData[10],    // 10: Miles
+                            rowData[11],    // 11: Customer
+                            rowData[12],    // 12: Yard Services
+                            rowData[13],    // 13: Yard Rate
+                            rowData[14],    // 14: Date Out
+                            rowData[15],    // 15: Company
+                            rowData[16],    // 16: Driver
+                            rowData[17],    // 17: Trans Pay
+                            rowData[18],    // 18: Type Pay
+                            rowData[19],    // 19: Sales Price
+                            rowData[20],    // 20: Collect Pay
+                            rowData[21],    // 21: Amount
+                            rowData[22],    // 22: Phone #
+                            rowData[23],    // 23: Paid Driver
+                            rowData[24],    // 24: Income Fee
+                            rowData[25],    // 25: Note
+                            email,          // 26: Email
                         ];
 
                         displayData.forEach((text, i) => {
                             const td = document.createElement('td');
                             
                             // Formatting Currency for Financial Columns (Corrected Indices for 22-28 scale)
-                            if ([14, 18, 20, 22, 24, 25].includes(i)) {
+                            if ([13, 17, 19, 21, 23, 24].includes(i)) {
                                 const val = parseFloat(text) || 0;
                                 td.textContent = `$${val.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
                                 td.style.fontWeight = 'bold';
 
-                                // Yard Rate ✅ Icon logic (Index 14 in this new order)
-                                if (i === 14 && stYard === 'PAID') {
+                                // Yard Rate ✅ Icon logic (Index 13 in this new order)
+                                if (i === 13 && stYard === 'PAID') {
                                     td.innerHTML = `$${val.toLocaleString('en-US', { minimumFractionDigits: 2 })} <i class="fas fa-check-circle" style="color: #10b981; margin-left: 5px;" title="Yard Fee Paid"></i>`;
                                 }
                             } else {
                                 td.textContent = text;
                             }
 
-                            // PAID Status Checkbox for Amount Column (Index 22 in this new order)
-                            if (i === 22) {
+                            // PAID Status Checkbox for Amount Column (Index 21 in this new order)
+                            if (i === 21) {
                                 td.innerHTML = '';
                                 const container = document.createElement('div');
                                 container.style.display = 'flex';
@@ -2481,6 +2464,8 @@
 
             // Run initial load
             loadFleetData();
+        });
+
         document.addEventListener('DOMContentLoaded', async () => {
             const activeSection = sessionStorage.getItem('activeSection') || 'hero';
             
