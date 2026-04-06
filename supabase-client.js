@@ -42,14 +42,14 @@ async function addTrip(tripData) {
     return data;
 }
 
-async function updateTrip(tripUuid, updateData) {
-    const { data, error } = await db.from('trips').update(updateData).eq('id', tripUuid);
+async function updateTrip(tripId, updateData) {
+    const { data, error } = await db.from('trips').update(updateData).eq('trip_id', tripId);
     if (error) { console.error('Error updating trip:', error); throw error; }
     return data;
 }
 
-async function deleteTrip(tripUuid) {
-    const { error } = await db.from('trips').delete().eq('id', tripUuid);
+async function deleteTrip(tripId) {
+    const { error } = await db.from('trips').delete().eq('trip_id', tripId);
     if (error) { console.error('Error deleting trip:', error); throw error; }
 }
 

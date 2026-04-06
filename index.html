@@ -392,6 +392,9 @@
                             <input type="hidden" id="in-mrate" value="0">
                             <input type="hidden" id="in-sdaterent" value="">
                             <input type="hidden" id="in-nextdue" value="">
+                            <input type="hidden" id="in-yard" value="NO">
+                            <input type="hidden" id="in-paytype" value="PENDING">
+                            <input type="hidden" id="in-collect" value="PENDING">
                         </div>
 
                     </div>
@@ -1327,29 +1330,52 @@
             const normPaid = (val) => (val === true || val === 1 || val === 'PAID' || val === 'true') ? 'PAID' : 'PEND';
             
             return [
-                t.id || '', t.date || '---', t.size || '---', t.n_cont || '---', t.release_no || '---',
-                t.order_no || '---', t.city || '---', t.pickup_address || '---', t.delivery_place || '---',
-                t.doors_direction || '---', t.miles || 0, t.customer || '---',
-                t.yard_services || '---', t.yard_rate || 0, t.date_out || '---',
-                t.company || '---', t.driver || '---', t.trans_pay || 0, t.type_payment || '---',
-                t.sales_price || 0, t.collect_payment || '---', t.amount || 0, t.phone_no || '---',
-                t.paid_driver || 0,
-                t.note || '---',
-                t.service_mode || '---', t.monthly_rate || 0, t.start_date_rent || '---', t.next_due || '---',
-                normPaid(t.st_yard), 
-                normPaid(t.st_rent), 
-                normPaid(t.st_rate || t.trans_pay_paid), 
-                normPaid(t.st_sales || t.sales_price_paid),
-                normPaid(t.st_amount || t.amount_paid || t.paid), 
-                `$${(t.pending_balance || 0).toFixed(2)}`,
-                t.email || '---',
-                t.truck_unit || '---', t.trailer_unit || '---',
-                t.final_driver_pay || 0,
-                t.yard_rate_paid || false,
-                t.status || 'PENDING_PAYMENT',
-                t.has_trans || 'YES', 
-                t.has_sales || 'YES',
-                t.price_per_day || 0
+                t.trip_id || '',           // 0
+                t.date || '---',           // 1
+                t.size || '---',           // 2
+                t.n_cont || '---',         // 3
+                t.release_no || '---',      // 4
+                t.order_no || '---',       // 5
+                t.city || '---',           // 6
+                t.pickup_address || '---',  // 7
+                t.delivery_place || '---',  // 8
+                t.doors_direction || '---', // 9
+                t.miles || 0,              // 10
+                t.customer || '---',       // 11
+                t.yard_services || '---',  // 12 (in-yard)
+                t.yard_rate || 0,          // 13 (in-yardrate)
+                t.price_per_day || 0,      // 14 (in-priceperday)
+                t.date_out || '---',       // 15 (in-dateout)
+                t.company || '---',        // 16 (in-company)
+                t.driver || '---',         // 17 (in-driver)
+                t.trans_pay || 0,          // 18 (in-rate)
+                t.type_payment || '---',   // 19 (in-paytype)
+                t.sales_price || 0,        // 20 (in-sales)
+                t.collect_payment || '---', // 21 (in-collect)
+                t.amount || 0,             // 22 (in-amount)
+                t.phone_no || '---',       // 23 (in-phone)
+                t.paid_driver || 0,         // 24 (in-paiddriver)
+                t.note || '---',           // 25 (in-note)
+                t.service_mode || 'SALE',  // 26 (in-mode)
+                t.monthly_rate || 0,       // 27 (in-mrate)
+                t.start_date_rent || '---', // 28 (in-sdaterent)
+                t.next_due || '---',       // 29 (in-nextdue)
+                normPaid(t.st_yard),       // 30
+                normPaid(t.st_rent),       // 31
+                normPaid(t.st_rate || t.trans_pay_paid),  // 32
+                normPaid(t.st_sales || t.sales_price_paid),// 33
+                normPaid(t.st_amount || t.amount_paid || t.paid), // 34
+                `$${(t.pending_balance || 0).toFixed(2)}`,       // 35
+                t.email || '---',          // 36
+                t.truck_unit || '---',      // 37
+                t.trailer_unit || '---',    // 38
+                t.final_driver_pay || 0,    // 39
+                t.yard_rate_paid || false,  // 40
+                t.status || 'PENDING_PAYMENT', // 41
+                t.has_trans === 'YES' || t.has_trans === true || (t.has_trans === null && t.trip_id) ? 'YES' : 'NO', // 42
+                t.has_sales === 'YES' || t.has_sales === true || (t.has_sales === null && t.trip_id) ? 'YES' : 'NO', // 43
+                t.rel_type || '---',        // 44
+                t.rel_condition || '---'    // 45
             ];
         }
 
@@ -1357,50 +1383,51 @@
         // Maps sidebar save rowData (no trip UUID in row — checkboxes inserted before last field)
         function mapArrayToTrip(row) {
             return {
-                date: row[0] === '---' ? null : row[0],
-                size: row[1],
-                n_cont: row[2],
-                release_no: row[3],
-                order_no: row[4],
-                city: row[5],
-                pickup_address: row[6],
-                delivery_place: row[7],
-                doors_direction: row[8],
-                miles: parseFloat(row[9]) || 0,
-                customer: row[10],
-                yard_services: row[11],
-                yard_rate: parseFloat(row[12]) || 0,
-                price_per_day: parseFloat(row[13]) || 0,
-                date_out: row[14] === '---' ? null : row[14],
-                company: row[15],
-                driver: row[16],
-                trans_pay: parseFloat(row[17]) || 0,
-                type_payment: row[18],
-                sales_price: parseFloat(row[19]) || 0,
-                collect_payment: row[20],
-                amount: parseFloat(row[21]) || 0,
-                phone_no: row[22],
-                paid_driver: parseFloat(row[23]) || 0,
-                note: row[24],
-                service_mode: row[25],
-                monthly_rate: parseFloat(row[26]) || 0,
-                start_date_rent: row[27] === '---' ? null : row[27],
-                next_due: row[33] === '---' ? null : row[33],
-                st_yard: row[28],
-                st_rent: row[29],
-                st_rate: row[30],
-                st_sales: row[31],
-                st_amount: row[32],
-                pending_balance: row[34] ? parseFloat(row[34].toString().replace('$', '').replace(/,/g, '')) || 0 : 0,
-                email: row[35],
-                truck_unit: row[36] === '---' ? null : row[36],
-                trailer_unit: row[37] === '---' ? null : row[37],
-                final_driver_pay: calculateFinalPay(row[14], parseFloat(row[22]) || 0),
-                yard_rate_paid: row[28] === 'PAID',
-                status: row[40] || 'PENDING_PAYMENT',
-                has_trans: row[41] || 'YES',
-                has_sales: row[42] || 'YES',
-                price_per_day: parseFloat(row[43]) || 0
+                date: row[1] === '---' ? null : row[1],
+                size: row[2],
+                n_cont: row[3],
+                release_no: row[4],
+                order_no: row[5],
+                city: row[6],
+                pickup_address: row[7],
+                delivery_place: row[8],
+                doors_direction: row[9],
+                miles: parseFloat(row[10]) || 0,
+                customer: row[11],
+                yard_services: row[12],
+                yard_rate: parseFloat(row[13]) || 0,
+                price_per_day: parseFloat(row[14]) || 0,
+                date_out: row[15] === '---' ? null : row[15],
+                company: row[16],
+                driver: row[17],
+                trans_pay: parseFloat(row[18]) || 0,
+                type_payment: row[19],
+                sales_price: parseFloat(row[20]) || 0,
+                collect_payment: row[21],
+                amount: parseFloat(row[22]) || 0,
+                phone_no: row[23],
+                paid_driver: parseFloat(row[24]) || 0,
+                note: row[25],
+                service_mode: row[26] || 'SALE',
+                monthly_rate: parseFloat(row[27]) || 0,
+                start_date_rent: row[28] === '---' ? null : row[28],
+                next_due: row[29] === '---' ? null : row[29],
+                st_yard: row[30],
+                st_rent: row[31],
+                st_rate: row[32],
+                st_sales: row[33],
+                st_amount: row[34],
+                pending_balance: row[35] ? parseFloat(row[35].toString().replace('$', '').replace(/,/g, '')) || 0 : 0,
+                email: row[36],
+                truck_unit: row[37] === '---' ? null : row[37],
+                trailer_unit: row[38] === '---' ? null : row[38],
+                final_driver_pay: parseFloat(row[39]) || 0,
+                yard_rate_paid: row[40] === true || row[40] === 'true',
+                status: row[41] || 'PENDING_PAYMENT',
+                has_trans: row[42] === 'NO' ? 'NO' : 'YES',
+                has_sales: row[43] === 'NO' ? 'NO' : 'YES',
+                rel_type: row[44] || '---',
+                rel_condition: row[45] || '---'
             };
         }
 
@@ -1448,10 +1475,7 @@
         }
 
         function newTripIdForDb() {
-            if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-                return crypto.randomUUID();
-            }
-            return 't-' + Date.now() + '-' + Math.random().toString(36).slice(2, 12);
+            return 'TRIP-' + Date.now().toString().slice(-6);
         }
 
         // --- FLEET DATA MAPPERS ---
@@ -1707,14 +1731,20 @@
 
         function toggleYardRate() {
             const chkYard = document.getElementById('in-flag1');
+            const yardHidden = document.getElementById('in-yard');
             const yr = document.getElementById('yard-rate-group');
             const doGroup = document.getElementById('date-out-group');
             const ppd = document.getElementById('price-per-day-group');
+            
             if (chkYard) {
                 const isChecked = chkYard.checked;
+                // Sync the hidden field used for database saving
+                if (yardHidden) yardHidden.value = isChecked ? 'YES' : 'NO';
+                
                 if (yr) yr.style.display = isChecked ? 'flex' : 'none';
                 if (doGroup) doGroup.style.display = isChecked ? 'flex' : 'none';
                 if (ppd) ppd.style.display = isChecked ? 'flex' : 'none';
+                
                 if (!isChecked && document.getElementById('in-yardrate')) {
                     document.getElementById('in-yardrate').value = 0;
                 }
@@ -1941,7 +1971,8 @@
                 'in-yard', 'in-yardrate', 'in-dateout', 'in-company', 'in-driver',
                 'in-rate', 'in-paytype', 'in-sales', 'in-collect', 'in-amount', 'in-phone',
                 'in-paiddriver', 'in-note',
-                'in-mode', 'in-mrate', 'in-sdaterent', 'in-nextdue', 'in-email'
+                'in-mode', 'in-mrate', 'in-sdaterent', 'in-nextdue', 'in-email',
+                'in-rel-type', 'in-rel-condition'
             ];
             fields.forEach(id => {
                 const el = document.getElementById(id);
@@ -1959,6 +1990,7 @@
 
             document.getElementById('in-flag2').checked = false;
             document.getElementById('in-flag3').checked = false;
+            if (document.getElementById('in-status-toggle')) document.getElementById('in-status-toggle').checked = false;
             toggleTransport();
             toggleSalesPrice();
         }
@@ -2030,7 +2062,9 @@
             const selectedRelCond = document.getElementById('in-rel-condition').value;
 
             // STOCK DEDUCTION CRITERIA: SALE/RENT, RELEASE PRESENT, ALL PAID, NOT YARD-SERVICE-ONLY
-            const yardOnly = document.getElementById('in-yard').value === 'YES' && (parseFloat(document.getElementById('in-sales').value) === 0);
+            const yardEl = document.getElementById('in-yard');
+            const yardVal = yardEl ? yardEl.value : (document.getElementById('in-flag1')?.checked ? 'YES' : 'NO');
+            const yardOnly = yardVal === 'YES' && (parseFloat(document.getElementById('in-sales')?.value || '0') === 0);
             const modeVal = document.getElementById('in-mode')?.value || 'SALE';
             const isDeductionCandidate = (selectedRelease && selectedRelease !== '---' && !yardOnly && (modeVal === 'SALE' || modeVal === 'RENT'));
             const isYardPaid = document.getElementById('in-yardpaid').checked;
@@ -2042,132 +2076,143 @@
             const stRent = document.getElementById('in-rentpaid')?.checked ? 'PAID' : 'PEND';
             const stRate = isRatePaid ? 'PAID' : 'PEND';
             const stSales = isSalesPaid ? 'PAID' : 'PEND';
-            const stAmount = isAmountPaid ? 'PAID' : 'PEND';
+            const stAmount = (document.getElementById('in-amountpaid') && document.getElementById('in-amountpaid').checked) ? 'PAID' : 'PEND';
 
-            const allPaid = (isYardPaid && isRatePaid && isSalesPaid);
-            const globalStatus = allPaid ? 'PAID' : 'PENDING_PAYMENT';
+            // The status toggle (swish) is the MASTER finalization flag.
+            // Green = order finalized (money visible in Profit Report, stock deducted if sale)
+            // Red  = order pending  (money hidden from Profit Report, no stock deduction)
+            const isFinalized = document.getElementById('in-status-toggle')?.checked || false;
+            const globalStatus = isFinalized ? 'PAID' : 'PENDING_PAYMENT';
 
-            // newlyPaid logic
-            let newlyPaid = false;
+            // Stock deduction only triggers when the toggle is switched TO green AND
+            // it is a new order or was previously not finalized
+            let newlyFinalized = false;
             if (editingIndex !== null) {
                 const oldRow = currentTrips[editingIndex];
-                const prevAllPaid = (oldRow[30] === 'PAID' && oldRow[32] === 'PAID' && oldRow[33] === 'PAID');
-                if (allPaid && !prevAllPaid) newlyPaid = true;
+                if (oldRow) {
+                    const wasFinalized = (oldRow[41] === 'PAID');
+                    if (isFinalized && !wasFinalized) newlyFinalized = true;
+                }
             } else {
-                if (allPaid) newlyPaid = true;
+                if (isFinalized) newlyFinalized = true;
             }
 
-            const triggerStockUpdate = newlyPaid && isDeductionCandidate;
+            const triggerStockUpdate = newlyFinalized && isDeductionCandidate;
 
-            if (isDeductionCandidate && editingIndex === null) {
-                if (!triggerStockUpdate) {
-                    console.log("Stock deduction pre-validation skipped: Not yet all PAID.");
-                } else {
-                    // Must select type and condition
-                    if (!selectedRelType || !selectedRelCond) {
-                        alert("ERROR: Para movimientos con Release, debes seleccionar TIPO y CONDICIÓN para validar stock.");
-                        isSaving = false;
-                        restoreTripArchiveButtonUI();
-                        return;
-                    }
+            // Stock validation: run whenever an order involves a Release
+            if (isDeductionCandidate) {
+                if (!selectedRelType || !selectedRelCond) {
+                    alert("ERROR: Para movimientos con Release, debes seleccionar TIPO y CONDICIÓN para validar stock.");
+                    isSaving = false;
+                    restoreTripArchiveButtonUI();
+                    return;
+                }
 
+                // Ensure releases are loaded
+                if (!currentReleases || currentReleases.length === 0) {
+                    if (window.loadReleasesData) await loadReleasesData();
+                }
 
-
-                if (currentReleases.length > 0) {
-                    // SUM all rows that match Release #, Type, and Condition
+                if (currentReleases && currentReleases.length > 0) {
                     const matchingRows = currentReleases.filter(r => r[0] === selectedRelease && r[2] === selectedRelType && r[3] === selectedRelCond);
-                    
+
                     if (matchingRows.length > 0) {
                         let totalStockFound = 0;
                         let dbField = '';
                         let sizeBase = '';
                         let stockIdx = -1;
-                        
+
                         if (selectedSize.startsWith("20")) { stockIdx = 7; dbField = 'qty_20'; sizeBase = "20'"; }
                         else if (selectedSize.startsWith("40")) { stockIdx = 9; dbField = 'qty_40'; sizeBase = "40'"; }
                         else if (selectedSize.startsWith("45")) { stockIdx = 11; dbField = 'qty_45'; sizeBase = "45'"; }
 
                         if (stockIdx !== -1) {
                             totalStockFound = matchingRows.reduce((sum, r) => sum + (parseInt(r[stockIdx]) || 0), 0);
-                            
+
                             if (totalStockFound <= 0) {
-                                alert(`Sin stock disponible para contenedores de ${sizeBase}.`);
+                                alert(`Sin stock disponible para contenedores de ${sizeBase} en la combinación ${selectedRelType}/${selectedRelCond}.`);
                                 isSaving = false;
                                 restoreTripArchiveButtonUI();
                                 return;
                             }
 
-                            // For deduction, we use the first matching row as the "primary" to update, 
-                            // or ideally would distribute but standard is updating the first valid row for this release variant.
-                            window.calculatedNewStock = (parseInt(matchingRows[0][stockIdx]) || 0) - 1;
-                            window.stockUpdateField = dbField;
-                            window.targetReleaseNo = selectedRelease;
-                            window.targetReleaseType = selectedRelType;
-                            window.targetReleaseCond = selectedRelCond;
-                            window.targetReleaseId = matchingRows[0][14]; // Need ID for exact update
+                            // Preparation for actual deduction: only if newly green toggle
+                            if (triggerStockUpdate) {
+                                window.calculatedNewStock = (parseInt(matchingRows[0][stockIdx]) || 0) - 1;
+                                window.stockUpdateField = dbField;
+                                window.targetReleaseNo = selectedRelease;
+                                window.targetReleaseType = selectedRelType;
+                                window.targetReleaseCond = selectedRelCond;
+                                window.targetReleaseId = matchingRows[0][15]; // id is at index 15
+                            }
                         }
                     } else {
-                        alert(`ERROR: No existe un Release ${selectedRelease} configurado como ${selectedRelType} / ${selectedRelCond}. Por favor, créalo en la sección Form Releases.`);
+                        alert(`ERROR: No existe un Release ${selectedRelease} configurado como ${selectedRelType} / ${selectedRelCond}. Por favor, créalo primero en la sección Form Releases.`);
                         isSaving = false;
                         restoreTripArchiveButtonUI();
                         return;
                     }
                 }
-                }
+            } else if (isDeductionCandidate && !isFinalized) {
+                console.log("Stock deduction skipped: swish is RED (order not finalized).");
             }
 
-            // --- Final Data Construction (Simplified and Fixed Indices) ---
+
+            // --- Final Data Construction (Fixed Absolute 44-Index Map) ---
             const baseValues = fields.map(id => {
                 const el = document.getElementById(id);
                 return el ? el.value || '---' : '---';
             });
 
-            const rowData = [...baseValues];
-            // Insert pay-status flags before last field (next due date)
-            rowData.splice(baseValues.length - 1, 0, stYard, stRent, stRate, stSales, stAmount);
-
-            // Index 34: Balance Pending
+            // Calculate Pending Balance (matches logic in report view)
             let pending = 0;
-            if (stYard === 'PEND') pending += parseFloat(document.getElementById('in-yardrate').value) || 0;
-            if (stRate === 'PEND') pending += parseFloat(document.getElementById('in-rate').value) || 0;
-            if (stSales === 'PEND') pending += parseFloat(document.getElementById('in-sales').value) || 0;
-            if (stAmount === 'PEND') pending += parseFloat(document.getElementById('in-amount').value) || 0;
+            if (stYard === 'PEND') pending += parseFloat(document.getElementById('in-yardrate')?.value || '0') || 0;
+            if (stRate === 'PEND') pending += parseFloat(document.getElementById('in-rate')?.value || '0') || 0;
+            if (stSales === 'PEND') pending += parseFloat(document.getElementById('in-sales')?.value || '0') || 0;
+            if (stAmount === 'PEND') pending += parseFloat(document.getElementById('in-amount')?.value || '0') || 0;
             if (stRent === 'PEND' && (document.getElementById('in-mode')?.value || '') === 'RENT') {
                 pending += parseFloat(document.getElementById('in-mrate')?.value || '0') || 0;
             }
 
-            rowData.push(pending.toFixed(2)); // Index 34
+            const rowData = [
+                editingTripDbId || '',                  // 0: trip_id
+                ...baseValues.slice(0, 28),             // 1-28: Fields 0-27 (Date to StartDateRent)
+                baseValues[28],                          // 29: Next Due (Fields[28])
+                stYard,                                  // 30
+                stRent,                                  // 31
+                stRate,                                  // 32
+                stSales,                                 // 33
+                stAmount,                                // 34
+                pending.toFixed(2),                      // 35: Pending Balance
+                document.getElementById('in-email')?.value || '---',  // 36
+                document.getElementById('in-truck')?.value || '---',  // 37
+                document.getElementById('in-trailer')?.value || '---',// 38
+                calculateFinalPay(baseValues[15], parseFloat(baseValues[23]) || 0), // 39 (Company at fields[15], Gross at fields[23])
+                isYardPaid,                              // 40
+                globalStatus,                            // 41
+                document.getElementById('in-flag2').checked ? 'YES' : 'NO', // 42
+                document.getElementById('in-flag3').checked ? 'YES' : 'NO', // 43
+                document.getElementById('in-rel-type')?.value || '---',    // 44
+                document.getElementById('in-rel-condition')?.value || '---'// 45
+            ];
 
-            // Indices 35-37: Contact & Metadata
-            rowData.push(document.getElementById('in-email').value || '---'); // Index 35
-            rowData.push('---', '---'); // Index 36, 37 Truck/Trailer placeholders
-            
-            // Indices 38-40: Extended Metadata
-            rowData.push(0);        // Index 38: Final driver pay placeholder
-            rowData.push(isYardPaid); // Index 39: Yard rate paid bool
-            rowData.push(globalStatus); // Index 40: GLOBAL STATUS (PAID vs PENDING_PAYMENT)
-            rowData.push(document.getElementById('in-flag2').checked ? 'YES' : 'NO'); // Index 41 (Transport flags)
-            rowData.push(document.getElementById('in-flag3').checked ? 'YES' : 'NO'); // Index 42 (Sales flags)
-            rowData.push(parseFloat(document.getElementById('in-priceperday')?.value) || 0); // Index 43 (Price per Day)
+            const dbObj = mapArrayToTrip(rowData);
 
             // --- SUPABASE INTEGRATION ---
-            const tripObj = mapArrayToTrip(rowData);
-            
-            // Safety Strip: Remove fields not yet in DB schema
-            const dbObj = { ...tripObj };
-            delete dbObj.has_trans;
-            delete dbObj.has_sales;
-            delete dbObj.income_dis_fee; // Ensure it's not sent if present
-
             try {
                 if (editingIndex !== null) {
                     if (!editingTripDbId) {
-                        alert('Error: no se pudo identificar el viaje para actualizar.');
-                        isSaving = false;
-                        restoreTripArchiveButtonUI();
-                        return;
+                        // Fallback: try to recover TRIP_ID from cache if global variable was cleared
+                        if (currentTrips[editingIndex] && currentTrips[editingIndex][0]) {
+                            editingTripDbId = currentTrips[editingIndex][0];
+                        } else {
+                            alert('Error: no se pudo identificar la orden (TRIP_ID) para actualizar.');
+                            isSaving = false;
+                            restoreTripArchiveButtonUI();
+                            return;
+                        }
                     }
-                    const { error } = await db.from('trips').update(dbObj).eq('id', editingTripDbId);
+                    const { error } = await db.from('trips').update(dbObj).eq('trip_id', editingTripDbId);
                     if (error) {
                         console.error("SUPABASE UPDATE ERROR:", error.message, error.details);
                         alert(`Error actualizando: ${error.message}`);
@@ -2178,7 +2223,8 @@
                     editingIndex = null;
                     editingTripDbId = null;
                 } else {
-                    dbObj.trip_id = newTripIdForDb();
+                    const newId = newTripIdForDb();
+                    dbObj.trip_id = newId;
                     const { error } = await db.from('trips').insert([dbObj]);
                     if (error) {
                         console.error("SUPABASE INSERT ERROR:", error.message, error.details);
@@ -2285,8 +2331,10 @@
                 const matchingRows = currentReleases.filter(r => r[0] === selectedRel && r[2] === selectedRelType && r[3] === selectedRelCond);
 
                 if (matchingRows.length === 0) {
-                    restoreTripArchiveButtonUI();
-                    tripBtn.title = 'No hay release coincidente; revisa Form Releases o el número de release.';
+                    tripBtn.disabled = true;
+                    tripBtn.style.opacity = '0.5';
+                    if (labelSpan) labelSpan.textContent = 'No match';
+                    tripBtn.title = 'No existe un Release con este Número, Tipo y Condición.';
                     return;
                 }
 
@@ -2376,7 +2424,11 @@
             const rowData = currentTrips[idx];
 
             editingIndex = idx;
-            editingTripDbId = rowData[0] || null;
+            const tripId = rowData[0];
+            if (!tripId || tripId === '---') {
+                console.error("CRITICAL: Selected trip row is missing its TRIP_ID at index 0.", rowData);
+            }
+            editingTripDbId = tripId || null;
 
             const fields = [
                 'in-date', 'in-size', 'in-ncont', 'in-release', 'in-order', 'in-city', 'in-pickup',
@@ -2393,31 +2445,39 @@
                 if (el) el.value = (v === '---' || v === undefined || v === null) ? '' : v;
             });
 
-            // Re-trigger Toggles based on values loaded
-            if (window.toggleModeFields) window.toggleModeFields();
-            if (window.toggleYardRate) window.toggleYardRate();
-            else toggleYardRate(); // fallback if not on window
+            // Set Additional Fields (rel_type, rel_condition)
+            if (document.getElementById('in-rel-type')) document.getElementById('in-rel-type').value = rowData[44] === '---' ? '' : (rowData[44] || '');
+            if (document.getElementById('in-rel-condition')) document.getElementById('in-rel-condition').value = rowData[45] === '---' ? '' : (rowData[45] || '');
 
-            const isTransChecked = (rowData[41] === 'YES');
+            // Re-trigger Toggles based on values loaded (Fixed Absolute Indices)
+            const isYardChecked = (rowData[12] === 'YES');
+            const isTransChecked = (rowData[42] === 'YES');
+            const isSalesChecked = (rowData[43] === 'YES');
+
+            document.getElementById('in-flag1').checked = isYardChecked;
             document.getElementById('in-flag2').checked = isTransChecked;
-            const isSalesChecked = (rowData[42] === 'YES');
             document.getElementById('in-flag3').checked = isSalesChecked;
+
+            toggleYardRate();
             toggleTransport();
             toggleSalesPrice();
 
 
-            // Set Checkboxes (Indices shifted after Income Dis Fee removal)
-            document.getElementById('in-yardpaid').checked = (rowData[29] === 'PAID');
-            document.getElementById('in-rentpaid').checked = (rowData[30] === 'PAID');
-            document.getElementById('in-ratepaid').checked = (rowData[31] === 'PAID');
-            document.getElementById('in-salespaid').checked = (rowData[32] === 'PAID');
-            document.getElementById('in-amountpaid').checked = (rowData[33] === 'PAID');
+            // Set Checkboxes (Fixed Absolute Indices)
+            const isPaid = (rowData[41] === 'PAID');
+            if (document.getElementById('in-status-toggle')) document.getElementById('in-status-toggle').checked = isPaid;
+
+            document.getElementById('in-yardpaid').checked = (rowData[30] === 'PAID');
+            document.getElementById('in-rentpaid').checked = (rowData[31] === 'PAID');
+            document.getElementById('in-ratepaid').checked = (rowData[32] === 'PAID');
+            document.getElementById('in-salespaid').checked = (rowData[33] === 'PAID');
+            document.getElementById('in-amountpaid').checked = (rowData[34] === 'PAID');
 
             // Removed DRIVER Payout Status as requested
 
             const emailInput = document.getElementById('in-email');
             if (emailInput) {
-                const ev = rowData[35];
+                const ev = rowData[36]; // Correctly mapped to index 36 from mapTripToArray
                 emailInput.value = (ev === '---' || ev === undefined || ev === null) ? '' : ev;
             }
 
@@ -2468,13 +2528,13 @@
                 currentTrips.forEach((rowData, idx) => {
                     try {
                         const tr = document.createElement('tr');
-                        const mode = rowData[25];
-                        const stYard = rowData[29];
-                        const stRate = rowData[31];
-                        const stSales = rowData[32];
-                        const stAmount = rowData[33];
-                        const nextDueVal = rowData[28];
-                        const email = rowData[35];
+                        const mode = rowData[26];
+                        const stYard = rowData[30];
+                        const stRate = rowData[32];
+                        const stSales = rowData[33];
+                        const stAmount = rowData[34];
+                        const nextDueVal = rowData[29];
+                        const email = rowData[36];
 
                         tr.dataset.styard = stYard;
                         tr.dataset.strate = stRate;
@@ -2487,47 +2547,45 @@
                             rowData[2],     // 1: Size
                             rowData[3],     // 2: N. Cont
                             rowData[4],     // 3: Release #
-                            rowData[5],     // 4: Order - Bol Cont #
+                            rowData[5],     // 4: Order
                             rowData[6],     // 5: City
                             rowData[7],     // 6: Pick Up Address
                             rowData[8],     // 7: Delivery Place
                             rowData[9],     // 8: Doors Direction
                             rowData[10],    // 9: Miles
                             rowData[11],    // 10: Customer
-                            rowData[12],    // 11: Yard Services
-                            rowData[13],    // 12: Yard Rate
-                            rowData[43],    // 13: Price per Day (New)
-                            rowData[14],    // 14: Date Out
-                            rowData[15],    // 15: Company
-                            rowData[16],    // 16: Driver
-                            rowData[17],    // 17: Trans Pay
-                            rowData[18],    // 18: Type Pay (Legacy)
-                            rowData[19],    // 19: Sales Price
-                            rowData[20],    // 20: Collect Pay
-                            rowData[21],    // 21: Amount
-                            rowData[22],    // 22: Phone #
-                            rowData[23],    // 23: Paid Driver
-                            rowData[25],    // 24: Note
-                            email           // 25: Email
+                            rowData[13],    // 11: Yard Rate
+                            rowData[14],    // 12: Price per Day
+                            rowData[15],    // 13: Date Out
+                            rowData[16],    // 14: Company
+                            rowData[17],    // 15: Driver
+                            rowData[18],    // 16: Trans. Pay
+                            rowData[20],    // 17: Sales Price
+                            rowData[22],    // 18: Amount
+                            rowData[23],    // 19: Phone #
+                            rowData[24],    // 20: Paid Driver
+                            rowData[25],    // 21: Note
+                            email           // 22: Email
                         ];
 
                         displayData.forEach((text, i) => {
                             const td = document.createElement('td');
                             
-                            if ([13, 17, 19, 21, 23].includes(i)) {
+                            // Money formatting for specific columns: [11-YardRate, 12-PricePerDay, 16-TransPay, 17-SalesPrice, 18-Amount, 20-PaidDriver]
+                            if ([11, 12, 16, 17, 18, 20].includes(i)) {
                                 const val = parseFloat(text) || 0;
                                 td.textContent = `$${val.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
                                 td.style.fontWeight = 'bold';
-                                if (i === 13 || i === 14) { // Yard Rate or Price per Day
+                                if (i === 11 || i === 12) { // Yard Rate or Price per Day
                                     td.style.backgroundColor = (stYard === 'PAID') ? '#dcfce7' : '#fee2e2';
                                     td.style.color = (stYard === 'PAID') ? '#166534' : '#991b1b';
-                                } else if (i === 17) { // Trans Pay
+                                } else if (i === 16) { // Trans Pay
                                     td.style.backgroundColor = (stRate === 'PAID') ? '#dcfce7' : '#fee2e2';
                                     td.style.color = (stRate === 'PAID') ? '#166534' : '#991b1b';
-                                } else if (i === 19) { // Sales Price
+                                } else if (i === 17) { // Sales Price
                                     td.style.backgroundColor = (stSales === 'PAID') ? '#dcfce7' : '#fee2e2';
                                     td.style.color = (stSales === 'PAID') ? '#166534' : '#991b1b';
-                                } else if (i === 21) { // Amount
+                                } else if (i === 18) { // Amount
                                     // NO Background color as requested. Just Icons:
                                     const iconClass = (stAmount === 'PAID') ? 'fas fa-money-bill-wave' : 'fas fa-university';
                                     const iconColor = (stAmount === 'PAID') ? '#059669' : '#3b82f6'; 
@@ -2550,7 +2608,7 @@
                             e.stopPropagation();
                             if (!confirm('¿Seguro que quieres borrar este viaje? Esta acción no se puede deshacer.')) return;
                             try {
-                                await deleteTrip(rowData[0]);
+                                await deleteTrip(rowData[0]); // This is trip_id
                                 alert("Viaje eliminado");
                                 await loadTableData();
                             } catch (err) {
@@ -3542,39 +3600,38 @@
                 };
 
                 // 1. Calculate Revenue from Logistics (Fixed Indices matching mapTripToArray)
+                // RULE: Only include an order in Profit Report if the finalization toggle (swish) is GREEN
+                // row[41] = status — 'PAID' = green (finalized), 'PENDING_PAYMENT' = red (pending)
                 logisticsData.forEach(row => {
                     const rowDate = row[1];
-                    if ((!dateFrom || rowDate >= dateFrom) && (!dateTo || rowDate <= dateTo)) {
-                        totals.sales += parseFloat(row[19]) || 0;  // sales_price at index 19
+                    const isFinalized = (row[41] === 'PAID'); // The swish toggle state
+
+                    if ((!dateFrom || rowDate >= dateFrom) && (!dateTo || rowDate <= dateTo) && isFinalized) {
+                        // Sales Price
+                        totals.sales += parseFloat(row[20]) || 0;  // sales_price at index 20
+
+                        // Yard Services (yard_rate + daily storage)
                         totals.yard += parseFloat(row[13]) || 0;   // yard_rate at index 13
 
-                        // Price per day × days (Date Out - Date)
-                        const pricePerDay = parseFloat(row[43]) || 0;
-                        if (pricePerDay > 0 && row[1] && row[14] && row[14] !== '---') {
+                        // Price per day × days (Date Out - Date In)
+                        const pricePerDay = parseFloat(row[14]) || 0; // price_per_day at index 14
+                        if (pricePerDay > 0 && row[1] && row[15] && row[15] !== '---') { // date_out at index 15
                             const dateIn  = new Date(row[1]);
-                            const dateOut = new Date(row[14]);
+                            const dateOut = new Date(row[15]);
                             const days = Math.max(0, Math.round((dateOut - dateIn) / (1000 * 60 * 60 * 24)));
                             totals.yard += pricePerDay * days;
                         }
 
-                        // Collections: Only if NOT marked as CASH/PAID (User requested: "cuando no esta tildado va a Profit Report")
-                        if (row[34] !== 'PAID') {
-                            totals.collects += parseFloat(row[21]) || 0; // Index 21 is Amount
-                        }
+                        // Collections (Amount)
+                        totals.collects += parseFloat(row[22]) || 0; // amount at index 22
 
-                        // Rentals: Sum Day Rate (17) and Monthly Rate (27)
-                        const dayRate = parseFloat(row[17]) || 0;
-                        const monthlyRate = parseFloat(row[27]) || 0;
-                        totals.rentals += (dayRate + monthlyRate);
-
-                        // NEW: RP TULIPAN Calculation (Trans Pay - Driver Pay)
-                        if (row[15] === 'RP TULIPAN') {
-                            const transPay = parseFloat(row[17]) || 0; // Index 17 is trans_pay
-                            const driverPay = parseFloat(row[23]) || 0; // Index 23 is paid_driver
+                        // Transport: RP TULIPAN vs CONTRACTOR (company at index 16, trans_pay at 18, paid_driver at 24)
+                        const company = row[16] || '';
+                        const transPay = parseFloat(row[18]) || 0;
+                        const driverPay = parseFloat(row[24]) || 0;
+                        if (company === 'RP TULIPAN' || company === 'JR SUPER CRAME') {
                             totals.tulipan += (transPay - driverPay);
-                        } else if (row[15] === 'CONTRACTOR') {
-                            const transPay = parseFloat(row[17]) || 0; 
-                            const driverPay = parseFloat(row[23]) || 0;
+                        } else if (company === 'CONTRACTOR') {
                             totals.contractor += (transPay - driverPay);
                         }
                     }

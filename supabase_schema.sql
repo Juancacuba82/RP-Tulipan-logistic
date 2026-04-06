@@ -3,8 +3,7 @@
 
 -- 1. TRIPS TABLE (v3 Refined Schema)
 CREATE TABLE IF NOT EXISTS trips (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    trip_id TEXT UNIQUE NOT NULL,
+    trip_id TEXT PRIMARY KEY,
     date DATE,
     size TEXT,
     n_cont TEXT,

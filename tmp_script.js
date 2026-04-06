@@ -29,27 +29,56 @@
 
         // --- TRIP DATA MAPPING HELPERS ---
 
-        // --- TRIP DATA MAPPING HELPERS ---
         function mapTripToArray(t) {
-            // New Unified Structure (v4)
+            const normPaid = (val) => (val === true || val === 1 || val === 'PAID' || val === 'true') ? 'PAID' : 'PEND';
+            
             return [
-                t.trip_id || '---', t.date || '---', t.size || '---', t.n_cont || '---', t.release_no || '---',
-                t.order_no || '---', t.city || '---', t.pickup_address || '---', t.delivery_place || '---',
-                t.doors_direction || '---', t.miles || 0, t.customer || '---',
-                t.yard_services || '---', t.yard_rate || 0, t.date_out || '---',
-                t.company || '---', t.driver || '---', t.trans_pay || 0, t.type_payment || '---',
-                t.sales_price || 0, t.collect_payment || '---', t.amount || 0, t.phone_no || '---',
-                t.paid_driver || 0, t.income_dis_fee || 0, t.note || '---', // 0-25
-                t.st_yard || 'PEND', t.st_rent || 'PEND', t.st_rate || 'PEND', t.st_sales || 'PEND', t.st_amount || (t.paid ? 'PAID' : 'PENDING'), // 26-30
-                (t.pending_balance || 0).toFixed(2), // 31
-                t.email || '---', // 32
-                t.truck_unit || '---', t.trailer_unit || '---', // 33, 34
-                t.final_driver_pay || 0, // 35
-                t.yard_rate_paid || false, // 36
-                t.status || 'PENDING', // 37
-                t.payout_status || 'PENDING', // 38 (New)
-                t.service_mode || '---', t.monthly_rate || 0, t.start_date_rent || '---', t.next_due || '---', // 39-42
-                t.price_per_day || 0 // 43
+                t.trip_id || '',           // 0
+                t.date || '---',           // 1
+                t.size || '---',           // 2
+                t.n_cont || '---',         // 3
+                t.release_no || '---',      // 4
+                t.order_no || '---',       // 5
+                t.city || '---',           // 6
+                t.pickup_address || '---',  // 7
+                t.delivery_place || '---',  // 8
+                t.doors_direction || '---', // 9
+                t.miles || 0,              // 10
+                t.customer || '---',       // 11
+                t.yard_services || '---',  // 12
+                t.yard_rate || 0,          // 13
+                t.price_per_day || 0,      // 14
+                t.date_out || '---',       // 15
+                t.company || '---',        // 16
+                t.driver || '---',         // 17
+                t.trans_pay || 0,          // 18
+                t.type_payment || '---',   // 19
+                t.sales_price || 0,        // 20
+                t.collect_payment || '---', // 21
+                t.amount || 0,             // 22
+                t.phone_no || '---',       // 23
+                t.paid_driver || 0,         // 24
+                t.note || '---',           // 25
+                t.service_mode || 'SALE',  // 26
+                t.monthly_rate || 0,       // 27
+                t.start_date_rent || '---', // 28
+                t.next_due || '---',       // 29
+                normPaid(t.st_yard),       // 30
+                normPaid(t.st_rent),       // 31
+                normPaid(t.st_rate || t.trans_pay_paid),  // 32
+                normPaid(t.st_sales || t.sales_price_paid),// 33
+                normPaid(t.st_amount || t.amount_paid || t.paid), // 34
+                `$${(t.pending_balance || 0).toFixed(2)}`,       // 35
+                t.email || '---',          // 36
+                t.truck_unit || '---',      // 37
+                t.trailer_unit || '---',    // 38
+                t.final_driver_pay || 0,    // 39
+                t.yard_rate_paid || false,  // 40
+                t.status || 'PENDING',      // 41
+                t.has_trans === 'YES' || t.has_trans === true || (t.has_trans === null && t.trip_id) ? 'YES' : 'NO', // 42
+                t.has_sales === 'YES' || t.has_sales === true || (t.has_sales === null && t.trip_id) ? 'YES' : 'NO', // 43
+                t.rel_type || '---',       // 44
+                t.rel_condition || '---'   // 45
             ];
         }
 
@@ -69,37 +98,38 @@
                 customer: row[11],
                 yard_services: row[12],
                 yard_rate: parseFloat(row[13]) || 0,
-                date_out: row[14] === '---' ? null : row[14],
-                company: row[15],
-                driver: row[16],
-                trans_pay: parseFloat(row[17]) || 0,
-                type_payment: row[18],
-                sales_price: parseFloat(row[19]) || 0,
-                collect_payment: row[20],
-                amount: parseFloat(row[21]) || 0,
-                phone_no: row[22],
-                paid_driver: parseFloat(row[23]) || 0,
-                income_dis_fee: parseFloat(row[24]) || 0,
+                price_per_day: parseFloat(row[14]) || 0,
+                date_out: row[15] === '---' ? null : row[15],
+                company: row[16],
+                driver: row[17],
+                trans_pay: parseFloat(row[18]) || 0,
+                type_payment: row[19],
+                sales_price: parseFloat(row[20]) || 0,
+                collect_payment: row[21],
+                amount: parseFloat(row[22]) || 0,
+                phone_no: row[23],
+                paid_driver: parseFloat(row[24]) || 0,
                 note: row[25],
-                st_yard: row[26],
-                st_rent: row[27],
-                st_rate: row[28],
-                st_sales: row[29],
-                st_amount: row[30],
-                paid: row[30] === 'PAID',
-                pending_balance: row[31] ? parseFloat(row[31].toString().replace('$', '').replace(/,/g, '')) || 0 : 0,
-                email: row[32],
-                truck_unit: row[33] === '---' ? null : row[33],
-                trailer_unit: row[34] === '---' ? null : row[34],
-                final_driver_pay: parseFloat(row[35]) || 0,
-                yard_rate_paid: row[36] === true || row[36] === 'true',
-                status: row[37] || 'PENDING',
-                payout_status: row[38] || 'PENDING',
-                service_mode: row[39],
-                monthly_rate: parseFloat(row[40]) || 0,
-                start_date_rent: row[41] === '---' ? null : row[41],
-                next_due: row[42] === '---' ? null : row[42],
-                price_per_day: parseFloat(row[43]) || 0
+                service_mode: row[26] || 'SALE',
+                monthly_rate: parseFloat(row[27]) || 0,
+                start_date_rent: row[28] === '---' ? null : row[28],
+                next_due: row[29] === '---' ? null : row[29],
+                st_yard: row[30],
+                st_rent: row[31],
+                st_rate: row[32],
+                st_sales: row[33],
+                st_amount: row[34],
+                pending_balance: row[35] ? parseFloat(row[35].toString().replace('$', '').replace(/,/g, '')) || 0 : 0,
+                email: row[36],
+                truck_unit: row[37] === '---' ? null : row[37],
+                trailer_unit: row[38] === '---' ? null : row[38],
+                final_driver_pay: parseFloat(row[39]) || 0,
+                yard_rate_paid: row[40] === true || row[40] === 'true',
+                status: row[41] || 'PENDING',
+                has_trans: row[42] === 'NO' ? 'NO' : 'YES',
+                has_sales: row[43] === 'NO' ? 'NO' : 'YES',
+                rel_type: row[44] || '---',
+                rel_condition: row[45] || '---'
             };
         }
 
@@ -566,9 +596,10 @@
 
             if (editingIndex === null) {
                 const nextId = 'TRIP-' + Date.now().toString().slice(-6);
-                document.getElementById('in-id').value = nextId;
+                const elId = document.getElementById('in-id');
+                if (elId) elId.value = nextId;
                 const ordInput = document.getElementById('in-order');
-                if (!ordInput.value || ordInput.value.trim() === '') {
+                if (ordInput && (!ordInput.value || ordInput.value.trim() === '')) {
                     const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
                     let ordSuffix = '';
                     for (let i = 0; i < 4; i++) ordSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -1918,13 +1949,24 @@
                 logisticsData.forEach(row => {
                     const rowDate = row[1];
                     if ((!dateFrom || rowDate >= dateFrom) && (!dateTo || rowDate <= dateTo)) {
-                        totals.sales += parseFloat(row[19]) || 0;  // sales_price at index 19
-                        totals.yard += (parseFloat(row[13]) || 0) + (parseFloat(row[43]) || 0);   // yard_rate (13) + price_per_day (43)
+                        // Yard Services: Only if marked as PAID (Green switch index 30)
+                        if (row[30] === 'PAID') {
+                            totals.yard += parseFloat(row[13]) || 0;   // yard_rate at index 13
 
-                        // Rentals: Sum Trans Pay (17) and Monthly Rate (40)
-                        const transPay = parseFloat(row[17]) || 0;
-                        const monthlyRate = parseFloat(row[40]) || 0;
-                        totals.rentals += (transPay + monthlyRate);
+                            // Price per day × days (Date Out - Date)
+                            const pricePerDay = parseFloat(row[14]) || 0; // index 14 is price_per_day
+                            if (pricePerDay > 0 && row[1] && row[15] && row[15] !== '---') { // index 15 is date_out
+                                const dateIn  = new Date(row[1]);
+                                const dateOut = new Date(row[15]);
+                                const days = Math.max(0, Math.round((dateOut - dateIn) / (1000 * 60 * 60 * 24)));
+                                totals.yard += pricePerDay * days;
+                            }
+                        }
+
+                        // Rentals: Sum Day Rate (18) and Monthly Rate (27)
+                        const dayRate = parseFloat(row[18]) || 0;
+                        const monthlyRate = parseFloat(row[27]) || 0;
+                        totals.rentals += (dayRate + monthlyRate);
                     }
                 });
 
