@@ -105,16 +105,21 @@
         <section id="calendar-view" class="view-section hidden">
             <div class="dashboard-split-container">
                 <!-- Left Panel: Data Entry Form (40%) -->
-                <aside class="entry-sidebar primary-entry">
-                    <div class="sidebar-header">
-                        <h3>New Trip Entry</h3>
+                <aside class="entry-sidebar primary-entry trip-entry-sidebar">
+                    <div class="sidebar-header trip-entry-header">
+                        <div class="trip-entry-header-text">
+                            <h3>New trip entry</h3>
+                            <p class="trip-entry-subtitle">Fill in each block below, then save to the grid.</p>
+                        </div>
                         <div class="header-actions">
-                            <button onclick="addRow()" class="btn-add-sidebar">Archive Order</button>
+                            <button type="button" id="btn-archive-trip" onclick="addRow()" class="btn-add-sidebar btn-archive-order"
+                                title="Save trip to database">
+                                <i class="fas fa-save" aria-hidden="true"></i>
+                                <span class="btn-archive-order-label">Archive order</span>
+                            </button>
                         </div>
                     </div>
-                    <div class="sidebar-form">
-                        <div class="form-group"><label class="sidebar-label-btn">ID</label><input type="text" id="in-id" placeholder="TRIP-0000"
-                                readonly style="background: #f1f5f9; cursor: not-allowed;"></div>
+                    <div class="sidebar-form trip-entry-form">
                         <div class="form-group"><label class="sidebar-label-btn">Date</label><input type="date" id="in-date"></div>
                         <div class="form-group">
                             <label class="sidebar-label-btn">Size</label>
@@ -136,22 +141,28 @@
                             <input type="text" id="in-release" placeholder="Release" list="release-list">
                             <datalist id="release-list"></datalist>
                         </div>
-                        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                            <div>
-                                <label class="sidebar-label-btn">TYPE</label>
-                                <select id="in-rel-type" required>
-                                    <option value="" disabled selected>Select</option>
-                                    <option value="DRY">DRY (Calor 🔥)</option>
-                                    <option value="REEFER">REEFER (Frío ❄️)</option>
-                                </select>
+                        <div class="trip-release-card" role="group" aria-label="Release type and condition">
+                            <div class="trip-release-card-head">
+                                <i class="fas fa-layer-group" aria-hidden="true"></i>
+                                <span>Release type &amp; condition</span>
                             </div>
-                            <div>
-                                <label class="sidebar-label-btn">CONDITION</label>
-                                <select id="in-rel-condition" required>
-                                    <option value="" disabled selected>Select</option>
-                                    <option value="NEW">NEW (Sparkles ✨)</option>
-                                    <option value="USED">USED (Tools 🔧)</option>
-                                </select>
+                            <div class="trip-release-grid">
+                                <div class="trip-release-cell">
+                                    <label class="trip-field-label" for="in-rel-type">Type</label>
+                                    <select id="in-rel-type" class="trip-select" required>
+                                        <option value="" disabled selected>Choose type…</option>
+                                        <option value="DRY">DRY (Calor 🔥)</option>
+                                        <option value="REEFER">REEFER (Frío ❄️)</option>
+                                    </select>
+                                </div>
+                                <div class="trip-release-cell">
+                                    <label class="trip-field-label" for="in-rel-condition">Condition</label>
+                                    <select id="in-rel-condition" class="trip-select" required>
+                                        <option value="" disabled selected>Choose condition…</option>
+                                        <option value="NEW">NEW (Sparkles ✨)</option>
+                                        <option value="USED">USED (Tools 🔧)</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <div class="form-group"><label class="sidebar-label-btn">Order - Bol Cont #</label><input type="text" id="in-order"
@@ -225,6 +236,24 @@
                                 <option value="TRUCK YARD">
                             </datalist>
                         </div>
+                        <!-- New Status Squares Group -->
+                        <div class="form-group">
+                            <label class="sidebar-label-btn">Status Flags</label>
+                            <div style="display: flex; gap: 15px; align-items: center; padding: 5px 0;">
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <input type="checkbox" id="in-flag1" style="width: 20px; height: 20px; accent-color: #b91c1c;">
+                                    <span style="font-size: 0.7rem; font-weight: 700; color: #64748b;">S1</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <input type="checkbox" id="in-flag2" style="width: 20px; height: 20px; accent-color: #b91c1c;">
+                                    <span style="font-size: 0.7rem; font-weight: 700; color: #64748b;">S2</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <input type="checkbox" id="in-flag3" style="width: 20px; height: 20px; accent-color: #b91c1c;">
+                                    <span style="font-size: 0.7rem; font-weight: 700; color: #64748b;">S3</span>
+                                </div>
+                            </div>
+                        </div>
                         <div class="form-group"><label class="sidebar-label-btn">Delivery Place</label><input type="text" id="in-delivery"
                                 placeholder="Delivery"></div>
                         <div class="form-group">
@@ -262,10 +291,13 @@
                                 <option value="NO">NO</option>
                             </select>
                         </div>
-                        <div class="form-group" id="yard-rate-group"><label class="sidebar-label-btn">Yard Rate</label>
-                            <input type="number" id="in-yardrate" style="flex: 0.6;">
-                            <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox"
-                                    id="in-yardpaid" onchange="syncImmediate('st_yard', this.checked ? 'PAID' : 'PEND')"></label>
+                        <div class="form-group trip-pay-row" id="yard-rate-group">
+                            <label class="sidebar-label-btn">Yard Rate</label>
+                            <div class="trip-pay-controls">
+                                <input type="number" id="in-yardrate" class="trip-pay-input" placeholder="0.00">
+                                <label class="trip-paid-toggle">PAID <input type="checkbox"
+                                        id="in-yardpaid" onchange="syncImmediate('st_yard', this.checked ? 'PAID' : 'PEND')"></label>
+                            </div>
                         </div>
                         <div class="form-group"><label class="sidebar-label-btn">Date Out</label><input type="date" id="in-dateout"></div>
                         <!-- Removed DAY RATE as per user request -->
@@ -300,10 +332,13 @@
                                 <option value="NO">NO</option>
                             </select>
                         </div>
-                        <div class="form-group" id="trans-pay-group"><label class="sidebar-label-btn">Trans. Pay</label>
-                            <input type="number" id="in-rate" style="flex: 0.6;" oninput="updateDriverCommission()">
-                            <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox"
-                                    id="in-ratepaid" onchange="syncImmediate('st_rate', this.checked ? 'PAID' : 'PEND')"></label>
+                        <div class="form-group trip-pay-row" id="trans-pay-group">
+                            <label class="sidebar-label-btn">Trans. Pay</label>
+                            <div class="trip-pay-controls">
+                                <input type="number" id="in-rate" class="trip-pay-input" oninput="updateDriverCommission()" placeholder="0.00">
+                                <label class="trip-paid-toggle">PAID <input type="checkbox"
+                                        id="in-ratepaid" onchange="syncImmediate('st_rate', this.checked ? 'PAID' : 'PEND')"></label>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -321,10 +356,13 @@
                                 <option value="NO">NO</option>
                             </select>
                         </div>
-                        <div class="form-group" id="sales-price-group"><label class="sidebar-label-btn">Sales Price</label>
-                            <input type="number" id="in-sales" style="flex: 0.6;">
-                            <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">PAID <input type="checkbox"
-                                    id="in-salespaid" onchange="syncImmediate('st_sales', this.checked ? 'PAID' : 'PEND')"></label>
+                        <div class="form-group trip-pay-row" id="sales-price-group">
+                            <label class="sidebar-label-btn">Sales Price</label>
+                            <div class="trip-pay-controls">
+                                <input type="number" id="in-sales" class="trip-pay-input" placeholder="0.00">
+                                <label class="trip-paid-toggle">PAID <input type="checkbox"
+                                        id="in-salespaid" onchange="syncImmediate('st_sales', this.checked ? 'PAID' : 'PEND')"></label>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -335,11 +373,13 @@
                                 <option value="NO">NO</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group trip-pay-row">
                             <label class="sidebar-label-btn">Amount</label>
-                            <input type="number" id="in-amount" style="flex: 0.6;" oninput="updateDriverCommission()">
-                            <label style="flex: 0.2; font-size: 0.7rem; color: #b91c1c;">CASH <input type="checkbox"
-                                    id="in-amountpaid" onchange="syncImmediate('st_amount', this.checked ? 'PAID' : 'PENDING')"></label>
+                            <div class="trip-pay-controls">
+                                <input type="number" id="in-amount" class="trip-pay-input" oninput="updateDriverCommission()" placeholder="0.00">
+                                <label class="trip-paid-toggle">CASH <input type="checkbox"
+                                        id="in-amountpaid" onchange="syncImmediate('st_amount', this.checked ? 'PAID' : 'PENDING')"></label>
+                            </div>
                         </div>
                         <div class="form-group"><label class="sidebar-label-btn">Phone #</label><input type="text" id="in-phone"></div>
                         <div class="form-group">
@@ -357,6 +397,16 @@
                         <div class="form-group"><label class="sidebar-label-btn">Note</label><input type="text" id="in-note"></div>
                         <div class="form-group"><label class="sidebar-label-btn">Email</label><input type="email" id="in-email"
                                 placeholder="customer@email.com"></div>
+
+                        <!-- Hidden: required by save / Supabase mapping (not shown in streamlined form) -->
+                        <input type="hidden" id="in-mode" value="SALE">
+                        <input type="hidden" id="in-income" value="">
+                        <input type="checkbox" id="in-rentpaid" tabindex="-1" aria-hidden="true" hidden>
+                        <div id="rental-fields" style="display: none;">
+                            <input type="hidden" id="in-mrate" value="0">
+                            <input type="hidden" id="in-sdaterent" value="">
+                            <input type="hidden" id="in-nextdue" value="">
+                        </div>
 
                     </div>
                 </aside>
@@ -459,7 +509,6 @@
                         <table id="logistics-table">
                             <thead>
                                 <tr class="header-row">
-                                    <th>ID</th>
                                     <th>Date</th>
                                     <th>Size</th>
                                     <th>N. Cont</th>
@@ -467,6 +516,7 @@
                                     <th>Order - Bol Cont #</th>
                                     <th>City</th>
                                     <th>Pick Up Address</th>
+                                    <th>Status Flags</th>
                                     <th>Delivery Place</th>
                                     <th>Doors Direction</th>
                                     <th>Miles</th>
@@ -512,8 +562,8 @@
                                 style="padding: 4px; font-size: 0.75rem;" onchange="loadDocTrips()">
                         </div>
                         <label style="font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; display: block;">SEARCH
-                            TRIP ID / NAME / CONT#</label>
-                        <input type="text" id="trip-search-input" class="form-input" placeholder="Type ID or Name..."
+                            ORDER / CONT# / CUSTOMER / DRIVER</label>
+                        <input type="text" id="trip-search-input" class="form-input" placeholder="Search trips..."
                             oninput="loadDocTrips()">
                     </div>
                     <div id="trip-list-scroll" class="trip-list-scroll">
@@ -533,8 +583,6 @@
                         </div>
                     </div>
                     <div class="sidebar-form" style="padding: 0;">
-                        <div class="form-group"><label>Movement ID</label><input type="text" id="u-r-id" readonly
-                                placeholder="Select a trip..."></div>
                         <div class="form-group"><label>Date</label><input type="date" id="u-r-date"
                                 oninput="drawReceipt()"></div>
                         <div class="form-group"><label>Movement</label>
@@ -601,7 +649,7 @@
                     <div id="receipt-a4" class="a4-paper">
                         <div
                             style="text-align: center; margin-top: 50% !important; color: #cbd5e1; font-style: italic;">
-                            Select a trip ID from the left list to generate a receipt preview.
+                            Select a trip from the list to generate a receipt preview.
                         </div>
                     </div>
                 </section>
@@ -1046,7 +1094,6 @@
                     <table class="drivers-report-table fleet-table" style="min-width: 100%;">
                         <thead style="background: #f8fafc;">
                             <tr>
-                                <th style="color: #64748b;">ID</th>
                                 <th style="color: #64748b;">Driver</th>
                                 <th style="color: #64748b;">Initial Date</th>
                                 <th style="color: #64748b;">Final Date</th>
@@ -1296,7 +1343,7 @@
             const normPaid = (val) => (val === true || val === 1 || val === 'PAID' || val === 'true') ? 'PAID' : 'PEND';
             
             return [
-                t.trip_id || '---', t.date || '---', t.size || '---', t.n_cont || '---', t.release_no || '---',
+                t.id || '', t.date || '---', t.size || '---', t.n_cont || '---', t.release_no || '---',
                 t.order_no || '---', t.city || '---', t.pickup_address || '---', t.delivery_place || '---',
                 t.doors_direction || '---', t.miles || 0, t.customer || '---',
                 t.yard_services || '---', t.yard_rate || 0, t.date_out || '---',
@@ -1322,48 +1369,48 @@
         }
 
 
+        // Maps sidebar save rowData (no trip UUID in row — checkboxes inserted before last field)
         function mapArrayToTrip(row) {
             return {
-                trip_id: row[0],
-                date: row[1] === '---' ? null : row[1],
-                size: row[2],
-                n_cont: row[3],
-                release_no: row[4],
-                order_no: row[5],
-                city: row[6],
-                pickup_address: row[7],
-                delivery_place: row[8],
-                doors_direction: row[9],
-                miles: parseFloat(row[10]) || 0,
-                customer: row[11],
-                yard_services: row[12],
-                yard_rate: parseFloat(row[13]) || 0,
-                date_out: row[14] === '---' ? null : row[14],
-                company: row[15],
-                driver: row[16],
-                trans_pay: parseFloat(row[17]) || 0,
-                type_payment: row[18],
-                sales_price: parseFloat(row[19]) || 0,
-                collect_payment: row[20],
-                amount: parseFloat(row[21]) || 0,
-                phone_no: row[22],
-                paid_driver: parseFloat(row[23]) || 0,
+                date: row[0] === '---' ? null : row[0],
+                size: row[1],
+                n_cont: row[2],
+                release_no: row[3],
+                order_no: row[4],
+                city: row[5],
+                pickup_address: row[6],
+                delivery_place: row[7],
+                doors_direction: row[8],
+                miles: parseFloat(row[9]) || 0,
+                customer: row[10],
+                yard_services: row[11],
+                yard_rate: parseFloat(row[12]) || 0,
+                date_out: row[13] === '---' ? null : row[13],
+                company: row[14],
+                driver: row[15],
+                trans_pay: parseFloat(row[16]) || 0,
+                type_payment: row[17],
+                sales_price: parseFloat(row[18]) || 0,
+                collect_payment: row[19],
+                amount: parseFloat(row[20]) || 0,
+                phone_no: row[21],
+                paid_driver: parseFloat(row[22]) || 0,
                 note: row[24],
                 service_mode: row[25],
                 monthly_rate: parseFloat(row[26]) || 0,
                 start_date_rent: row[27] === '---' ? null : row[27],
-                next_due: row[28] === '---' ? null : row[28],
-                st_yard: row[29],
-                st_rent: row[30],
-                st_rate: row[31],
-                st_sales: row[32],
-                st_amount: row[33],
+                next_due: row[33] === '---' ? null : row[33],
+                st_yard: row[28],
+                st_rent: row[29],
+                st_rate: row[30],
+                st_sales: row[31],
+                st_amount: row[32],
                 pending_balance: row[34] ? parseFloat(row[34].toString().replace('$', '').replace(/,/g, '')) || 0 : 0,
                 email: row[35],
                 truck_unit: row[36] === '---' ? null : row[36],
                 trailer_unit: row[37] === '---' ? null : row[37],
-                final_driver_pay: calculateFinalPay(row[15], parseFloat(row[23]) || 0),
-                yard_rate_paid: row[29] === 'PAID',
+                final_driver_pay: calculateFinalPay(row[14], parseFloat(row[22]) || 0),
+                yard_rate_paid: row[28] === 'PAID',
                 status: row[40] || 'PENDING_PAYMENT',
                 has_trans: row[41] || 'YES',
                 has_sales: row[42] || 'YES'
@@ -1383,7 +1430,42 @@
         let currentExpenses = []; // Cache from Supabase
         let currentFleet = []; // Cache from Supabase
         let editingIndex = null;
+        let editingTripDbId = null;
         let editingReleaseId = null;
+
+        function getTripArchiveButton() {
+            return document.getElementById('btn-archive-trip');
+        }
+
+        function setTripArchiveButton(opts) {
+            const btn = getTripArchiveButton();
+            if (!btn) return;
+            const span = btn.querySelector('.btn-archive-order-label');
+            if (opts.disabled !== undefined) btn.disabled = opts.disabled;
+            if (opts.opacity !== undefined) btn.style.opacity = String(opts.opacity);
+            if (opts.label !== undefined && span) span.textContent = opts.label;
+            if (opts.isUpdate === true) btn.classList.add('btn-update');
+            else if (opts.isUpdate === false) btn.classList.remove('btn-update');
+            if (opts.title !== undefined) btn.title = opts.title || '';
+        }
+
+        function restoreTripArchiveButtonUI() {
+            const isEdit = editingIndex !== null;
+            setTripArchiveButton({
+                disabled: false,
+                opacity: 1,
+                label: isEdit ? 'Update order' : 'Archive order',
+                isUpdate: isEdit,
+                title: isEdit ? 'Save changes to this trip' : 'Save trip to database'
+            });
+        }
+
+        function newTripIdForDb() {
+            if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+                return crypto.randomUUID();
+            }
+            return 't-' + Date.now() + '-' + Math.random().toString(36).slice(2, 12);
+        }
 
         // --- FLEET DATA MAPPERS ---
         function mapFleetToUI(f) {
@@ -1630,7 +1712,8 @@
         }
 
         function toggleModeFields() {
-            const mode = document.getElementById('in-mode').value;
+            const modeEl = document.getElementById('in-mode');
+            const mode = modeEl ? modeEl.value : 'SALE';
             const rentalGroup = document.getElementById('rental-fields');
             if (rentalGroup) rentalGroup.style.display = (mode === 'RENT') ? 'block' : 'none';
         }
@@ -1677,11 +1760,14 @@
 
 
         function calcNextDue() {
-            const startStr = document.getElementById('in-sdaterent').value;
+            const startEl = document.getElementById('in-sdaterent');
+            const nextEl = document.getElementById('in-nextdue');
+            if (!startEl || !nextEl) return;
+            const startStr = startEl.value;
             if (!startStr) return;
             const start = new Date(startStr + 'T00:00:00');
             start.setDate(start.getDate() + 30);
-            document.getElementById('in-nextdue').value = start.toISOString().split('T')[0];
+            nextEl.value = start.toISOString().split('T')[0];
         }
 
         // --- ADVANCED FILTERING LOGIC ---
@@ -1768,19 +1854,18 @@
                 const cells = tr.cells;
                 if (cells.length < 20) return; 
 
-                // UPDATED INDICES FOR New 22-Column Structure
-                const valID = (cells[1].textContent || '').toLowerCase().trim();
-                const valDate = (cells[2].textContent || '').trim();
-                const valSize = (cells[3].textContent || '').toLowerCase().trim();
-                const valNcont = (cells[4].textContent || '').toLowerCase().trim();
-                const valRelease = (cells[5].textContent || '').toLowerCase().trim();
-                const valOrder = (cells[6].textContent || '').toLowerCase().trim();
-                const valCity = (cells[7].textContent || '').toLowerCase().trim();
-                const valCustomer = (cells[12].textContent || '').toLowerCase().trim();
-                const valCompany = (cells[16].textContent || '').toLowerCase().trim();
-                const valDriver = (cells[17].textContent || '').toLowerCase().trim();
-                const valCollect = (cells[21].textContent || '').toLowerCase().trim();
-                const valPhone = (cells[23].textContent || '').toLowerCase().trim();
+                // Cell indices: Date, Size, ... (matches table without Mode column)
+                const valDate = (cells[0].textContent || '').trim();
+                const valSize = (cells[1].textContent || '').toLowerCase().trim();
+                const valNcont = (cells[2].textContent || '').toLowerCase().trim();
+                const valRelease = (cells[3].textContent || '').toLowerCase().trim();
+                const valOrder = (cells[4].textContent || '').toLowerCase().trim();
+                const valCity = (cells[5].textContent || '').toLowerCase().trim();
+                const valCustomer = (cells[10].textContent || '').toLowerCase().trim();
+                const valCompany = (cells[14].textContent || '').toLowerCase().trim();
+                const valDriver = (cells[15].textContent || '').toLowerCase().trim();
+                const valCollect = (cells[19].textContent || '').toLowerCase().trim();
+                const valPhone = (cells[21].textContent || '').toLowerCase().trim();
 
                 const matchCity = !filters.city || valCity === filters.city.toLowerCase().trim();
 
@@ -1830,8 +1915,9 @@
 
         function resetForm() {
             editingIndex = null;
+            editingTripDbId = null;
             const fields = [
-                'in-id', 'in-date', 'in-size', 'in-ncont', 'in-release', 'in-order', 'in-city', 'in-pickup',
+                'in-date', 'in-size', 'in-ncont', 'in-release', 'in-order', 'in-city', 'in-pickup',
                 'in-delivery', 'in-doors', 'in-miles', 'in-customer',
                 'in-yard', 'in-yardrate', 'in-dateout', 'in-company', 'in-driver',
                 'in-rate', 'in-paytype', 'in-sales', 'in-collect', 'in-amount', 'in-phone',
@@ -1849,24 +1935,19 @@
                 if (el) el.checked = false;
             });
 
-            const btn = document.querySelector('.btn-add-sidebar');
-            if (btn) {
-                btn.textContent = 'Archive Order';
-                btn.classList.remove('btn-update');
-            }
+            setTripArchiveButton({ label: 'Archive order', isUpdate: false, disabled: false, opacity: 1, title: 'Save trip to database' });
+            if (window.refreshTripArchiveStockUi) window.refreshTripArchiveStockUi();
 
             document.getElementById('in-has-trans').value = 'YES';
             document.getElementById('in-has-sales').value = 'YES';
             toggleTransPay();
             toggleSalesPrice();
-
-            initNewTripId();
         }
 
         // --- IMMEDIATE SYNC FOR EDIT MODE ---
         async function syncImmediate(fieldName, value) {
             if (editingIndex === null) return;
-            const tripId = document.getElementById('in-id').value;
+            const tripId = editingTripDbId;
             if (!tripId) return;
 
             const updateData = {};
@@ -1895,20 +1976,16 @@
         async function addRow() {
             if (isSaving) return;
 
-            const btn = document.querySelector('.btn-add-sidebar');
-            const originalText = btn ? btn.textContent : 'Archive Order';
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = 'Saving... Wait';
-                btn.style.opacity = '0.7';
+            const tripBtn = getTripArchiveButton();
+            const labelSpan = tripBtn?.querySelector('.btn-archive-order-label');
+            if (tripBtn) {
+                tripBtn.disabled = true;
+                if (labelSpan) labelSpan.textContent = 'Saving…';
+                tripBtn.style.opacity = '0.7';
             }
             isSaving = true;
 
-            // Auto-generate ID and Order ONLY if not editing
             if (editingIndex === null) {
-                const nextId = 'TRIP-' + Date.now().toString().slice(-6);
-                document.getElementById('in-id').value = nextId;
-
                 // Only auto-generate Order if user hasn't typed one
                 const ordInput = document.getElementById('in-order');
                 if (!ordInput.value || ordInput.value.trim() === '') {
@@ -1919,7 +1996,7 @@
                 }
             }
             const fields = [
-                'in-id', 'in-date', 'in-size', 'in-ncont', 'in-release', 'in-order', 'in-city', 'in-pickup',
+                'in-date', 'in-size', 'in-ncont', 'in-release', 'in-order', 'in-city', 'in-pickup',
                 'in-delivery', 'in-doors', 'in-miles', 'in-customer',
                 'in-yard', 'in-yardrate', 'in-dateout', 'in-company', 'in-driver',
                 'in-rate', 'in-paytype', 'in-sales', 'in-collect', 'in-amount', 'in-phone',
@@ -1935,14 +2012,15 @@
 
             // STOCK DEDUCTION CRITERIA: SALE/RENT, RELEASE PRESENT, ALL PAID, NOT YARD-SERVICE-ONLY
             const yardOnly = document.getElementById('in-yard').value === 'YES' && (parseFloat(document.getElementById('in-sales').value) === 0);
-            const isDeductionCandidate = (selectedRelease && selectedRelease !== '---' && !yardOnly && (document.getElementById('in-mode').value === 'SALE' || document.getElementById('in-mode').value === 'RENT'));
+            const modeVal = document.getElementById('in-mode')?.value || 'SALE';
+            const isDeductionCandidate = (selectedRelease && selectedRelease !== '---' && !yardOnly && (modeVal === 'SALE' || modeVal === 'RENT'));
             const isYardPaid = document.getElementById('in-yardpaid').checked;
             const isRatePaid = document.getElementById('in-ratepaid').checked;
             const isSalesPaid = document.getElementById('in-salespaid').checked;
             const isAmountPaid = document.getElementById('in-amountpaid').checked;
 
             const stYard = isYardPaid ? 'PAID' : 'PEND';
-            const stRent = document.getElementById('in-rentpaid').checked ? 'PAID' : 'PEND';
+            const stRent = document.getElementById('in-rentpaid')?.checked ? 'PAID' : 'PEND';
             const stRate = isRatePaid ? 'PAID' : 'PEND';
             const stSales = isSalesPaid ? 'PAID' : 'PEND';
             const stAmount = isAmountPaid ? 'PAID' : 'PEND';
@@ -1969,7 +2047,8 @@
                     // Must select type and condition
                     if (!selectedRelType || !selectedRelCond) {
                         alert("ERROR: Para movimientos con Release, debes seleccionar TIPO y CONDICIÓN para validar stock.");
-                        isSaving = false; if (btn) { btn.disabled = false; btn.textContent = originalText; btn.style.opacity = '1'; }
+                        isSaving = false;
+                        restoreTripArchiveButtonUI();
                         return;
                     }
 
@@ -1994,7 +2073,8 @@
                             
                             if (totalStockFound <= 0) {
                                 alert(`Sin stock disponible para contenedores de ${sizeBase}.`);
-                                isSaving = false; if (btn) { btn.disabled = false; btn.textContent = originalText; btn.style.opacity = '1'; }
+                                isSaving = false;
+                                restoreTripArchiveButtonUI();
                                 return;
                             }
 
@@ -2009,7 +2089,8 @@
                         }
                     } else {
                         alert(`ERROR: No existe un Release ${selectedRelease} configurado como ${selectedRelType} / ${selectedRelCond}. Por favor, créalo en la sección Form Releases.`);
-                        isSaving = false; if (btn) { btn.disabled = false; btn.textContent = originalText; btn.style.opacity = '1'; }
+                        isSaving = false;
+                        restoreTripArchiveButtonUI();
                         return;
                     }
                 }
@@ -2022,11 +2103,9 @@
                 return el ? el.value || '---' : '---';
             });
 
-            // baseValues ends at index 28 (nextdue)
-            const rowData = [...baseValues]; 
-            
-            // Indices 29-33: Checkbox States
-            rowData.splice(29, 0, stYard, stRent, stRate, stSales, stAmount);
+            const rowData = [...baseValues];
+            // Insert pay-status flags before last field (next due date)
+            rowData.splice(baseValues.length - 1, 0, stYard, stRent, stRate, stSales, stAmount);
 
             // Index 34: Balance Pending
             let pending = 0;
@@ -2034,7 +2113,9 @@
             if (stRate === 'PEND') pending += parseFloat(document.getElementById('in-rate').value) || 0;
             if (stSales === 'PEND') pending += parseFloat(document.getElementById('in-sales').value) || 0;
             if (stAmount === 'PEND') pending += parseFloat(document.getElementById('in-amount').value) || 0;
-            if (stRent === 'PEND' && document.getElementById('in-mode').value === 'RENT') pending += parseFloat(document.getElementById('in-mrate').value) || 0;
+            if (stRent === 'PEND' && (document.getElementById('in-mode')?.value || '') === 'RENT') {
+                pending += parseFloat(document.getElementById('in-mrate')?.value || '0') || 0;
+            }
 
             rowData.push(pending.toFixed(2)); // Index 34
 
@@ -2060,23 +2141,30 @@
 
             try {
                 if (editingIndex !== null) {
-                    // UPDATE MODE
-                    const tripId = rowData[0];
-                    const { error } = await db.from('trips').update(dbObj).eq('trip_id', tripId);
+                    if (!editingTripDbId) {
+                        alert('Error: no se pudo identificar el viaje para actualizar.');
+                        isSaving = false;
+                        restoreTripArchiveButtonUI();
+                        return;
+                    }
+                    const { error } = await db.from('trips').update(dbObj).eq('id', editingTripDbId);
                     if (error) {
                         console.error("SUPABASE UPDATE ERROR:", error.message, error.details);
                         alert(`Error actualizando: ${error.message}`);
-                        isSaving = false; if (btn) { btn.disabled = false; btn.textContent = originalText; btn.style.opacity = '1'; }
+                        isSaving = false;
+                        restoreTripArchiveButtonUI();
                         return;
                     }
                     editingIndex = null;
+                    editingTripDbId = null;
                 } else {
-                    // NEW MODE
+                    dbObj.trip_id = newTripIdForDb();
                     const { error } = await db.from('trips').insert([dbObj]);
                     if (error) {
                         console.error("SUPABASE INSERT ERROR:", error.message, error.details);
                         alert(`Error insertando en DB: ${error.message}.`);
-                        isSaving = false; if (btn) { btn.disabled = false; btn.textContent = originalText; btn.style.opacity = '1'; }
+                        isSaving = false;
+                        restoreTripArchiveButtonUI();
                         return;
                     }
                 }
@@ -2125,21 +2213,17 @@
                     if (el) el.value = '';
                 });
 
-                // Re-initialize ID for next entry
-                if (window.initNewTripId) window.initNewTripId();
                 alert("Trip saved successfully & Inventory Updated!");
             } catch (err) {
                 console.error("Failed to save trip:", err);
                 alert("DATABASE ERROR: " + (err.message || "Unknown error"));
             } finally {
                 isSaving = false;
-                if (btn) {
-                    btn.disabled = false;
-                    btn.textContent = originalText;
-                    btn.style.opacity = '1';
-                }
+                restoreTripArchiveButtonUI();
             }
         }
+
+        window.addRow = addRow;
 
         window.updateReleaseDatalist = function() {
             const releaseList = document.getElementById('release-list');
@@ -2162,47 +2246,56 @@
             const validateStockUI = () => {
                 const selectedRel = inReleaseInput.value;
                 const selectedSize = inSizeSelect.value;
-                const selectedRelType = document.getElementById('in-rel-type').value;
-                const selectedRelCond = document.getElementById('in-rel-condition').value;
-                const btn = document.querySelector('.btn-add-sidebar');
-                
+                const selectedRelType = document.getElementById('in-rel-type')?.value;
+                const selectedRelCond = document.getElementById('in-rel-condition')?.value;
+                const tripBtn = getTripArchiveButton();
+                const labelSpan = tripBtn?.querySelector('.btn-archive-order-label');
+                if (!tripBtn || (labelSpan && labelSpan.textContent === 'Saving…')) return;
+
                 if (!selectedRel || selectedRel === '---' || !selectedSize || !selectedRelType || !selectedRelCond) {
-                    if (btn && btn.textContent !== 'Saving... Wait') {
-                        btn.disabled = false;
-                        btn.style.opacity = '1';
-                        btn.textContent = editingIndex !== null ? 'Update Trip' : 'Archive Order';
-                    }
+                    restoreTripArchiveButtonUI();
                     return;
                 }
 
-                if (currentReleases.length === 0) return;
+                if (currentReleases.length === 0) {
+                    restoreTripArchiveButtonUI();
+                    return;
+                }
+
                 const matchingRows = currentReleases.filter(r => r[0] === selectedRel && r[2] === selectedRelType && r[3] === selectedRelCond);
 
-                if (matchingRows.length > 0) {
-                    let totalStock = 0;
-                    let sizeBase = '';
-                    let idx = -1;
-                    if (selectedSize.startsWith("20")) { idx = 7; sizeBase = "20'"; }
-                    else if (selectedSize.startsWith("40")) { idx = 9; sizeBase = "40'"; }
-                    else if (selectedSize.startsWith("45")) { idx = 11; sizeBase = "45'"; }
+                if (matchingRows.length === 0) {
+                    restoreTripArchiveButtonUI();
+                    tripBtn.title = 'No hay release coincidente; revisa Form Releases o el número de release.';
+                    return;
+                }
 
-                    if (idx !== -1) {
-                        totalStock = matchingRows.reduce((sum, r) => sum + (parseInt(r[idx]) || 0), 0);
-                    }
+                let totalStock = 0;
+                let sizeBase = '';
+                let idx = -1;
+                if (selectedSize.startsWith("20")) { idx = 7; sizeBase = "20'"; }
+                else if (selectedSize.startsWith("40")) { idx = 9; sizeBase = "40'"; }
+                else if (selectedSize.startsWith("45")) { idx = 11; sizeBase = "45'"; }
 
-                    if (totalStock <= 0) {
-                        btn.disabled = true;
-                        btn.style.opacity = '0.5';
-                        btn.textContent = `Sin stock disponible para contenedores de ${sizeBase}.`;
-                        btn.style.background = '#64748b'; // Gray out
-                    } else {
-                        btn.disabled = false;
-                        btn.style.opacity = '1';
-                        btn.textContent = editingIndex !== null ? 'Update Trip' : 'Archive Order';
-                        btn.style.background = editingIndex !== null ? '#0f172a' : '#b91c1c';
-                    }
+                if (idx !== -1) {
+                    totalStock = matchingRows.reduce((sum, r) => sum + (parseInt(r[idx]) || 0), 0);
+                }
+
+                if (totalStock <= 0) {
+                    tripBtn.disabled = true;
+                    tripBtn.style.opacity = '0.5';
+                    if (labelSpan) labelSpan.textContent = 'No stock';
+                    tripBtn.title = `Sin stock para ${sizeBase || 'esta medida'}.`;
+                    if (editingIndex !== null) tripBtn.classList.add('btn-update');
+                } else {
+                    tripBtn.disabled = false;
+                    tripBtn.style.opacity = '1';
+                    tripBtn.title = editingIndex !== null ? 'Save changes to this trip' : 'Save trip to database';
+                    restoreTripArchiveButtonUI();
                 }
             };
+
+            window.refreshTripArchiveStockUi = validateStockUI;
 
             [inReleaseInput, inSizeSelect, document.getElementById('in-rel-type'), document.getElementById('in-rel-condition')].forEach(el => {
                 if (el) el.addEventListener('change', validateStockUI);
@@ -2258,24 +2351,15 @@
             }
         }
 
-        // --- AUTO ID GENERATION ---
-        function initNewTripId() {
-            const idInput = document.getElementById('in-id');
-            if (idInput && (idInput.value === '' || idInput.value === 'TRIP-0000')) {
-                const nextId = 'TRIP-' + Date.now().toString().slice(-6);
-                idInput.value = nextId;
-            }
-        }
-
         function loadTripToEdit(idx) {
             if (!currentTrips[idx]) return;
             const rowData = currentTrips[idx];
 
-            editingIndex = idx; // Set Global Edit State
+            editingIndex = idx;
+            editingTripDbId = rowData[0] || null;
 
-            // Populate Fields (Map back from indices 0-35)
             const fields = [
-                'in-id', 'in-date', 'in-size', 'in-ncont', 'in-release', 'in-order', 'in-city', 'in-pickup',
+                'in-date', 'in-size', 'in-ncont', 'in-release', 'in-order', 'in-city', 'in-pickup',
                 'in-delivery', 'in-doors', 'in-miles', 'in-customer',
                 'in-yard', 'in-yardrate', 'in-dateout', 'in-company', 'in-driver',
                 'in-rate', 'in-paytype', 'in-sales', 'in-collect', 'in-amount', 'in-phone',
@@ -2285,7 +2369,8 @@
 
             fields.forEach((id, i) => {
                 const el = document.getElementById(id);
-                if (el) el.value = (rowData[i] === '---') ? '' : rowData[i];
+                const v = rowData[i + 1];
+                if (el) el.value = (v === '---' || v === undefined || v === null) ? '' : v;
             });
 
             // Re-trigger Toggles based on values loaded
@@ -2308,10 +2393,10 @@
 
             // Removed DRIVER Payout Status as requested
 
-            // Email (Index 36)
             const emailInput = document.getElementById('in-email');
             if (emailInput) {
-                emailInput.value = (rowData[36] === '---') ? '' : rowData[36];
+                const ev = rowData[35];
+                emailInput.value = (ev === '---' || ev === undefined || ev === null) ? '' : ev;
             }
 
             // Truck / Trailer (Indices 44, 45 ignored for Trips UI)
@@ -2320,12 +2405,8 @@
             toggleModeFields();
             updateDriverCommission();
 
-            // Update UI Button
-            const btn = document.querySelector('.btn-add-sidebar');
-            if (btn) {
-                btn.textContent = 'Update Trip';
-                btn.classList.add('btn-update');
-            }
+            setTripArchiveButton({ label: 'Update order', isUpdate: true, disabled: false, opacity: 1, title: 'Save changes to this trip' });
+            if (window.refreshTripArchiveStockUi) window.refreshTripArchiveStockUi();
 
             // Highlighting Row (Removing redundant loadTableData call)
             // loadTableData();
@@ -2372,56 +2453,52 @@
                         tr.dataset.stsales = stSales;
                         tr.dataset.stamount = stAmount;
 
-                        // Construct display array (Exact Load Flow Order - 28 Columns)
+                        // Display columns (DB UUID at rowData[0] omitted; no Mode column — starts with Date)
                         const displayData = [
-                            mode,           // 0: Service Mode
-                            rowData[0],     // 1: ID
-                            rowData[1],     // 2: Date
-                            rowData[2],     // 3: Size
-                            rowData[3],     // 4: N. Cont
-                            rowData[4],     // 5: Release #
-                            rowData[5],     // 6: Order - Bol Cont #
-                            rowData[6],     // 7: City
-                            rowData[7],     // 8: Pick Up Address
-                            rowData[8],     // 9: Delivery Place
-                            rowData[9],     // 10: Doors Direction
-                            rowData[10],    // 11: Miles
-                            rowData[11],    // 12: Customer
-                            rowData[12],    // 13: Yard Services
-                            rowData[13],    // 14: Yard Rate
-                            rowData[14],    // 15: Date Out
-                            rowData[15],    // 16: Company
-                            rowData[16],    // 17: Driver
-                            rowData[17],    // 18: Trans Pay
-                            rowData[18],    // 19: Type Pay
-                            rowData[19],    // 20: Sales Price
-                            rowData[20],    // 21: Collect Pay
-                            rowData[21],    // 22: Amount
-                            rowData[22],    // 23: Phone #
-                            rowData[23],    // 24: Paid Driver
-                            rowData[25],    // 25: Note
-                            email,          // 26: Email
+                            rowData[1],     // 0: Date
+                            rowData[2],     // 1: Size
+                            rowData[3],     // 2: N. Cont
+                            rowData[4],     // 3: Release #
+                            rowData[5],     // 4: Order - Bol Cont #
+                            rowData[6],     // 5: City
+                            rowData[7],     // 6: Pick Up Address
+                            rowData[8],     // 7: Delivery Place
+                            rowData[9],     // 8: Doors Direction
+                            rowData[10],    // 9: Miles
+                            rowData[11],    // 10: Customer
+                            rowData[12],    // 11: Yard Services
+                            rowData[13],    // 12: Yard Rate
+                            rowData[14],    // 13: Date Out
+                            rowData[15],    // 14: Company
+                            rowData[16],    // 15: Driver
+                            rowData[17],    // 16: Trans Pay
+                            rowData[18],    // 17: Type Pay
+                            rowData[19],    // 18: Sales Price
+                            rowData[20],    // 19: Collect Pay
+                            rowData[21],    // 20: Amount
+                            rowData[22],    // 21: Phone #
+                            rowData[23],    // 22: Paid Driver
+                            rowData[25],    // 23: Note
+                            email,          // 24: Email
                         ];
 
                         displayData.forEach((text, i) => {
                             const td = document.createElement('td');
                             
-                            // Formatting Currency for Financial Columns (Corrected Indices for 22-28 scale)
-                            if ([14, 18, 20, 22, 24].includes(i)) {
+                            if ([12, 16, 18, 20, 22].includes(i)) {
                                 const val = parseFloat(text) || 0;
                                 td.textContent = `$${val.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
                                 td.style.fontWeight = 'bold';
-                                // APPLY CONDITIONAL COLORING (User request: RED for Pending, GREEN for Paid/Cash)
-                                if (i === 14) { // Yard Rate
+                                if (i === 12) { // Yard Rate
                                     td.style.backgroundColor = (stYard === 'PAID') ? '#dcfce7' : '#fee2e2';
                                     td.style.color = (stYard === 'PAID') ? '#166534' : '#991b1b';
-                                } else if (i === 18) { // Trans Pay
+                                } else if (i === 16) { // Trans Pay
                                     td.style.backgroundColor = (stRate === 'PAID') ? '#dcfce7' : '#fee2e2';
                                     td.style.color = (stRate === 'PAID') ? '#166534' : '#991b1b';
-                                } else if (i === 20) { // Sales Price
+                                } else if (i === 18) { // Sales Price
                                     td.style.backgroundColor = (stSales === 'PAID') ? '#dcfce7' : '#fee2e2';
                                     td.style.color = (stSales === 'PAID') ? '#166534' : '#991b1b';
-                                } else if (i === 22) { // Amount
+                                } else if (i === 20) { // Amount
                                     // NO Background color as requested. Just Icons:
                                     const iconClass = (stAmount === 'PAID') ? 'fas fa-money-bill-wave' : 'fas fa-university';
                                     const iconColor = (stAmount === 'PAID') ? '#059669' : '#3b82f6'; 
@@ -2513,7 +2590,7 @@
         async function settleDriverGroup(driverName) {
             if (!confirm(`Are you sure you want to mark ALL pending trips for ${driverName} as PAID?`)) return;
 
-            const toUpdate = currentTrips.filter(r => (r[18] || 'UNASSIGNED') === driverName && r[42] !== 'PAID');
+            const toUpdate = currentTrips.filter(r => (r[16] || 'UNASSIGNED') === driverName && r[42] !== 'PAID');
 
             try {
                 // Bulk update logic: Sequential for safety or Promise.all
@@ -2531,7 +2608,7 @@
         async function revertDriverGroup(driverName) {
             if (!confirm(`Do you want to REVERT all trips for ${driverName} back to PENDING?`)) return;
 
-            const toUpdate = currentTrips.filter(r => (r[18] || 'UNASSIGNED') === driverName && r[42] === 'PAID');
+            const toUpdate = currentTrips.filter(r => (r[16] || 'UNASSIGNED') === driverName && r[42] === 'PAID');
 
             try {
                 const promises = toUpdate.map(r => updateTrip(r[0], { payout_status: 'PENDING' }));
@@ -2558,12 +2635,15 @@
 
                 // 1. Filter the rows first
                 const filtered = allRows.filter(r => {
-                    const rDate = r[1]; // DATA
-                    const rId = r[0]; // ID
-                    const rDriver = (r[16] || 'UNASSIGNED').toString(); // Corrected Index for Driver: 16
-                    const rStAmount = r[34]; // Index 34 is st_amount (PAID/PEND)
+                    const rDate = r[1];
+                    const rDriver = (r[16] || 'UNASSIGNED').toString();
+                    const rStAmount = r[34];
+                    const rCont = (r[3] || '').toString();
+                    const rOrder = (r[5] || '').toString();
 
-                    const matchesSearch = rDriver.toLowerCase().includes(searchTerm) || rId.toLowerCase().includes(searchTerm);
+                    const matchesSearch = !searchTerm || rDriver.toLowerCase().includes(searchTerm)
+                        || rCont.toLowerCase().includes(searchTerm)
+                        || rOrder.toLowerCase().includes(searchTerm);
                     const matchesDate = (!dateFrom || rDate >= dateFrom) && (!dateTo || rDate <= dateTo);
                     
                     // STATUS FILTER LOGIC
@@ -2835,7 +2915,7 @@
             });
 
             if (filtered.length === 0) {
-                body.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color: #64748b; font-style: italic;">No records matching filter.</td></tr>`;
+                body.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px; color: #64748b; font-style: italic;">No records matching filter.</td></tr>`;
                 return;
             }
 
@@ -2864,7 +2944,6 @@
                 const balanceColor = balance < 0 ? '#ef4444' : '#10b981';
 
                 tr.innerHTML = `
-                    <td style="font-size: 0.75rem; color: #94a3b8;">${(s.id || '---').toString().slice(0, 8).toUpperCase()}</td>
                     <td style="font-weight: 700; color: #1e293b;">${s.driver_name || 'UNASSIGNED'}</td>
                     <td style="color: #475569;">${fDate(s.start_date)}</td>
                     <td style="color: #475569;">${fDate(s.end_date)}</td>
@@ -3016,8 +3095,6 @@
             const savedSection = sessionStorage.getItem('activeSection') || 'hero';
             showView(savedSection);
 
-            // Set initial ID and Order
-            document.getElementById('in-id').value = 'TRIP-' + Date.now().toString().slice(-6);
             const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             let initialOrd = '';
             for (let i = 0; i < 4; i++) initialOrd += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -3560,24 +3637,23 @@
 
                 list.innerHTML = '';
                 data.slice().reverse().forEach(trip => {
-                    const id = (trip[0] || '').toLowerCase();
-                    const date = trip[1] || ''; // Trip Date is Index 1
+                    const date = trip[1] || '';
                     const cont = (trip[3] || '').toLowerCase();
                     const cust = (trip[11] || '').toLowerCase();
-                    const drv = (trip[18] || '').toLowerCase();
+                    const drv = (trip[16] || '').toLowerCase();
+                    const ord = (trip[5] || '').toLowerCase();
 
-                    // Show all if search is empty, or match specific terms: ID, Container, Customer, Driver
-                    const matchesSearch = !search || id.includes(search) || cont.includes(search) || cust.includes(search) || drv.includes(search);
+                    const matchesSearch = !search || cont.includes(search) || cust.includes(search) || drv.includes(search) || ord.includes(search);
                     const matchesDate = (!fromDate || date >= fromDate) && (!toDate || date <= toDate);
 
                     if (matchesSearch && matchesDate) {
                         const div = document.createElement('div');
                         div.className = 'trip-item';
                         div.innerHTML = `
-                            <h4>ID: ${trip[0]}</h4>
-                            <p>${trip[3] || 'No Cont'} | ${trip[19] || 'No Driver'}</p>
+                            <h4>${trip[5] && trip[5] !== '---' ? 'Order ' + trip[5] : 'Trip'} · ${trip[1] || '—'}</h4>
+                            <p>${trip[3] || 'No Cont'} | ${trip[16] || 'No Driver'}</p>
                             <p style="font-size:0.6rem; color:#94a3b8;">${trip[11] || 'No Cust'} | ${trip[1] || ''}</p>
-                            <p style="font-size:0.55rem; color:#64748b;">Truck: ${trip[45] || 'N/A'} | Trailer: ${trip[46] || 'N/A'}</p>
+                            <p style="font-size:0.55rem; color:#64748b;">Truck: ${trip[36] || 'N/A'} | Trailer: ${trip[37] || 'N/A'}</p>
                         `;
                         div.onclick = () => fillReceiptFromTrip(trip, div);
                         list.appendChild(div);
@@ -3594,7 +3670,7 @@
                 currentDocTrip = trip;
 
                 // Clear inputs so they remain "empty" for manual use
-                const inputs = ['u-r-id', 'u-r-date', 'u-r-cont', 'u-r-size', 'u-r-rel', 'u-r-order', 'u-r-doors', 'u-r-customer', 'u-r-phone', 'u-r-pickup', 'u-r-place', 'u-r-yard', 'u-r-storage', 'u-r-sales', 'u-r-notes'];
+                const inputs = ['u-r-date', 'u-r-cont', 'u-r-size', 'u-r-rel', 'u-r-order', 'u-r-doors', 'u-r-customer', 'u-r-phone', 'u-r-pickup', 'u-r-place', 'u-r-yard', 'u-r-storage', 'u-r-sales', 'u-r-notes'];
                 inputs.forEach(id => {
                     const elInput = document.getElementById(id);
                     if (elInput) elInput.value = '';
@@ -3624,13 +3700,11 @@
                     const manual = document.getElementById(id).checked;
                     if (manual) return true;
                     if (!currentDocTrip) return false;
-                    const note = (currentDocTrip[31] || '').toUpperCase();
+                    const note = (currentDocTrip[24] || '').toUpperCase();
                     return note.includes(searchText);
                 };
 
-                // Gather Data for Rendering
                 const data = {
-                    id: getV('u-r-id', 0),
                     date: getV('u-r-date', 1),
                     move: document.getElementById('u-r-move').value || 'IN/OUT',
                     cont: getV('u-r-cont', 3),
@@ -3639,15 +3713,15 @@
                     order: getV('u-r-order', 5),
                     doors: getV('u-r-doors', 9),
                     cust: getV('u-r-customer', 11),
-                    phone: getV('u-r-phone', 23),
+                    phone: getV('u-r-phone', 22),
                     pickup: getV('u-r-pickup', 7),
                     place: getV('u-r-place', 8),
                     yard: parseFloat(getV('u-r-yard', 13)) || 0,
-                    storage: parseFloat(getV('u-r-storage', 15)) || 0,
+                    storage: parseFloat(getV('u-r-storage', 26)) || 0,
                     transp: parseFloat(document.getElementById('u-r-transp')?.value) || 0,
-                    sales: parseFloat(getV('u-r-sales', 20)) || 0,
+                    sales: parseFloat(getV('u-r-sales', 19)) || 0,
                     taxRate: parseFloat(document.getElementById('u-r-tax').value) || 0,
-                    notes: getV('u-r-notes', 28),
+                    notes: getV('u-r-notes', 24),
                     cond: {
                         asis: getB('chk-asis', 'AS IS'),
                         wwt: getB('chk-wwt', 'WWT'),
@@ -3662,7 +3736,9 @@
                 const taxVal = subtotal * (data.taxRate / 100);
                 const total = subtotal + taxVal;
 
-                // Base Header Template
+                const hasReceiptBody = (data.date && data.date !== '---') || (data.order && data.order !== '---')
+                    || (data.cont && data.cont !== '---');
+
                 const headerHtml = `
                     <div class="receipt-header">
                         <div class="receipt-logo-area">
@@ -3671,17 +3747,17 @@
                             <p style="font-size:0.7rem; color:#64748b;">9804 nw 80 ave Hialeah Gardens fl 33016</p>
                             <p style="font-size:0.7rem; color:#64748b;">Phone: 786-768-4409 | 786-736-6288</p>
                         </div>
-                        ${data.id ? `
+                        ${hasReceiptBody ? `
                         <div class="receipt-meta-box">
                             <h2 style="color:#1e293b; margin-bottom:5px; border-bottom: 2px solid #b91c1c; padding-bottom:5px;">RECEIPT</h2>
-                            <p>ID: <strong style="font-size:1.1rem; color:#b91c1c;">#${data.id}</strong></p>
+                            ${data.order && data.order !== '---' ? `<p>ORDER: <strong style="font-size:1rem; color:#b91c1c;">${data.order}</strong></p>` : ''}
                             <p>DATE: <strong>${data.date || '---'}</strong></p>
                         </div>
                         ` : ''}
                     </div>
                 `;
 
-                if (!data.id) {
+                if (!hasReceiptBody) {
                     preview.innerHTML = headerHtml;
                     return;
                 }
@@ -3818,11 +3894,8 @@
             }
 
             window.updateCalendarFromReceipt = async function () {
-                const id = document.getElementById('u-r-id').value;
-                if (!id) return alert('Select a trip first!');
-
-                const tripIdx = currentTrips.findIndex(t => t[0] === id);
-                if (tripIdx === -1) return alert('Trip ID not found in database.');
+                if (!currentDocTrip || !currentDocTrip[0]) return alert('Select a trip first!');
+                const tripUuid = currentDocTrip[0];
 
                 if (!confirm('This will update the main Delivery Calendar with these manual changes. Continue?')) return;
 
@@ -3844,9 +3917,9 @@
                 };
 
                 try {
-                    await updateTrip(id, updates);
+                    await updateTrip(tripUuid, updates);
                     if (window.loadTableData) await window.loadTableData();
-                    await loadDocTrips();
+                    await window.loadDocTrips();
                     alert('Success! Calendar and Report Panel have been updated with these values.');
                 } catch (err) {
                     console.error("Sync failed:", err);
@@ -3909,16 +3982,12 @@
 
                 const filtered = currentTrips.filter(r => {
                     const rDate = r[1];
-                    const rId = r[0];
-                    const rDriver = (r[18] || '---').toString().toLowerCase();
+                    const rDriver = (r[16] || '---').toString().toLowerCase();
                     const rCont = (r[3] || '---').toString().toLowerCase();
+                    const rOrd = (r[5] || '---').toString().toLowerCase();
 
-                    const matchesSearch = rId.toLowerCase().includes(search) || 
-                                          rDriver.includes(search) || 
-                                          rCont.includes(search);
-                                          
-                    const matchesDate = (!fromDate || rDate >= fromDate) && 
-                                        (!toDate || rDate <= toDate);
+                    const matchesSearch = !search || rDriver.includes(search) || rCont.includes(search) || rOrd.includes(search);
+                    const matchesDate = (!fromDate || rDate >= fromDate) && (!toDate || rDate <= toDate);
 
                     return matchesSearch && matchesDate;
                 });
@@ -3927,7 +3996,7 @@
                 filtered.forEach(r => {
                     const div = document.createElement('div');
                     div.className = 'trip-item';
-                    div.innerHTML = `<strong>${r[0]}</strong> - ${r[1]}<br><small>${r[18]} | ${r[3]}</small>`;
+                    div.innerHTML = `<strong>${r[5] && r[5] !== '---' ? 'Order ' + r[5] : 'Trip'} · ${r[1] || '—'}</strong><br><small>${r[16] || '—'} | ${r[3] || '—'}</small>`;
                     div.onclick = () => fillReceiptFromTrip(r, div);
                     list.appendChild(div);
                 });
@@ -4063,9 +4132,6 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             const activeSection = sessionStorage.getItem('activeSection') || 'hero';
-            
-            // Generate initial ID
-            if (window.initNewTripId) window.initNewTripId();
             
             // INITIAL DATA FETCH (Critical for reports persistence)
             if (window.renderDriverLog) {

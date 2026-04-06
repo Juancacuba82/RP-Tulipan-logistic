@@ -497,7 +497,7 @@ main {
 
 #logistics-table {
     width: 100%;
-    min-width: 3200px; /* Stronger width for 31 columns to ensure no wrapping */
+    min-width: 3000px; /* Wide logistics table */
     border-collapse: collapse;
     font-family: var(--font-main);
     font-size: 0.72rem;
@@ -648,7 +648,270 @@ main {
     box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.1);
 }
 
+/* --- Delivery Calendar: New Trip Entry (professional form layout) --- */
+#calendar-view .trip-entry-sidebar {
+    flex: 0 0 540px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 55%, #f1f5f9 100%);
+}
+
+#calendar-view .trip-entry-header {
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 18px 20px;
+    background: linear-gradient(135deg, var(--navy-blue) 0%, #132f4c 100%);
+    border-bottom: none;
+    box-shadow: 0 4px 20px rgba(10, 25, 47, 0.25);
+}
+
+#calendar-view .trip-entry-header-text {
+    flex: 1;
+    min-width: 160px;
+}
+
+#calendar-view .trip-entry-header h3 {
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0 0 4px 0;
+}
+
+#calendar-view .trip-entry-subtitle {
+    margin: 0;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 500;
+    line-height: 1.4;
+    max-width: 280px;
+}
+
+#calendar-view .trip-entry-header .header-actions {
+    align-self: center;
+}
+
+#calendar-view .btn-archive-order {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 22px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(211, 47, 47, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+#calendar-view .btn-archive-order i {
+    font-size: 1rem;
+    opacity: 0.95;
+}
+
+#calendar-view .btn-archive-order:hover {
+    background-color: #e53935;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(211, 47, 47, 0.5);
+}
+
+#calendar-view .btn-archive-order:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(211, 47, 47, 0.4);
+}
+
+#calendar-view .btn-archive-order.btn-update {
+    background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4);
+}
+
+#calendar-view .btn-archive-order.btn-update:hover {
+    background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+    box-shadow: 0 6px 18px rgba(217, 119, 6, 0.45);
+}
+
+#calendar-view .trip-entry-form {
+    padding: 18px 18px 28px;
+}
+
+/* Stacked rows: label full width on top, control full width — easier to scan */
+#calendar-view .trip-entry-form > .form-group:not(.trip-pay-row) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+#calendar-view .trip-entry-form > .form-group:not(.trip-pay-row) .sidebar-label-btn {
+    width: 100% !important;
+    max-width: none;
+    flex: none !important;
+    margin-right: 0;
+    justify-content: flex-start;
+    padding: 8px 12px;
+    min-height: 32px;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+#calendar-view .trip-entry-form > .form-group:not(.trip-pay-row) input,
+#calendar-view .trip-entry-form > .form-group:not(.trip-pay-row) select {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+#calendar-view .trip-entry-form > .form-group:not(.trip-pay-row) input:focus,
+#calendar-view .trip-entry-form > .form-group:not(.trip-pay-row) select:focus {
+    border-color: var(--navy-blue);
+    box-shadow: 0 0 0 3px rgba(10, 25, 47, 0.12);
+}
+
+/* Release type + condition card */
+#calendar-view .trip-release-card {
+    margin-bottom: 18px;
+    padding: 14px 14px 16px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+    border-left: 4px solid var(--corporate-red);
+}
+
+#calendar-view .trip-release-card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--navy-blue);
+}
+
+#calendar-view .trip-release-card-head i {
+    color: var(--corporate-red);
+    font-size: 0.95rem;
+}
+
+#calendar-view .trip-release-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    align-items: start;
+}
+
+#calendar-view .trip-release-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+#calendar-view .trip-field-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #475569;
+    margin: 0;
+    line-height: 1.2;
+}
+
+#calendar-view .trip-select {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: var(--font-main);
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+#calendar-view .trip-select:focus {
+    outline: none;
+    border-color: var(--navy-blue);
+    box-shadow: 0 0 0 3px rgba(10, 25, 47, 0.12);
+}
+
+/* Amount rows with PAID / CASH */
+#calendar-view .trip-entry-form .trip-pay-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+#calendar-view .trip-entry-form .trip-pay-row .sidebar-label-btn {
+    width: 100% !important;
+    flex: none !important;
+    margin-right: 0;
+    justify-content: flex-start;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+#calendar-view .trip-pay-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+#calendar-view .trip-pay-input {
+    flex: 1;
+    min-width: 100px;
+    min-height: 38px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+}
+
+#calendar-view .trip-paid-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--corporate-red);
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+}
+
+#calendar-view .trip-paid-toggle input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--corporate-red);
+    cursor: pointer;
+}
+
 @media screen and (max-width: 768px) {
+    #calendar-view .trip-release-grid {
+        grid-template-columns: 1fr;
+    }
     .form-group {
         flex-direction: column;
         align-items: flex-start;

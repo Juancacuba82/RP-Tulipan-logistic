@@ -160,14 +160,17 @@ CREATE POLICY "Allow public insert" ON settlements FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public update" ON settlements FOR UPDATE USING (true);
 CREATE POLICY "Allow public delete" ON settlements FOR DELETE USING (true);
 
--- Corrected Settlement History Table
-DROP TABLE IF EXISTS settlements;
+-- Corrected Settlement History Table (replaces old settlements table)
+-- WARNING: Only run the DROP below manually if you want to delete old data:
+-- DROP TABLE IF EXISTS settlements;
 CREATE TABLE IF NOT EXISTS settlement_history (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     driver_name TEXT,
     start_date DATE,
     end_date DATE,
     cash_balance NUMERIC,
+    status TEXT,         -- New Field
+    payment_type TEXT,   -- New Field
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

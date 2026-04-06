@@ -1,9 +1,0 @@
-C:\Users\Juanca\Desktop\RP tulipan logistic\tmp_script.js:2507
-
-
-
-SyntaxError: Unexpected end of input
-    at wrapSafe (node:internal/modules/cjs/loader:1638:18)
-    at checkSyntax (node:internal/main/check_syntax:78:3)
-
-Node.js v22.20.0

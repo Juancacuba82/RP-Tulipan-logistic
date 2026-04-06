@@ -31,6 +31,7 @@
 
         // --- TRIP DATA MAPPING HELPERS ---
         function mapTripToArray(t) {
+            // New Unified Structure (v4)
             return [
                 t.trip_id || '---', t.date || '---', t.size || '---', t.n_cont || '---', t.release_no || '---',
                 t.order_no || '---', t.city || '---', t.pickup_address || '---', t.delivery_place || '---',
@@ -38,16 +39,16 @@
                 t.yard_services || '---', t.yard_rate || 0, t.date_out || '---',
                 t.company || '---', t.driver || '---', t.trans_pay || 0, t.type_payment || '---',
                 t.sales_price || 0, t.collect_payment || '---', t.amount || 0, t.phone_no || '---',
-                t.paid_driver || 0,
-                t.income_dis_fee || 0, t.note || '---',
-                t.service_mode || '---', t.monthly_rate || 0, t.start_date_rent || '---', t.next_due || '---',
-                t.st_yard || 'PEND', t.st_rent || 'PEND', t.st_rate || 'PEND', t.st_sales || 'PEND',
-                t.st_amount || (t.paid ? 'PAID' : 'PENDING'), `$${(t.pending_balance || 0).toFixed(2)}`,
-                t.email || '---',
-                t.truck_unit || '---', t.trailer_unit || '---',
-                t.final_driver_pay || 0,
-                t.yard_rate_paid || false,
-                t.status || 'PENDING'
+                t.paid_driver || 0, t.income_dis_fee || 0, t.note || '---', // 0-25
+                t.st_yard || 'PEND', t.st_rent || 'PEND', t.st_rate || 'PEND', t.st_sales || 'PEND', t.st_amount || (t.paid ? 'PAID' : 'PENDING'), // 26-30
+                (t.pending_balance || 0).toFixed(2), // 31
+                t.email || '---', // 32
+                t.truck_unit || '---', t.trailer_unit || '---', // 33, 34
+                t.final_driver_pay || 0, // 35
+                t.yard_rate_paid || false, // 36
+                t.status || 'PENDING', // 37
+                t.payout_status || 'PENDING', // 38 (New)
+                t.service_mode || '---', t.monthly_rate || 0, t.start_date_rent || '---', t.next_due || '---' // 39-42
             ];
         }
 
@@ -79,23 +80,24 @@
                 paid_driver: parseFloat(row[23]) || 0,
                 income_dis_fee: parseFloat(row[24]) || 0,
                 note: row[25],
-                service_mode: row[26],
-                monthly_rate: parseFloat(row[27]) || 0,
-                start_date_rent: row[28] === '---' ? null : row[28],
-                next_due: row[29] === '---' ? null : row[29],
-                st_yard: row[30],
-                st_rent: row[31],
-                st_rate: row[32],
-                st_sales: row[33],
-                st_amount: row[34],
-                paid: row[34] === 'PAID',
-                pending_balance: row[35] ? parseFloat(row[35].toString().replace('$', '').replace(/,/g, '')) || 0 : 0,
-                email: row[36],
-                truck_unit: row[37] === '---' ? null : row[37],
-                trailer_unit: row[38] === '---' ? null : row[38],
-                final_driver_pay: row[39] || 0,
-                yard_rate_paid: row[40] || false,
-                status: row[41] || 'PENDING'
+                st_yard: row[26],
+                st_rent: row[27],
+                st_rate: row[28],
+                st_sales: row[29],
+                st_amount: row[30],
+                paid: row[30] === 'PAID',
+                pending_balance: row[31] ? parseFloat(row[31].toString().replace('$', '').replace(/,/g, '')) || 0 : 0,
+                email: row[32],
+                truck_unit: row[33] === '---' ? null : row[33],
+                trailer_unit: row[34] === '---' ? null : row[34],
+                final_driver_pay: parseFloat(row[35]) || 0,
+                yard_rate_paid: row[36] === true || row[36] === 'true',
+                status: row[37] || 'PENDING',
+                payout_status: row[38] || 'PENDING',
+                service_mode: row[39],
+                monthly_rate: parseFloat(row[40]) || 0,
+                start_date_rent: row[41] === '---' ? null : row[41],
+                next_due: row[42] === '---' ? null : row[42]
             };
         }
 
@@ -153,7 +155,7 @@
             return [
                 e.date || '---', e.category || '---', e.description || '---',
                 `$${(e.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`, e.note || '---',
-                e.expense_id
+                e.id
             ];
         }
 
@@ -451,7 +453,7 @@
                 const cells = tr.cells;
                 if (cells.length < 20) return; 
 
-                // UPDATED INDICES FOR New 22-Column Structure
+                // UPDATED INDICES FOR New 27-Column Structure (Display Grid)
                 const valID = (cells[0].textContent || '').toLowerCase();
                 const valDate = (cells[1].textContent || '');
                 const valSize = (cells[2].textContent || '').toLowerCase();
@@ -459,8 +461,8 @@
                 const valRelease = (cells[4].textContent || '').toLowerCase();
                 const valOrder = (cells[5].textContent || '').toLowerCase();
                 const valCity = (cells[6].textContent || '').toLowerCase();
-                const valDriver = (cells[10].textContent || '').toLowerCase();
-                const valPhone = (cells[16].textContent || '').toLowerCase();
+                const valDriver = (cells[17].textContent || '').toLowerCase(); // Shifted: 16 -> 17
+                const valPhone = (cells[23].textContent || '').toLowerCase(); // Shifted: 22 -> 23
                 
                 const matchCity = !filters.city || valCity === filters.city.toLowerCase();
                 const matchSize = !filters.size || valSize.includes(filters.size);
@@ -570,8 +572,8 @@
                 'in-delivery', 'in-doors', 'in-miles', 'in-customer',
                 'in-yard', 'in-yardrate', 'in-dateout', 'in-company', 'in-driver',
                 'in-rate', 'in-paytype', 'in-sales', 'in-collect', 'in-amount', 'in-phone',
-                'in-paiddriver', 'in-income', 'in-note',
-                'in-mode', 'in-mrate', 'in-sdaterent', 'in-nextdue'
+                'in-paiddriver', 'in-income', 'in-note'
+                // indices 0-25: removed legacy 'in-mode','in-mrate','in-sdaterent','in-nextdue'
             ];
 
             let currentlyFinalized = false;
@@ -622,7 +624,7 @@
             const stSales = document.getElementById('in-salespaid') ? (document.getElementById('in-salespaid').checked ? 'PAID' : 'PEND') : 'PEND';
             let stAmount = document.getElementById('in-amountpaid') ? (document.getElementById('in-amountpaid').checked ? 'PAID' : (shouldFinalize ? 'PAID' : 'PENDING')) : (shouldFinalize ? 'PAID' : 'PENDING');
 
-            rowData.splice(30, 0, stYard, stRent, stRate, stSales, stAmount);
+            rowData.splice(26, 0, stYard, stRent, stRate, stSales, stAmount); // indices 26-30
 
             let pending = 0;
             if (stYard === 'PEND') pending += parseFloat(document.getElementById('in-yardrate')?.value || 0);
@@ -630,12 +632,17 @@
             if (stSales === 'PEND') pending += parseFloat(document.getElementById('in-sales')?.value || 0);
             if (stAmount === 'PENDING') pending += parseFloat(document.getElementById('in-amount')?.value || 0);
 
-            rowData.push(pending.toFixed(2)); // 35
-            rowData.push(document.getElementById('in-email').value || '---'); // 36
-            rowData.push('---', '---'); // 37, 38
-            rowData.push(calculateFinalPay(document.getElementById('in-company').value, parseFloat(document.getElementById('in-paiddriver').value) || 0)); // 39
-            rowData.push(stYard === 'PAID'); // 40
-            rowData.push(finalStatus); // 41
+            rowData.push(pending.toFixed(2)); // 31
+            rowData.push(document.getElementById('in-email').value || '---'); // 32
+            rowData.push('---', '---'); // 33, 34
+            rowData.push(calculateFinalPay(document.getElementById('in-company').value, parseFloat(document.getElementById('in-paiddriver').value) || 0)); // 35
+            rowData.push(stYard === 'PAID'); // 36
+            rowData.push(finalStatus); // 37
+            rowData.push('PENDING'); // 38: payout_status default
+            rowData.push(document.getElementById('in-mode').value || 'SALE'); // 39: service_mode
+            rowData.push(parseFloat(document.getElementById('in-mrate')?.value || 0)); // 40: monthly_rate
+            rowData.push(document.getElementById('in-sdaterent')?.value || '---'); // 41: start_date_rent
+            rowData.push(document.getElementById('in-nextdue')?.value || '---'); // 42: next_due
 
             const tripObj = mapArrayToTrip(rowData);
 
@@ -807,8 +814,8 @@
                 'in-delivery', 'in-doors', 'in-miles', 'in-customer',
                 'in-yard', 'in-yardrate', 'in-dateout', 'in-company', 'in-driver',
                 'in-rate', 'in-paytype', 'in-sales', 'in-collect', 'in-amount', 'in-phone',
-                'in-paiddriver', 'in-income', 'in-note',
-                'in-mode', 'in-mrate', 'in-sdaterent', 'in-nextdue'
+                'in-paiddriver', 'in-income', 'in-note'
+                // removed legacy: 'in-mode','in-mrate','in-sdaterent','in-nextdue'
             ];
 
             fields.forEach((id, i) => {
@@ -820,20 +827,20 @@
             if (window.toggleYardRate) window.toggleYardRate();
             else toggleYardRate(); // fallback if not on window
 
-            // Set Checkboxes (Indices 34-38)
+            // Set Checkboxes — indices from mapTripToArray output:
+            // [26]=st_yard, [28]=st_rate, [29]=st_sales, [30]=st_amount
             const elYardPaid = document.getElementById('in-yardpaid');
-            if (elYardPaid) elYardPaid.checked = (rowData[34] === 'PAID');
+            if (elYardPaid) elYardPaid.checked = (rowData[26] === 'PAID');
             const elRatePaid = document.getElementById('in-ratepaid');
-            if (elRatePaid) elRatePaid.checked = (rowData[36] === 'PAID');
+            if (elRatePaid) elRatePaid.checked = (rowData[28] === 'PAID');
             const elSalesPaid = document.getElementById('in-salespaid');
-            if (elSalesPaid) elSalesPaid.checked = (rowData[37] === 'PAID');
+            if (elSalesPaid) elSalesPaid.checked = (rowData[29] === 'PAID');
             const elAmountPaid = document.getElementById('in-amountpaid');
-            if (elAmountPaid) elAmountPaid.checked = (rowData[38] === 'PAID');
+            if (elAmountPaid) elAmountPaid.checked = (rowData[30] === 'PAID');
 
-            // Removed DRIVER Payout Status as requested
-
-            // Email (Index 43)
-            document.getElementById('in-email').value = rowData[43] || '';
+            // Email — index 32 in mapTripToArray output
+            const elEmail = document.getElementById('in-email');
+            if (elEmail) elEmail.value = rowData[32] || '';
 
             // Truck / Trailer (Indices 44, 45 ignored for Trips UI)
 
@@ -879,12 +886,12 @@
                 currentTrips.forEach((rowData, idx) => {
                     try {
                         const tr = document.createElement('tr');
-                        const stYard = rowData[30];
-                        const stRate = rowData[32];
-                        const stSales = rowData[33];
-                        const stAmount = rowData[34];
-                        const nextDueVal = rowData[29]; // Corrected Variable from rowData
-                        const email = rowData[36];
+                        const stYard = rowData[26];
+                        const stRate = rowData[28];
+                        const stSales = rowData[29];
+                        const stAmount = rowData[30];
+                        const nextDueVal = rowData[42]; // Based on v4 structure
+                        const email = rowData[32]; // index 32 for Email
 
                         // Construct display array (Exact Load Flow Order - 27 Columns)
                         const displayData = [
@@ -896,46 +903,57 @@
                             rowData[5],     // 5: Order - Bol Cont #
                             rowData[6],     // 6: City
                             rowData[7],     // 7: Pick Up Address
-                            rowData[8],     // 8: Delivery Place
-                            rowData[9],     // 9: Doors Direction
-                            rowData[10],    // 10: Miles
-                            rowData[11],    // 11: Customer
-                            rowData[12],    // 12: Yard Services
-                            rowData[13],    // 13: Yard Rate
-                            rowData[14],    // 14: Date Out
-                            rowData[15],    // 15: Company
-                            rowData[16],    // 16: Driver
-                            rowData[17],    // 17: Trans Pay
-                            rowData[18],    // 18: Type Pay
-                            rowData[19],    // 19: Sales Price
-                            rowData[20],    // 20: Collect Pay
-                            rowData[21],    // 21: Amount
-                            rowData[22],    // 22: Phone #
-                            rowData[23],    // 23: Paid Driver
-                            rowData[24],    // 24: Income Fee
-                            rowData[25],    // 25: Note
-                            email,          // 26: Email
+                            'STATUS_FLAGS', // 8: NEW COLUMN
+                            rowData[8],     // 9: Delivery Place (was 8)
+                            rowData[9],     // 10: Doors Direction (was 9)
+                            rowData[10],    // 11: Miles
+                            rowData[11],    // 12: Customer
+                            rowData[12],    // 13: Yard Services
+                            rowData[13],    // 14: Yard Rate (was 13)
+                            rowData[14],    // 15: Date Out
+                            rowData[15],    // 16: Company
+                            rowData[16],    // 17: Driver (was 16)
+                            rowData[17],    // 18: Trans Pay (was 17)
+                            rowData[18],    // 19: Type Pay
+                            rowData[19],    // 20: Sales Price (was 19)
+                            rowData[20],    // 21: Collect Pay
+                            rowData[21],    // 22: Amount (was 21)
+                            rowData[22],    // 23: Phone # (was 22)
+                            rowData[23],    // 24: Paid Driver (was 23)
+                            rowData[24],    // 25: Income Fee (was 24)
+                            rowData[25],    // 26: Note
+                            email,          // 27: Email
                         ];
 
                         displayData.forEach((text, i) => {
                             const td = document.createElement('td');
                             
-                            // Formatting Currency for Financial Columns (Corrected Indices for 22-28 scale)
-                            if ([13, 17, 19, 21, 23, 24].includes(i)) {
+                            // FORMATTING STATUS_FLAGS COLUMN (Index 8)
+                            if (i === 8) {
+                                td.innerHTML = `
+                                    <div style="display:flex; gap:5px; justify-content:center;">
+                                        <input type="checkbox" style="width:16px; height:16px;">
+                                        <input type="checkbox" style="width:16px; height:16px;">
+                                        <input type="checkbox" style="width:16px; height:16px;">
+                                    </div>
+                                `;
+                            }
+                            // Formatting Currency for Financial Columns (Indices shifted by 1)
+                            else if ([14, 18, 20, 22, 24, 25].includes(i)) {
                                 const val = parseFloat(text) || 0;
                                 td.textContent = `$${val.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
                                 td.style.fontWeight = 'bold';
 
-                                // Yard Rate ✅ Icon logic (Index 13 in this new order)
-                                if (i === 13 && stYard === 'PAID') {
+                                // Yard Rate ✅ Icon logic (Index 14)
+                                if (i === 14 && stYard === 'PAID') {
                                     td.innerHTML = `$${val.toLocaleString('en-US', { minimumFractionDigits: 2 })} <i class="fas fa-check-circle" style="color: #10b981; margin-left: 5px;" title="Yard Fee Paid"></i>`;
                                 }
                             } else {
                                 td.textContent = text;
                             }
 
-                            // PAID Status Checkbox for Amount Column (Index 21 in this new order)
-                            if (i === 21) {
+                            // PAID Status Checkbox for Amount Column (Index 22 Shifted)
+                            if (i === 22) {
                                 td.innerHTML = '';
                                 const container = document.createElement('div');
                                 container.style.display = 'flex';
@@ -998,7 +1016,8 @@
                         if (editingIndex === idx) tr.classList.add('editing-row');
 
                         // OVERDUE RENT HIGHLIGHTING
-                        if (mode === 'RENT' && nextDueVal !== '---' && new Date(nextDueVal + 'T00:00:00') < new Date()) {
+                        const serviceMode = rowData[39];
+                        if (serviceMode === 'RENT' && nextDueVal !== '---' && new Date(nextDueVal + 'T00:00:00') < new Date()) {
                             tr.style.backgroundColor = '#fff7ed';
                             tr.style.border = '2px solid #f97316';
                         }
@@ -1100,7 +1119,7 @@
                     const rDate = r[1]; // DATA
                     const rId = r[0]; // ID
                     const rDriver = (r[16] || 'UNASSIGNED').toString(); // Corrected Index for Driver: 16
-                    const rStAmount = r[34]; // Index 34 is st_amount (PAID/PEND)
+                    const rStAmount = r[30]; // Index 30 is st_amount (PAID/PEND)
 
                     const matchesSearch = rDriver.toLowerCase().includes(searchTerm) || rId.toLowerCase().includes(searchTerm);
                     const matchesDate = (!dateFrom || rDate >= dateFrom) && (!dateTo || rDate <= dateTo);
@@ -1120,8 +1139,8 @@
                 let totalGrossFiltered = 0;
                 filtered.forEach(r => {
                     totalAmountFiltered += parseFloat(r[21]) || 0; // Index 21 is Amount
-                    // Use final_driver_pay (Index 39 in rowData) for calculator with fallback
-                    let finalNetVal = parseFloat(r[39]) || 0;
+                    // Use final_driver_pay (Index 35 in rowData) for calculator with fallback
+                    let finalNetVal = parseFloat(r[35]) || 0;
                     if (finalNetVal <= 0) {
                         const comp = r[15] || ''; // Index 15 is Company
                         const grossPaid = parseFloat(r[23]) || 0; // Index 23 is Gross Driver Pay
@@ -1166,8 +1185,8 @@
 
                     selectedIndices.forEach(idx => {
                         const r = filtered[idx];
-                        // Use final_driver_pay (Index 39) with fallback for calculation
-                        let netVal = parseFloat(r[39]) || 0;
+                        // Use final_driver_pay (Index 35) with fallback for calculation
+                        let netVal = parseFloat(r[35]) || 0;
                         if (netVal <= 0) {
                             const comp = r[15] || '';
                             const grossPaid = parseFloat(r[23]) || 0;
@@ -1175,7 +1194,7 @@
                         }
                         totalPaidDriver += netVal;
                         
-                        if (r[34] === 'PAID') { // CASH status for Amount is Index 34
+                        if (r[30] === 'PAID') { // CASH status for Amount is Index 30
                             totalCash += parseFloat(r[21]) || 0; // Amount is Index 21
                         }
                     });
@@ -1236,9 +1255,9 @@
                         const td = document.createElement('td');
                         let value = r[idx] || '---';
 
-                        // Specific logic for 'Paid Driver' column in Reports: show FINAL NET PAY (Index 39) with fallback
+                        // Specific logic for 'Paid Driver' column in Reports: show FINAL NET PAY (Index 35) with fallback
                         if (idx === 23) {
-                            let finalNet = parseFloat(r[39]) || 0;
+                            let finalNet = parseFloat(r[35]) || 0;
                             // Fallback calculation in real-time if DB value is 0
                             if (finalNet <= 0) {
                                 const comp = r[15] || ''; // rowData index 15: Company
@@ -1248,9 +1267,9 @@
                             value = finalNet;
                         }
 
-                        // Specific logic for the LAST column (Cash): only show if r[34] is PAID
+                        // Specific logic for the LAST column (Cash): only show if r[30] is PAID
                         if (i === 10) { // Index of 'Cash' column in cellIndices
-                            const isCashMarked = (r[34] === 'PAID');
+                            const isCashMarked = (r[30] === 'PAID');
                             value = isCashMarked ? (r[21] || '---') : '---';
                         }
 
@@ -1864,17 +1883,17 @@
                     releases: 0
                 };
 
-                // 1. Calculate Revenue from Logistics (Fixed Indices matching mapTripToArray)
+                // 1. Calculate Revenue from Logistics (Fixed Indices matching v4 structure)
                 logisticsData.forEach(row => {
                     const rowDate = row[1];
                     if ((!dateFrom || rowDate >= dateFrom) && (!dateTo || rowDate <= dateTo)) {
                         totals.sales += parseFloat(row[19]) || 0;  // sales_price at index 19
                         totals.yard += parseFloat(row[13]) || 0;   // yard_rate at index 13
 
-                        // Rentals: Sum Day Rate (17) and Monthly Rate (27)
-                        const dayRate = parseFloat(row[17]) || 0;
-                        const monthlyRate = parseFloat(row[27]) || 0;
-                        totals.rentals += (dayRate + monthlyRate);
+                        // Rentals: Sum Trans Pay (17) and Monthly Rate (40)
+                        const transPay = parseFloat(row[17]) || 0;
+                        const monthlyRate = parseFloat(row[40]) || 0;
+                        totals.rentals += (transPay + monthlyRate);
                     }
                 });
 
@@ -1891,12 +1910,12 @@
                 currentReleases.forEach(row => {
                     const rowDate = row[1];
                     if ((!dateFrom || rowDate >= dateFrom) && (!dateTo || rowDate <= dateTo)) {
-                        const q20 = parseFloat(row[6]) || 0;
-                        const p20 = parseFloat(row[7]) || 0;
-                        const q40 = parseFloat(row[8]) || 0;
-                        const p40 = parseFloat(row[9]) || 0;
-                        const q45 = parseFloat(row[10]) || 0;
-                        const p45 = parseFloat(row[11]) || 0;
+                        const q20 = parseFloat(row[7]) || 0;
+                        const p20 = parseFloat(row[8]) || 0;
+                        const q40 = parseFloat(row[9]) || 0;
+                        const p40 = parseFloat(row[10]) || 0;
+                        const q45 = parseFloat(row[11]) || 0;
+                        const p45 = parseFloat(row[12]) || 0;
                         totals.releases += (q20 * p20) + (q40 * p40) + (q45 * p45);
                     }
                 });
@@ -1958,21 +1977,23 @@
             let currentDocTrip = null;
 
             window.loadDocTrips = function () {
-                const search = (document.getElementById('trip-search-input').value || '').toLowerCase();
-                const fromDate = document.getElementById('trip-from-date').value;
-                const toDate = document.getElementById('trip-to-date').value;
+                const search = (document.getElementById('trip-search-input')?.value || '').toLowerCase();
+                const fromDate = document.getElementById('trip-from-date')?.value;
+                const toDate = document.getElementById('trip-to-date')?.value;
                 const list = document.getElementById('trip-list-scroll');
                 const data = currentTrips;
 
+                if (!list) return;
+
                 list.innerHTML = '';
+                // Use a copy to avoid mutating cache while iterating if needed, slice() works
                 data.slice().reverse().forEach(trip => {
                     const id = (trip[0] || '').toLowerCase();
-                    const date = trip[1] || ''; // Trip Date is Index 1
-                    const cont = (trip[3] || '').toLowerCase();
-                    const cust = (trip[11] || '').toLowerCase();
-                    const drv = (trip[18] || '').toLowerCase();
+                    const date = trip[1] || ''; // Index 1
+                    const cont = (trip[3] || '').toString().toLowerCase(); // Index 3
+                    const cust = (trip[11] || '').toString().toLowerCase(); // Index 11
+                    const drv = (trip[16] || '').toString().toLowerCase(); // Index 16: Driver
 
-                    // Show all if search is empty, or match specific terms: ID, Container, Customer, Driver
                     const matchesSearch = !search || id.includes(search) || cont.includes(search) || cust.includes(search) || drv.includes(search);
                     const matchesDate = (!fromDate || date >= fromDate) && (!toDate || date <= toDate);
 
@@ -1981,9 +2002,9 @@
                         div.className = 'trip-item';
                         div.innerHTML = `
                             <h4>ID: ${trip[0]}</h4>
-                            <p>${trip[3] || 'No Cont'} | ${trip[19] || 'No Driver'}</p>
+                            <p>${trip[3] || 'No Cont'} | ${trip[16] || 'No Driver'}</p>
                             <p style="font-size:0.6rem; color:#94a3b8;">${trip[11] || 'No Cust'} | ${trip[1] || ''}</p>
-                            <p style="font-size:0.55rem; color:#64748b;">Truck: ${trip[45] || 'N/A'} | Trailer: ${trip[46] || 'N/A'}</p>
+                            <p style="font-size:0.55rem; color:#64748b;">Truck: ${trip[33] || 'N/A'} | Trailer: ${trip[34] || 'N/A'}</p>
                         `;
                         div.onclick = () => fillReceiptFromTrip(trip, div);
                         list.appendChild(div);
@@ -2030,7 +2051,7 @@
                     const manual = document.getElementById(id).checked;
                     if (manual) return true;
                     if (!currentDocTrip) return false;
-                    const note = (currentDocTrip[31] || '').toUpperCase();
+                    const note = (currentDocTrip[25] || '').toUpperCase(); // Index 25 is Note
                     return note.includes(searchText);
                 };
 
@@ -2045,15 +2066,15 @@
                     order: getV('u-r-order', 5),
                     doors: getV('u-r-doors', 9),
                     cust: getV('u-r-customer', 11),
-                    phone: getV('u-r-phone', 23),
+                    phone: getV('u-r-phone', 22), // Index 22 is phone_no
                     pickup: getV('u-r-pickup', 7),
                     place: getV('u-r-place', 8),
                     yard: parseFloat(getV('u-r-yard', 13)) || 0,
-                    storage: parseFloat(getV('u-r-storage', 15)) || 0,
-                    transp: parseFloat(document.getElementById('u-r-transp')?.value) || 0,
-                    sales: parseFloat(getV('u-r-sales', 20)) || 0,
+                    storage: parseFloat(getV('u-r-storage', 40)) || 0, // Index 40 is monthly_rate
+                    transp: parseFloat(getV('u-r-transp', 17)) || 0, // Index 17 is trans_pay
+                    sales: parseFloat(getV('u-r-sales', 19)) || 0, // Index 19 is sales_price
                     taxRate: parseFloat(document.getElementById('u-r-tax').value) || 0,
-                    notes: getV('u-r-notes', 28),
+                    notes: getV('u-r-notes', 25), // Index 25 is Note
                     cond: {
                         asis: getB('chk-asis', 'AS IS'),
                         wwt: getB('chk-wwt', 'WWT'),
@@ -2296,51 +2317,7 @@
             if (fromD) fromD.value = '';
             if (toD) toD.value = '';
 
-            // Update loadDocTrips to show all if no dates are provided
-            window.loadDocTrips = async function () {
-                const list = document.getElementById('trip-list-scroll');
-                if (!list) return;
-
-                const search = (document.getElementById('trip-search-input')?.value || '').toLowerCase();
-                const fromDate = document.getElementById('trip-from-date')?.value;
-                const toDate = document.getElementById('trip-to-date')?.value;
-
-                console.log("Loading doc trips... Search:", search, "From:", fromDate, "To:", toDate);
-
-                // Fetch if needed, otherwise use currentTrips
-                if (currentTrips.length === 0) {
-                    const data = await getTrips();
-                    currentTrips = data.map(mapTripToArray);
-                }
-
-                const filtered = currentTrips.filter(r => {
-                    const rDate = r[1];
-                    const rId = r[0];
-                    const rDriver = (r[18] || '---').toString().toLowerCase();
-                    const rCont = (r[3] || '---').toString().toLowerCase();
-
-                    const matchesSearch = rId.toLowerCase().includes(search) || 
-                                          rDriver.includes(search) || 
-                                          rCont.includes(search);
-                                          
-                    const matchesDate = (!fromDate || rDate >= fromDate) && 
-                                        (!toDate || rDate <= toDate);
-
-                    return matchesSearch && matchesDate;
-                });
-
-                list.innerHTML = '';
-                filtered.forEach(r => {
-                    const div = document.createElement('div');
-                    div.className = 'trip-item';
-                    div.innerHTML = `<strong>${r[0]}</strong> - ${r[1]}<br><small>${r[18]} | ${r[3]}</small>`;
-                    div.onclick = () => fillReceiptFromTrip(r, div);
-                    list.appendChild(div);
-                });
-            }
-
-            // Call loadDocTrips to populate initially
-            loadDocTrips();
+            // loadDocTrips call at end of DOMContentLoaded handles initial population
 
             // --- FLEET MANAGEMENT LOGIC ---
             let currentFleetTab = 'truck';

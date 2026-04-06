@@ -42,14 +42,14 @@ async function addTrip(tripData) {
     return data;
 }
 
-async function updateTrip(tripId, updateData) {
-    const { data, error } = await db.from('trips').update(updateData).eq('trip_id', tripId);
+async function updateTrip(tripUuid, updateData) {
+    const { data, error } = await db.from('trips').update(updateData).eq('id', tripUuid);
     if (error) { console.error('Error updating trip:', error); throw error; }
     return data;
 }
 
-async function deleteTrip(tripId) {
-    const { error } = await db.from('trips').delete().eq('trip_id', tripId);
+async function deleteTrip(tripUuid) {
+    const { error } = await db.from('trips').delete().eq('id', tripUuid);
     if (error) { console.error('Error deleting trip:', error); throw error; }
 }
 
@@ -86,7 +86,7 @@ async function addExpense(expenseData) {
 }
 
 async function deleteExpense(expenseId) {
-    const { error } = await db.from('expenses').delete().eq('expense_id', expenseId);
+    const { error } = await db.from('expenses').delete().eq('id', expenseId);
     if (error) { console.error('Error deleting expense:', error); throw error; }
 }
 
@@ -188,28 +188,26 @@ async function migrateDataToSupabase() {
             doors_direction: row[9],
             miles: parseFloat(row[10]) || 0,
             customer: row[11],
-            payment_date: row[12] === '---' ? null : row[12],
             yard_services: row[13],
             yard_rate: parseFloat(row[14]) || 0,
             date_out: row[15] === '---' ? null : row[15],
             day_rate: parseFloat(row[16]) || 0,
             company: row[17],
             driver: row[18],
-            rate: parseFloat(row[19]) || 0,
-            pay_type: row[20],
+            trans_pay: parseFloat(row[19]) || 0,
+            type_payment: row[20],
             sales_price: parseFloat(row[21]) || 0,
             collect_payment: row[22],
             amount: parseFloat(row[23]) || 0,
-            phone: row[24],
-            paid_driver_amount: parseFloat(row[25]) || 0,
+            phone_no: row[24],
+            paid_driver: parseFloat(row[25]) || 0,
             status: row[26],
             commission_percent: row[27],
             commission_driver: parseFloat(row[28]) || 0,
             income_dis_fee: parseFloat(row[29]) || 0,
             invoice: row[30],
             note: row[31],
-            email: row[43],
-            mode: row[32],
+            service_mode: row[32],
             monthly_rate: parseFloat(row[33]) || 0,
             start_date_rent: row[34] === '---' ? null : row[34],
             next_due: row[35] === '---' ? null : row[35],
