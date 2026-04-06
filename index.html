@@ -137,13 +137,6 @@
                                     <span style="font-size: 0.65rem; font-weight: 700; color: #059669;">Sales?</span>
                                 </div>
                                 
-                                <!-- Compact Status Toggle V2 (Cache Bypass) -->
-                                <div style="display: flex; align-items: center; padding-left: 30px; flex: none !important;">
-                                    <label class="v2-status-wrap" style="flex: none !important; width: 70px !important;">
-                                        <input type="checkbox" id="in-status-toggle">
-                                        <span class="v2-status-slider"></span>
-                                    </label>
-                                </div>
                             </div>
                         </div>
                         <div class="form-group"><label class="sidebar-label-btn">Date</label><input type="date" id="in-date"></div>
@@ -374,6 +367,14 @@
                             </div>
                         </div>
                         <div class="form-group"><label class="sidebar-label-btn">Phone #</label><input type="text" id="in-phone"></div>
+                        
+                        <div class="form-group">
+                            <label class="sidebar-label-btn">Status</label>
+                            <select id="in-status-toggle" onchange="updateStatusColor(this.value)" style="background-color: #fee2e2; font-weight: 700; color: #991b1b; transition: all 0.3s ease;">
+                                <option value="PENDING_PAYMENT" style="background-color: #fee2e2; color: #991b1b;">Pending</option>
+                                <option value="PAID" style="background-color: #dcfce7; color: #166534;">Complete</option>
+                            </select>
+                        </div>
 
                         <!-- Removed STATUS as per user request -->
                         <!-- Removed COMISSION as per user request -->
@@ -1961,6 +1962,19 @@
             if (window.applyAdvancedFilters) applyAdvancedFilters();
         }
         window.resetAdvancedFilters = resetAdvancedFilters;
+        
+        function updateStatusColor(val) {
+            const el = document.getElementById('in-status-toggle');
+            if (!el) return;
+            if (val === 'PAID') {
+                el.style.backgroundColor = '#dcfce7'; // Verde suave
+                el.style.color = '#166534';           // Verde oscuro texto
+            } else {
+                el.style.backgroundColor = '#fee2e2'; // Rojo suave
+                el.style.color = '#991b1b';           // Rojo oscuro texto
+            }
+        }
+        window.updateStatusColor = updateStatusColor;
 
         function resetForm() {
             editingIndex = null;
@@ -1990,7 +2004,10 @@
 
             document.getElementById('in-flag2').checked = false;
             document.getElementById('in-flag3').checked = false;
-            if (document.getElementById('in-status-toggle')) document.getElementById('in-status-toggle').checked = false;
+            if (document.getElementById('in-status-toggle')) {
+                document.getElementById('in-status-toggle').value = 'PENDING_PAYMENT';
+                updateStatusColor('PENDING_PAYMENT');
+            }
             toggleTransport();
             toggleSalesPrice();
         }
@@ -2081,7 +2098,8 @@
             // The status toggle (swish) is the MASTER finalization flag.
             // Green = order finalized (money visible in Profit Report, stock deducted if sale)
             // Red  = order pending  (money hidden from Profit Report, no stock deduction)
-            const isFinalized = document.getElementById('in-status-toggle')?.checked || false;
+            const finalizeVal = document.getElementById('in-status-toggle')?.value || 'PENDING_PAYMENT';
+            const isFinalized = finalizeVal === 'PAID';
             const globalStatus = isFinalized ? 'PAID' : 'PENDING_PAYMENT';
 
             // Stock deduction only triggers when the toggle is switched TO green AND
@@ -2129,7 +2147,16 @@
                         if (stockIdx !== -1) {
                             totalStockFound = matchingRows.reduce((sum, r) => sum + (parseInt(r[stockIdx]) || 0), 0);
 
-                            if (totalStockFound <= 0) {
+                            // Check if we are editing and haven't changed the Release details for THIS order
+                            let bypassStockCheck = false;
+                            if (editingIndex !== null) {
+                                const old = currentTrips[editingIndex];
+                                if (old && old[4] === selectedRelease && old[2] === selectedSize && old[44] === selectedRelType && old[45] === selectedRelCond) {
+                                    bypassStockCheck = true;
+                                }
+                            }
+
+                            if (totalStockFound <= 0 && !bypassStockCheck) {
                                 alert(`Sin stock disponible para contenedores de ${sizeBase} en la combinación ${selectedRelType}/${selectedRelCond}.`);
                                 isSaving = false;
                                 restoreTripArchiveButtonUI();
@@ -2349,7 +2376,16 @@
                     totalStock = matchingRows.reduce((sum, r) => sum + (parseInt(r[idx]) || 0), 0);
                 }
 
-                if (totalStock <= 0) {
+                // If editing and SAME release combo, don't block
+                let bypass = false;
+                if (editingIndex !== null) {
+                    const oldTripData = currentTrips[editingIndex];
+                    if (oldTripData && oldTripData[4] === selectedRel && oldTripData[2] === selectedSize && oldTripData[44] === selectedRelType && oldTripData[45] === selectedRelCond) {
+                        bypass = true;
+                    }
+                }
+
+                if (totalStock <= 0 && !bypass) {
                     tripBtn.disabled = true;
                     tripBtn.style.opacity = '0.5';
                     if (labelSpan) labelSpan.textContent = 'No stock';
@@ -2464,8 +2500,11 @@
 
 
             // Set Checkboxes (Fixed Absolute Indices)
-            const isPaid = (rowData[41] === 'PAID');
-            if (document.getElementById('in-status-toggle')) document.getElementById('in-status-toggle').checked = isPaid;
+            if (document.getElementById('in-status-toggle')) {
+                const sval = rowData[41] || 'PENDING_PAYMENT';
+                document.getElementById('in-status-toggle').value = sval;
+                updateStatusColor(sval);
+            }
 
             document.getElementById('in-yardpaid').checked = (rowData[30] === 'PAID');
             document.getElementById('in-rentpaid').checked = (rowData[31] === 'PAID');
