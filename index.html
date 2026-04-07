@@ -453,7 +453,7 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="sidebar-label-btn sidebar-label-btn-blue">Show Tax (%?)</label>
+                            <label class="sidebar-label-btn">Show Tax (%?)</label>
                             <div style="display: flex; gap: 8px; flex: 1; align-items: center;">
                                 <input type="checkbox" id="in-showtax" style="width: 20px; height: 20px; cursor: pointer;">
                                 <input type="number" id="in-taxpercent" placeholder="0" style="flex: 1; height: 32px; padding: 0 10px; border: 1px solid #cbd5e1; border-radius: 4px; background: #f8fafc;">
@@ -461,7 +461,7 @@
                         </div>
 
                         <div class="form-group" style="margin-bottom: 20px;">
-                            <label class="sidebar-label-btn" style="background: #e2e8f0; color: #1e293b;">Hide Billing on Receipt</label>
+                            <label class="sidebar-label-btn" style="background: #e2e8f0; color: #1e293b;">Billing on Receipt</label>
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <input type="checkbox" id="in-hideamounts" style="width:20px; height:20px; cursor:pointer;">
                                 <span style="font-size:0.75rem; color:#64748b; font-weight:bold;">Hide all prices & totals</span>
@@ -722,8 +722,8 @@
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                         <span style="font-weight: 900; font-size: 0.8rem; color: #1e293b;">20' FT</span>
                                         <div style="display: flex; gap: 8px;">
-                                            <input type="number" id="rel-qty-20" placeholder="Qty" value="0" min="0" style="width: 50px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px;">
-                                            <input type="number" id="rel-price-20" placeholder="$ Price" value="0" style="width: 70px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px; color: #16a34a; font-weight: bold;">
+                                            <input type="number" id="rel-qty-20" placeholder="0" value="0" min="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" style="width: 50px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px;">
+                                            <input type="number" id="rel-price-20" placeholder="0.00" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" style="width: 70px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px; color: #16a34a; font-weight: bold;">
                                         </div>
                                     </div>
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
@@ -745,8 +745,8 @@
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                         <span style="font-weight: 900; font-size: 0.8rem; color: #1e293b;">40' FT</span>
                                         <div style="display: flex; gap: 8px;">
-                                            <input type="number" id="rel-qty-40" placeholder="Qty" value="0" min="0" style="width: 50px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px;">
-                                            <input type="number" id="rel-price-40" placeholder="$ Price" value="0" style="width: 70px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px; color: #16a34a; font-weight: bold;">
+                                            <input type="number" id="rel-qty-40" placeholder="0" value="0" min="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" style="width: 50px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px;">
+                                            <input type="number" id="rel-price-40" placeholder="0.00" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" style="width: 70px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px; color: #16a34a; font-weight: bold;">
                                         </div>
                                     </div>
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
@@ -768,8 +768,8 @@
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                         <span style="font-weight: 900; font-size: 0.8rem; color: #1e293b;">45' FT</span>
                                         <div style="display: flex; gap: 8px;">
-                                            <input type="number" id="rel-qty-45" placeholder="Qty" value="0" min="0" style="width: 50px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px;">
-                                            <input type="number" id="rel-price-45" placeholder="$ Price" value="0" style="width: 70px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px; color: #16a34a; font-weight: bold;">
+                                            <input type="number" id="rel-qty-45" placeholder="0" value="0" min="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" style="width: 50px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px;">
+                                            <input type="number" id="rel-price-45" placeholder="0.00" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" style="width: 70px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.8rem; padding: 2px 4px; color: #16a34a; font-weight: bold;">
                                         </div>
                                     </div>
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
@@ -4141,7 +4141,7 @@
                                 td.textContent = valDisplay;
                                 td.style.fontWeight = '900';
 
-                                if (idx === 'STOCK' && valDisplay <= 10) {
+                                if (idx === 'STOCK' && valDisplay <= 5) {
                                     td.style.backgroundColor = '#fee2e2';
                                     td.style.color = '#dc2626';
                                     td.style.border = '2px solid #ef4444';
@@ -4153,7 +4153,7 @@
                                 const valStr = text !== undefined ? text : '0';
                                 const valNum = parseInt(valStr) || 0;
                                 td.textContent = valStr;
-                                if (valNum <= 10) {
+                                if (valNum <= 5) {
                                     td.style.backgroundColor = '#fee2e2';
                                     td.style.color = '#dc2626';
                                     td.style.fontWeight = '900';
