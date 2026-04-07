@@ -2084,6 +2084,9 @@
 
                 if (!list) return;
 
+                // Globalize critical state for robustness
+                window.currentDocTrip = window.currentDocTrip || null;
+                
                 list.innerHTML = '';
                 // Use a copy to avoid mutating cache while iterating if needed, slice() works
                 data.slice().reverse().forEach(trip => {
@@ -2091,9 +2094,11 @@
                     const date = trip[1] || ''; // Index 1
                     const cont = (trip[3] || '').toString().toLowerCase(); // Index 3
                     const cust = (trip[11] || '').toString().toLowerCase(); // Index 11
-                    const drv = (trip[16] || '').toString().toLowerCase(); // Index 16: Driver
+                    const drv = (trip[17] || '').toString().toLowerCase(); // Index 17: Driver
+                    const ord = (trip[5] || '').toString().toLowerCase(); // Index 5: Order
 
-                    const matchesSearch = !search || id.includes(search) || cont.includes(search) || cust.includes(search) || drv.includes(search);
+                    const matchesSearch = !search || id.includes(search) || cont.includes(search) || cust.includes(search) || drv.includes(search) || ord.includes(search);
+
                     const matchesDate = (!fromDate || date >= fromDate) && (!toDate || date <= toDate);
 
                     if (matchesSearch && matchesDate) {
@@ -2101,9 +2106,9 @@
                         div.className = 'trip-item';
                         div.innerHTML = `
                             <h4>ID: ${trip[0]}</h4>
-                            <p>${trip[3] || 'No Cont'} | ${trip[16] || 'No Driver'}</p>
+                            <p>${trip[3] || 'No Cont'} | ${trip[17] || 'No Driver'}</p>
                             <p style="font-size:0.6rem; color:#94a3b8;">${trip[11] || 'No Cust'} | ${trip[1] || ''}</p>
-                            <p style="font-size:0.55rem; color:#64748b;">Truck: ${trip[33] || 'N/A'} | Trailer: ${trip[34] || 'N/A'}</p>
+                            <p style="font-size:0.55rem; color:#64748b;">Truck: ${trip[37] || 'N/A'} | Trailer: ${trip[38] || 'N/A'}</p>
                         `;
                         div.onclick = () => fillReceiptFromTrip(trip, div);
                         list.appendChild(div);
@@ -2112,19 +2117,24 @@
             }
 
             window.fillReceiptFromTrip = function (trip, el) {
+                console.log("Selecting Trip for Receipt:", trip);
                 // UI Active State
                 document.querySelectorAll('.trip-item').forEach(i => i.classList.remove('active'));
                 if (el) el.classList.add('active');
 
                 // Store selected trip and CLEAR sideform for overrides
-                currentDocTrip = trip;
+                window.currentDocTrip = trip;
+                const elId = document.getElementById('u-r-id');
+                if (elId) elId.value = trip[0];
 
                 // Clear inputs so they remain "empty" for manual use
-                const inputs = ['u-r-id', 'u-r-date', 'u-r-cont', 'u-r-size', 'u-r-rel', 'u-r-order', 'u-r-doors', 'u-r-customer', 'u-r-phone', 'u-r-pickup', 'u-r-place', 'u-r-yard', 'u-r-storage', 'u-r-sales', 'u-r-notes'];
+                const inputs = ['u-r-date', 'u-r-cont', 'u-r-size', 'u-r-rel', 'u-r-order', 'u-r-doors', 'u-r-customer', 'u-r-phone', 'u-r-pickup', 'u-r-place', 'u-r-yard', 'u-r-storage', 'u-r-sales', 'u-r-transp', 'u-r-notes'];
+
                 inputs.forEach(id => {
                     const elInput = document.getElementById(id);
                     if (elInput) elInput.value = '';
                 });
+
 
                 // Reset checkboxes
                 ['chk-asis', 'chk-wwt', 'chk-cw', 'chk-new', 'chk-holes', 'chk-doors'].forEach(id => {
@@ -2140,19 +2150,29 @@
 
                 // Helper: Prioritize Manual Input (Sidebar) over Trip Data
                 const getV = (id, tripIdx, def = '') => {
-                    const manual = document.getElementById(id).value;
+                    const el = document.getElementById(id);
+                    const manual = el ? el.value : '';
                     if (manual && manual !== '0' && manual !== '') return manual;
-                    if (currentDocTrip && currentDocTrip[tripIdx]) return currentDocTrip[tripIdx];
+                    const trip = window.currentDocTrip;
+                    if (trip && trip[tripIdx] !== undefined) {
+                      const val = trip[tripIdx];
+                      return (val === '---' || val === null) ? def : val;
+                    }
                     return def;
                 };
 
+
                 const getB = (id, searchText) => {
-                    const manual = document.getElementById(id).checked;
+                    const el = document.getElementById(id);
+                    const manual = el ? el.checked : false;
                     if (manual) return true;
-                    if (!currentDocTrip) return false;
-                    const note = (currentDocTrip[25] || '').toUpperCase(); // Index 25 is Note
+                    const trip = window.currentDocTrip;
+                    if (!trip) return false;
+                    const note = (trip[25] || '').toUpperCase(); // Index 25 is Note
                     return note.includes(searchText);
                 };
+
+
 
                 // Gather Data for Rendering
                 const data = {
@@ -2165,15 +2185,16 @@
                     order: getV('u-r-order', 5),
                     doors: getV('u-r-doors', 9),
                     cust: getV('u-r-customer', 11),
-                    phone: getV('u-r-phone', 22), // Index 22 is phone_no
+                    phone: getV('u-r-phone', 23), // Index 23 is phone_no
                     pickup: getV('u-r-pickup', 7),
                     place: getV('u-r-place', 8),
                     yard: parseFloat(getV('u-r-yard', 13)) || 0,
-                    storage: parseFloat(getV('u-r-storage', 40)) || 0, // Index 40 is monthly_rate
-                    transp: parseFloat(getV('u-r-transp', 17)) || 0, // Index 17 is trans_pay
-                    sales: parseFloat(getV('u-r-sales', 19)) || 0, // Index 19 is sales_price
+                    storage: parseFloat(getV('u-r-storage', 27)) || 0, // Index 27 is monthly_rate
+                    transp: parseFloat(getV('u-r-transp', 18)) || 0, // Index 18 is trans_pay
+                    sales: parseFloat(getV('u-r-sales', 20)) || 0, // Index 20 is sales_price
                     taxRate: parseFloat(document.getElementById('u-r-tax').value) || 0,
                     notes: getV('u-r-notes', 25), // Index 25 is Note
+
                     cond: {
                         asis: getB('chk-asis', 'AS IS'),
                         wwt: getB('chk-wwt', 'WWT'),
@@ -2255,8 +2276,10 @@
                 let billingRows = '';
                 if (data.yard > 0) billingRows += `<tr><td>Yard Loading / Interchange Fee</td><td style="text-align:right;">$${data.yard.toFixed(2)}</td></tr>`;
                 if (data.storage > 0) billingRows += `<tr><td>Storage / Rental Fee</td><td style="text-align:right;">$${data.storage.toFixed(2)}</td></tr>`;
+                if (data.transp > 0) billingRows += `<tr><td>Freight / Transport Fee</td><td style="text-align:right;">$${data.transp.toFixed(2)}</td></tr>`;
                 if (data.sales > 0) billingRows += `<tr><td>Container Sales</td><td style="text-align:right;">$${data.sales.toFixed(2)}</td></tr>`;
                 if (taxVal > 0) billingRows += `<tr><td>Taxes (${data.taxRate}%)</td><td style="text-align:right;">$${taxVal.toFixed(2)}</td></tr>`;
+
 
                 let billingSectionHtml = '';
                 if (total > 0) {
@@ -2365,9 +2388,11 @@
                     delivery_place: document.getElementById('u-r-place').value,
                     yard_rate: parseFloat(document.getElementById('u-r-yard').value) || 0,
                     monthly_rate: parseFloat(document.getElementById('u-r-storage').value) || 0,
+                    trans_pay: parseFloat(document.getElementById('u-r-transp').value) || 0,
                     sales_price: parseFloat(document.getElementById('u-r-sales').value) || 0,
                     note: document.getElementById('u-r-notes').value
                 };
+
 
                 try {
                     await updateTrip(id, updates);
