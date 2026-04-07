@@ -718,18 +718,19 @@ main {
 /* ── Input with PAID badge floating inside ── */
 .input-paid-wrap {
     position: relative;
-    flex: 1;
+    flex: 1 !important;
     display: flex;
     align-items: center;
+    width: 100% !important;
 }
 
 .input-paid-wrap input[type="number"] {
     width: 100%;
     height: 32px;
-    padding: 6px 58px 6px 10px; /* Right padding reserves space for badge */
+    padding: 6px 95px 6px 10px; /* Precise padding for two mini-badges */
     border: 1px solid #cbd5e1;
     border-radius: 4px;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-family: inherit;
     background: #f8fafc;
     outline: none;
@@ -743,51 +744,63 @@ main {
     box-shadow: 0 0 0 3px rgba(10, 25, 47, 0.10);
 }
 
-.input-paid-badge {
+.input-paid-badges-group {
     position: absolute;
     right: 4px;
     top: 50%;
     transform: translateY(-50%);
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    pointer-events: auto; /* Ensure clicks reach the badges */
+}
+
+.input-paid-badge {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
-    padding: 2px 5px;
-    height: 22px;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
+    gap: 2px;
+    padding: 1px 3px;
+    height: 20px;
+    background: #f1f5f9; /* Subtle neutral gray default */
+    border: 1px solid #cbd5e1;
     border-radius: 3px;
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
-    font-size: 0.6rem;
-    font-weight: 800;
+    font-size: 0.58rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: #dc2626;
+    color: #475569;
     transition: all 0.2s ease;
+    line-height: 1;
 }
 
 .input-paid-badge:has(input:checked) {
-    background: #f0fdf4;
-    border-color: #86efac;
-    color: #15803d;
+    background: #f0fdf4 !important;
+    border-color: #86efac !important;
+    color: #15803d !important;
+}
+
+/* Specific color for the PAID badge when UNCHECKED (it should be red-ish) */
+/* This assumes the first badge is usually PAID */
+.input-paid-badges-group label:first-child:not(:has(input:checked)) {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
 }
 
 .input-paid-badge input[type="checkbox"] {
-    width: 13px;
-    height: 13px;
+    width: 11px;
+    height: 11px;
     margin: 0;
-    accent-color: #dc2626;
     cursor: pointer;
 }
 
-.input-paid-badge:has(input:checked) input[type="checkbox"] {
-    accent-color: #15803d;
-}
-
 .form-group input, .form-group select {
-    flex: 1;
-    height: 30px; /* Reduced to fit without scroll */
+    flex: 1 !important;
+    width: 100% !important; /* Ensure both input and select fill the space */
+    min-width: 0; /* Allow shrinking in flex containers */
+    height: 30px;
     padding: 4px 12px;
     border: 1px solid #cbd5e1;
     border-radius: 4px;
@@ -796,6 +809,7 @@ main {
     outline: none;
     background-color: #f8fafc;
     transition: all 0.2s ease;
+    box-sizing: border-box !important; /* Critical for alignment */
 }
 
 
