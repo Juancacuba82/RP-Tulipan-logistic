@@ -108,7 +108,27 @@
             color: #1e293b;
             border-color: #94a3b8;
         }
-    </style>
+        /* Driver Manager Styles */
+    .btn-manage-inline { background: transparent; border: none; padding: 0 5px; height: 20px; font-size: 0.75rem; color: #94a3b8; cursor: pointer; transition: all 0.2s; }
+    .btn-manage-inline:hover { color: #1e293b; text-decoration: underline; }
+
+    .simple-modal { display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    .modal-content { background: white; padding: 25px; border-radius: 12px; width: 400px; max-width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border-top: 5px solid #10b981; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-header h3 { margin: 0; color: #1e293b; font-size: 1.2rem; }
+    .btn-close-modal { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; line-height: 1; }
+    .driver-list-container { max-height: 250px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; }
+    .driver-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #e2e8f0; background: white; }
+    .driver-item:last-child { border-bottom: none; }
+    .driver-item span { font-weight: 700; color: #334155; text-transform: uppercase; font-size: 0.85rem; }
+    .btn-del-driver { color: #ef4444; background: none; border: none; cursor: pointer; font-size: 1rem; padding: 6px; border-radius: 6px; transition: all 0.2s; }
+    .btn-del-driver:hover { background: #fee2e2; }
+    .modal-footer { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+    .add-driver-input-row { display: flex; gap: 8px; }
+    .add-driver-input-row input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; text-transform: uppercase; }
+    .btn-add-driver-confirm { background: #10b981; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 700; transition: all 0.2s; }
+    .btn-add-driver-confirm:hover { background: #059669; }
+</style>
 </head>
 
 <body>
@@ -303,68 +323,21 @@
                             </select>
                         </div>
                         <div class="form-group">
-                             <label class="sidebar-label-btn">Pick Up Address</label>
+                             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                 <label class="sidebar-label-btn">Pick Up Address</label>
+                                 <button onclick="openPickupAddressManager()" class="btn-manage-inline">Manage</button>
+                             </div>
                              <select id="in-pickup" required>
-                                 <option value="" disabled selected>Select Pick Up Address</option>
-                                 <option value="10110 NW 95 AVE">10110 NW 95 AVE</option>
-                                 <option value="10110 NW 105 AVE MEDLEY FL 33178">10110 NW 105 AVE MEDLEY FL 33178</option>
-                                 <option value="10400 NW 95 AVE MEDLEY FL 33178">10400 NW 95 AVE MEDLEY FL 33178</option>
-                                 <option value="10458 ALTA DR JACKSONVILLE FL 32226">10458 ALTA DR JACKSONVILLE FL 32226</option>
-                                 <option value="14300 SW 194 AVE MIAMI FL 33196">14300 SW 194 AVE MIAMI FL 33196</option>
-                                 <option value="18300 SW 158 ST MIAMI FL">18300 SW 158 ST MIAMI FL</option>
-                                 <option value="19-3 HYATT AVE NEWARK NJ 07105">19-3 HYATT AVE NEWARK NJ 07105</option>
-                                 <option value="219 SQUANKUM RD FAMINGDALE NJ 07727">219 SQUANKUM RD FAMINGDALE NJ 07727</option>
-                                 <option value="230 GUN CLUB RD JACKSONVILLE FL 32218">230 GUN CLUB RD JACKSONVILLE FL 32218</option>
-                                 <option value="2545 NW 35TH ST MIAMI FL 33142">2545 NW 35TH ST MIAMI FL 33142</option>
-                                 <option value="2640 S 12 AVE TAMPA FL 33619">2640 S 12 AVE TAMPA FL 33619</option>
-                                 <option value="295 DOREMUS AVE NEWARK 07105">295 DOREMUS AVE NEWARK 07105</option>
-                                 <option value="32 SPIRIT LAKE RD WINTER HAVEN FL">32 SPIRIT LAKE RD WINTER HAVEN FL</option>
-                                 <option value="321 GRANGE RD SAVANNAG GA 31407">321 GRANGE RD SAVANNAG GA 31407</option>
-                                 <option value="3220 N COCOA BLVD COCOA FL 32926">3220 N COCOA BLVD COCOA FL 32926</option>
-                                 <option value="3237CHEESEQUAKE RD OLD BRIDGE NJ 08857">3237CHEESEQUAKE RD OLD BRIDGE NJ 08857</option>
-                                 <option value="340 COMMERCE DR RINCON GA 31326">340 COMMERCE DR RINCON GA 31326</option>
-                                 <option value="3500 KING ST SUITE a, COCOA FL 32926">3500 KING ST SUITE a, COCOA FL 32926</option>
-                                 <option value="4050 MARITIME BLVD TAMPA FL 33605">4050 MARITIME BLVD TAMPA FL 33605</option>
-                                 <option value="4135 OLD MCDOUNGH RD GA">4135 OLD MCDOUNGH RD GA</option>
-                                 <option value="5107 RAWLS RD TAMPA FL 33624">5107 RAWLS RD TAMPA FL 33624</option>
-                                 <option value="6508 EAST LOMBARD ST BALTIMORE MD 21224">6508 EAST LOMBARD ST BALTIMORE MD 21224</option>
-                                 <option value="6601 TICO RD TITUSVILLE FL 32780">6601 TICO RD TITUSVILLE FL 32780</option>
-                                 <option value="6890 NW 25 ST MIAMI FL 33122">6890 NW 25 ST MIAMI FL 33122</option>
-                                 <option value="8211 FISCHER RD BALTIMORE MD 21222">8211 FISCHER RD BALTIMORE MD 21222</option>
-                                 <option value="8300 NW 87 AVE MEDLEY FL 33166">8300 NW 87 AVE MEDLEY FL 33166</option>
-                                 <option value="8421 NW 70 ST MIAMI FL 33166">8421 NW 70 ST MIAMI FL 33166</option>
-                                 <option value="8831 MONCRIEF-DISMORE RD JACKSONVILLE FL 32219">8831 MONCRIEF-DISMORE RD JACKSONVILLE FL 32219</option>
-                                 <option value="9801 NW 106 ST MEDLEY FL 33178">9801 NW 106 ST MEDLEY FL 33178</option>
-                                 <option value="9804 NW 80 AVE HIALEAH FL 33106">9804 NW 80 AVE HIALEAH FL 33106</option>
-                                 <option value="ACE STEVEDORING">ACE STEVEDORING</option>
-                                 <option value="BRADENTON">BRADENTON</option>
-                                 <option value="CONGLOBAL JAX">CONGLOBAL JAX</option>
-                                 <option value="CONT MAINTENANCE">CONT MAINTENANCE</option>
-                                 <option value="DORAL">DORAL</option>
-                                 <option value="FIT TERMINAL">FIT TERMINAL</option>
-                                 <option value="FLCHR YARD">FLCHR YARD</option>
-                                 <option value="GENERAL TRANS DEPO">GENERAL TRANS DEPO</option>
-                                 <option value="MARITIME CONT">MARITIME CONT</option>
-                                 <option value="MIAMI CONT">MIAMI CONT</option>
-                                 <option value="OKECHOBEE">OKECHOBEE</option>
-                                 <option value="QUALITY CONT">QUALITY CONT</option>
-                                 <option value="SOLO DEPOT">SOLO DEPOT</option>
-                                 <option value="ST CLOUD">ST CLOUD</option>
-                                 <option value="TRUCK YARD">TRUCK YARD</option>
+                                 <option value="" disabled selected>Loading addresses...</option>
                              </select>
                          </div>
                         <div class="form-group">
-                            <label class="sidebar-label-btn">Customer</label>
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <label class="sidebar-label-btn">Customer</label>
+                                <button onclick="openCustomerManager()" class="btn-manage-inline">Manage</button>
+                            </div>
                             <select id="in-customer" required>
-                                <option value="" disabled selected>Select Customer</option>
-                                <option value="ANTONIO RENT">ANTONIO RENT</option>
-                                <option value="RICHARD HAYNES">RICHARD HAYNES</option>
-                                <option value="MARK MORRINSON">MARK MORRINSON</option>
-                                <option value="KEMOY">KEMOY</option>
-                                <option value="GLOBAL CONTAINER & CHASSIS">GLOBAL CONTAINER & CHASSIS</option>
-                                <option value="PROSTAR GROUP CONTAINER">PROSTAR GROUP CONTAINER</option>
-                                <option value="MAREX ROAD SERVICES">MAREX ROAD SERVICES</option>
-                                <option value="ZUM SHIPPING">ZUM SHIPPING</option>
+                                <option value="" disabled selected>Loading customers...</option>
                             </select>
                         </div>
 
@@ -383,26 +356,21 @@
                         <div class="form-group" id="transport-miles-group" style="display:none;"><label class="sidebar-label-btn sidebar-label-btn-blue">Miles</label><input type="number" id="in-miles" placeholder="0">
                         </div>
                         <div class="form-group" id="transport-company-group" style="display:none;">
-                            <label class="sidebar-label-btn sidebar-label-btn-blue">Company</label>
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <label class="sidebar-label-btn sidebar-label-btn-blue">Company</label>
+                                <button onclick="openCompanyManager()" class="btn-manage-inline">Manage</button>
+                            </div>
                             <select id="in-company" onchange="updateDriverCommission(); if(window.updateNetPayInfo) updateNetPayInfo();" required>
-                                <option value="" disabled selected>Select Company</option>
-                                <option value="RP TULIPAN">RP TULIPAN</option>
-                                <option value="JR SUPER CRAME">JR SUPER CRAME</option>
-                                <option value="CONTRACTOR">CONTRACTOR</option>
-                                <option value="ONLY SALES">ONLY SALES</option>
+                                <option value="" disabled selected>Loading companies...</option>
                             </select>
                         </div>
-                        <div class="form-group" id="transport-driver-group" style="display:none;">
-                            <label class="sidebar-label-btn sidebar-label-btn-blue">Driver</label>
+                         <div class="form-group" id="transport-driver-group" style="display:none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <label class="sidebar-label-btn sidebar-label-btn-blue">Driver</label>
+                                <button onclick="openDriverManager()" class="btn-manage-inline">Manage</button>
+                            </div>
                             <select id="in-driver" required>
-                                <option value="" disabled selected>Select Driver</option>
-                                <option value="LUIS GARRIDO">Luis Garrido</option>
-                                <option value="ROBERT CORTEZ">Robert Cortez</option>
-                                <option value="MILAY MIRANDA">Milay Miranda</option>
-                                <option value="JORGE A RAMIREZ">Jorge A Ramirez</option>
-                                <option value="JOSE">Jose</option>
-                                <option value="ANTONIO R CUBA">Antonio R Cuba</option>
-                                <option value="TRAVIS JOSEY">Travis Josey</option>
+                                <option value="" disabled selected>Loading drivers...</option>
                             </select>
                         </div>
                         <div class="form-group" id="trans-pay-group" style="display:none;">
@@ -885,8 +853,15 @@
                         </div>
                         <div class="form-group"><label>DEPOT</label><input type="text" id="rel-depot"
                                 placeholder="Depot Name"></div>
-                        <div class="form-group"><label>DEPOT ADDRESS</label><input type="text" id="rel-address"
-                                placeholder="Address"></div>
+                        <div class="form-group">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <label>DEPOT ADDRESS</label>
+                                <button onclick="openPickupAddressManager()" class="btn-manage-inline">Manage</button>
+                            </div>
+                            <select id="rel-address">
+                                <option value="" disabled selected>Loading addresses...</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>SELLER</label><input type="text" id="rel-seller"
                                 placeholder="Seller Name"></div>
                     </div>
@@ -1434,7 +1409,7 @@
         (function setupRealtime() {
             if (!db) return;
             
-            const channels = ['trips', 'releases', 'expenses', 'fleet'];
+            const channels = ['trips', 'releases', 'expenses', 'fleet', 'drivers', 'customers', 'pickup_addresses', 'companies'];
             channels.forEach(table => {
                 db.channel(`${table}_changes`)
                     .on('postgres_changes', { event: '*', schema: 'public', table: table }, async payload => {
@@ -1445,6 +1420,10 @@
                         if (table === 'releases') await loadReleasesData();
                         if (table === 'expenses') await loadExpensesData();
                         if (table === 'fleet') await loadFleetData();
+                        if (table === 'drivers') await loadDriversData();
+                        if (table === 'customers') await loadCustomersData();
+                        if (table === 'pickup_addresses') await loadPickupAddressesData();
+                        if (table === 'companies') await loadCompaniesData();
                     })
                     .subscribe();
             });
@@ -1454,6 +1433,440 @@
         // --- TRIP DATA MAPPING HELPERS ---
 
         // --- TRIP DATA MAPPING HELPERS ---
+        // --- DRIVER MANAGEMENT LOGIC ---
+        let currentDrivers = [];
+        window.openDriverManager = function() {
+            document.getElementById('driver-manager-modal').style.display = 'flex';
+            renderDriverManagerList();
+        }
+        window.closeDriverManager = function() {
+            document.getElementById('driver-manager-modal').style.display = 'none';
+        }
+
+        async function loadDriversData() {
+            if (!db) return;
+            try {
+                const { data, error } = await db.from('drivers').select('*').order('name', { ascending: true });
+                if (error) throw error;
+                
+                // One-time self-migration: If table is empty, seed from hardcoded list
+                if (data.length === 0) {
+                    const seed = ["LUIS GARRIDO", "ROBERT CORTEZ", "MILAY MIRANDA", "JORGE A RAMIREZ", "JOSE", "ANTONIO R CUBA", "TRAVIS JOSEY"];
+                    const seedObjs = seed.map(n => ({ name: n }));
+                    await db.from('drivers').insert(seedObjs);
+                    return loadDriversData();
+                }
+
+                currentDrivers = data;
+                refreshDriverSelects();
+            } catch (err) {
+                console.error("Error loading drivers:", err);
+            }
+        }
+        window.loadDriversData = loadDriversData;
+
+        function refreshDriverSelects() {
+            const sideSel = document.getElementById('in-driver');
+            const filterSel = document.getElementById('f-driver'); // If it exists in reports/history
+            
+            const populate = (sel) => {
+                if (!sel) return;
+                const currentVal = sel.value;
+                sel.innerHTML = '<option value="" disabled selected>Select Driver</option>';
+                currentDrivers.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.name;
+                    opt.textContent = d.name;
+                    sel.appendChild(opt);
+                });
+                if (currentVal) sel.value = currentVal;
+            };
+            
+            populate(sideSel);
+            populate(filterSel);
+        }
+
+        function renderDriverManagerList() {
+            const container = document.getElementById('driver-list-body');
+            if (!container) return;
+            container.innerHTML = '';
+            currentDrivers.forEach(d => {
+                const item = document.createElement('div');
+                item.className = 'driver-item';
+                item.innerHTML = `
+                    <span>${d.name}</span>
+                    <button onclick="deleteDriver('${d.id}')" class="btn-del-driver" title="Delete Driver">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        async function addNewDriver() {
+            const input = document.getElementById('new-driver-name');
+            const name = input.value.trim().toUpperCase();
+            if (!name) return;
+            
+            try {
+                const { error } = await db.from('drivers').insert([{ name: name }]);
+                if (error) {
+                    if (error.code === '23505') alert("Driver already exists!");
+                    else throw error;
+                }
+                input.value = '';
+                await loadDriversData();
+                renderDriverManagerList();
+            } catch (err) {
+                console.error("Failed to add driver:", err);
+                alert("Error adding driver.");
+            }
+        }
+        window.addNewDriver = addNewDriver;
+
+        async function deleteDriver(id) {
+            if (!confirm("Are you sure you want to remove this driver from the active list?")) return;
+            try {
+                const { error } = await db.from('drivers').delete().eq('id', id);
+                if (error) throw error;
+                await loadDriversData();
+                renderDriverManagerList();
+            } catch (err) {
+                console.error("Failed to delete driver:", err);
+            }
+        }
+        window.deleteDriver = deleteDriver;
+        
+        // --- CUSTOMER MANAGEMENT LOGIC ---
+        let currentCustomers = [];
+        window.openCustomerManager = function() {
+            document.getElementById('customer-manager-modal').style.display = 'flex';
+            renderCustomerManagerList();
+        }
+        window.closeCustomerManager = function() {
+            document.getElementById('customer-manager-modal').style.display = 'none';
+        }
+
+        async function loadCustomersData() {
+            if (!db) return;
+            try {
+                const { data, error } = await db.from('customers').select('*').order('name', { ascending: true });
+                if (error) throw error;
+                
+                // One-time self-migration: If table is empty, seed from current static list
+                if (data.length === 0) {
+                    const seed = ["ANTONIO RENT", "RICHARD HAYNES", "MARK MORRINSON", "KEMOY", "GLOBAL CONTAINER & CHASSIS", "PROSTAR GROUP CONTAINER", "MAREX ROAD SERVICES", "ZUM SHIPPING"];
+                    const seedObjs = seed.map(n => ({ name: n }));
+                    await db.from('customers').insert(seedObjs);
+                    return loadCustomersData();
+                }
+
+                currentCustomers = data;
+                refreshCustomerSelects();
+            } catch (err) {
+                console.error("Error loading customers:", err);
+            }
+        }
+        window.loadCustomersData = loadCustomersData;
+
+        function refreshCustomerSelects() {
+            const sideSel = document.getElementById('in-customer');
+            const filterSel = document.getElementById('f-customer');
+            
+            const populate = (sel) => {
+                if (!sel) return;
+                const currentVal = sel.value;
+                sel.innerHTML = '<option value="" disabled selected>Select Customer</option>';
+                currentCustomers.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.name;
+                    opt.textContent = c.name;
+                    sel.appendChild(opt);
+                });
+                if (currentVal) sel.value = currentVal;
+            };
+            
+            populate(sideSel);
+            populate(filterSel);
+        }
+
+        function renderCustomerManagerList() {
+            const container = document.getElementById('customer-list-body');
+            if (!container) return;
+            container.innerHTML = '';
+            currentCustomers.forEach(c => {
+                const item = document.createElement('div');
+                item.className = 'driver-item'; // Reuse same styles
+                item.innerHTML = `
+                    <span>${c.name}</span>
+                    <button onclick="deleteCustomer('${c.id}')" class="btn-del-driver" title="Delete Customer">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        async function addNewCustomer() {
+            const input = document.getElementById('new-customer-name');
+            const name = input.value.trim().toUpperCase();
+            if (!name) return;
+            
+            try {
+                const { error } = await db.from('customers').insert([{ name: name }]);
+                if (error) {
+                    if (error.code === '23505') alert("Customer already exists!");
+                    else throw error;
+                }
+                input.value = '';
+                await loadCustomersData();
+                renderCustomerManagerList();
+            } catch (err) {
+                console.error("Failed to add customer:", err);
+                alert("Error adding customer: " + (err.message || "Unknown error"));
+            }
+        }
+        window.addNewCustomer = addNewCustomer;
+
+        async function deleteCustomer(id) {
+            if (!confirm("Are you sure you want to remove this customer from the active list?")) return;
+            try {
+                const { error } = await db.from('customers').delete().eq('id', id);
+                if (error) throw error;
+                await loadCustomersData();
+                renderCustomerManagerList();
+            } catch (err) {
+                console.error("Failed to delete customer:", err);
+            }
+        }
+        window.deleteCustomer = deleteCustomer;
+
+        // --- PICKUP ADDRESS MANAGEMENT LOGIC ---
+        let currentPickupAddresses = [];
+        window.openPickupAddressManager = function() {
+            document.getElementById('pickup-address-manager-modal').style.display = 'flex';
+            renderPickupAddressManagerList();
+        }
+        window.closePickupAddressManager = function() {
+            document.getElementById('pickup-address-manager-modal').style.display = 'none';
+        }
+
+        async function loadPickupAddressesData() {
+            if (!db) return;
+            try {
+                const { data, error } = await db.from('pickup_addresses').select('*').order('name', { ascending: true });
+                if (error) throw error;
+                
+                // Seed if empty
+                if (data.length === 0) {
+                    const seed = [
+                        "10110 NW 95 AVE", "10110 NW 105 AVE MEDLEY FL 33178", "10400 NW 95 AVE MEDLEY FL 33178", 
+                        "10458 ALTA DR JACKSONVILLE FL 32226", "14300 SW 194 AVE MIAMI FL 33196", "18300 SW 158 ST MIAMI FL", 
+                        "19-3 HYATT AVE NEWARK NJ 07105", "219 SQUANKUM RD FAMINGDALE NJ 07727", "230 GUN CLUB RD JACKSONVILLE FL 32218", 
+                        "2545 NW 35TH ST MIAMI FL 33142", "2640 S 12 AVE TAMPA FL 33619", "295 DOREMUS AVE NEWARK 07105", 
+                        "32 SPIRIT LAKE RD WINTER HAVEN FL", "321 GRANGE RD SAVANNAG GA 31407", "3220 N COCOA BLVD COCOA FL 32926", 
+                        "3237CHEESEQUAKE RD OLD BRIDGE NJ 08857", "340 COMMERCE DR RINCON GA 31326", "3500 KING ST SUITE a, COCOA FL 32926", 
+                        "4050 MARITIME BLVD TAMPA FL 33605", "4135 OLD MCDOUNGH RD GA", "5107 RAWLS RD TAMPA FL 33624", 
+                        "6508 EAST LOMBARD ST BALTIMORE MD 21224", "6601 TICO RD TITUSVILLE FL 32780", "6890 NW 25 ST MIAMI FL 33122", 
+                        "8211 FISCHER RD BALTIMORE MD 21222", "8300 NW 87 AVE MEDLEY FL 33166", "8421 NW 70 ST MIAMI FL 33166", 
+                        "8831 MONCRIEF-DISMORE RD JACKSONVILLE FL 32219", "9801 NW 106 ST MEDLEY FL 33178", "9804 NW 80 AVE HIALEAH FL 33106", 
+                        "ACE STEVEDORING", "BRADENTON", "CONGLOBAL JAX", "CONT MAINTENANCE", "DORAL", "FIT TERMINAL", "FLCHR YARD", 
+                        "GENERAL TRANS DEPO", "MARITIME CONT", "MIAMI CONT", "OKECHOBEE", "QUALITY CONT", "SOLO DEPOT", "ST CLOUD", "TRUCK YARD"
+                    ];
+                    const seedObjs = seed.map(n => ({ name: n }));
+                    await db.from('pickup_addresses').insert(seedObjs);
+                    return loadPickupAddressesData();
+                }
+
+                currentPickupAddresses = data;
+                refreshPickupAddressSelects();
+            } catch (err) {
+                console.error("Error loading pickup addresses:", err);
+            }
+        }
+        window.loadPickupAddressesData = loadPickupAddressesData;
+
+        function refreshPickupAddressSelects() {
+            const sideSel = document.getElementById('in-pickup');
+            const releaseSel = document.getElementById('rel-address');
+            const filterSel = document.getElementById('f-pickup'); 
+            
+            const populate = (sel) => {
+                if (!sel) return;
+                const currentVal = sel.value;
+                sel.innerHTML = `<option value="" disabled selected>${sel.id === 'rel-address' ? 'Select Depot Address' : 'Select Pickup Address'}</option>`;
+                currentPickupAddresses.forEach(a => {
+                    const opt = document.createElement('option');
+                    opt.value = a.name;
+                    opt.textContent = a.name;
+                    sel.appendChild(opt);
+                });
+                if (currentVal) sel.value = currentVal;
+            };
+            
+            populate(sideSel);
+            populate(releaseSel);
+            populate(filterSel);
+        }
+
+        function renderPickupAddressManagerList() {
+            const container = document.getElementById('pickup-address-list-body');
+            if (!container) return;
+            container.innerHTML = '';
+            currentPickupAddresses.forEach(a => {
+                const item = document.createElement('div');
+                item.className = 'driver-item';
+                item.innerHTML = `
+                    <span>${a.name}</span>
+                    <button onclick="deletePickupAddress('${a.id}')" class="btn-del-driver" title="Delete Address">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        async function addNewPickupAddress() {
+            const input = document.getElementById('new-pickup-address-name');
+            const name = input.value.trim().toUpperCase();
+            if (!name) return;
+            
+            try {
+                const { error } = await db.from('pickup_addresses').insert([{ name: name }]);
+                if (error) {
+                    if (error.code === '23505') alert("Address already exists!");
+                    else throw error;
+                }
+                input.value = '';
+                await loadPickupAddressesData();
+                renderPickupAddressManagerList();
+            } catch (err) {
+                console.error("Failed to add address:", err);
+                alert("Error adding address: " + (err.message || "Unknown error"));
+            }
+        }
+        window.addNewPickupAddress = addNewPickupAddress;
+
+        async function deletePickupAddress(id) {
+            if (!confirm("Are you sure you want to remove this address from the active list?")) return;
+            try {
+                const { error } = await db.from('pickup_addresses').delete().eq('id', id);
+                if (error) throw error;
+                await loadPickupAddressesData();
+                renderPickupAddressManagerList();
+            } catch (err) {
+                console.error("Failed to delete address:", err);
+            }
+        }
+        window.deletePickupAddress = deletePickupAddress;
+
+        // --- COMPANY MANAGEMENT LOGIC ---
+        let currentCompanies = [];
+        window.openCompanyManager = function() {
+            document.getElementById('company-manager-modal').style.display = 'flex';
+            renderCompanyManagerList();
+        }
+        window.closeCompanyManager = function() {
+            document.getElementById('company-manager-modal').style.display = 'none';
+        }
+
+        async function loadCompaniesData() {
+            if (!db) return;
+            try {
+                const { data, error } = await db.from('companies').select('*').order('name', { ascending: true });
+                if (error) throw error;
+                
+                // Seed if empty
+                if (data.length === 0) {
+                    const seed = ["RP TULIPAN", "JR SUPER CRAME", "CONTRACTOR", "ONLY SALES"];
+                    const seedObjs = seed.map(n => ({ name: n }));
+                    await db.from('companies').insert(seedObjs);
+                    return loadCompaniesData();
+                }
+
+                currentCompanies = data;
+                refreshCompanySelects();
+            } catch (err) {
+                console.error("Error loading companies:", err);
+            }
+        }
+        window.loadCompaniesData = loadCompaniesData;
+
+        function refreshCompanySelects() {
+            const sideSel = document.getElementById('in-company');
+            const filterSel = document.getElementById('f-company'); 
+            
+            const populate = (sel) => {
+                if (!sel) return;
+                const currentVal = sel.value;
+                sel.innerHTML = '<option value="" disabled selected>Select Company</option>';
+                currentCompanies.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.name;
+                    opt.textContent = c.name;
+                    sel.appendChild(opt);
+                });
+                if (currentVal) sel.value = currentVal;
+            };
+            
+            populate(sideSel);
+            populate(filterSel);
+        }
+
+        function renderCompanyManagerList() {
+            const container = document.getElementById('company-list-body');
+            if (!container) return;
+            container.innerHTML = '';
+            currentCompanies.forEach(c => {
+                const item = document.createElement('div');
+                item.className = 'driver-item';
+                item.innerHTML = `
+                    <span>${c.name}</span>
+                    <button onclick="deleteCompany('${c.id}')" class="btn-del-driver" title="Delete Company">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        async function addNewCompany() {
+            const input = document.getElementById('new-company-name');
+            const name = input.value.trim().toUpperCase();
+            if (!name) return;
+            
+            try {
+                const { error } = await db.from('companies').insert([{ name: name }]);
+                if (error) {
+                    if (error.code === '23505') alert("Company already exists!");
+                    else throw error;
+                }
+                input.value = '';
+                await loadCompaniesData();
+                renderCompanyManagerList();
+            } catch (err) {
+                console.error("Failed to add company:", err);
+                alert("Error adding company: " + (err.message || "Unknown error"));
+            }
+        }
+        window.addNewCompany = addNewCompany;
+
+        async function deleteCompany(id) {
+            if (!confirm("Are you sure you want to remove this company from the active list?")) return;
+            try {
+                const { error } = await db.from('companies').delete().eq('id', id);
+                if (error) throw error;
+                await loadCompaniesData();
+                renderCompanyManagerList();
+            } catch (err) {
+                console.error("Failed to delete company:", err);
+            }
+        }
+        window.deleteCompany = deleteCompany;
+        
+        
+        
+
         function mapTripToArray(t) {
             const normPaid = (val) => (val === true || val === 1 || val === 'PAID' || val === 'true') ? 'PAID' : 'PEND';
             
@@ -1839,6 +2252,9 @@
                 } else if (view === 'profit-report') {
                     if (window.renderProfitReport) window.renderProfitReport();
                 }
+                
+                // Always ensure drivers are loaded
+                if (window.loadDriversData) window.loadDriversData();
             } else {
                 console.warn("View not found:", targetId);
             }
@@ -1990,8 +2406,8 @@
                     const hardcoded = ["ANTONIO RENT", "RICHARD HAYNES", "MARK MORRINSON", "KEMOY", "GLOBAL CONTAINER & CHASSIS", "PROSTAR GROUP CONTAINER", "MAREX ROAD SERVICES", "ZUM SHIPPING"];
                     finalValues = [...new Set([...hardcoded, ...dynamicValues])];
                 } else if (id === 'f-driver') {
-                    const hardcoded = ["LUIS GARRIDO", "ROBERT CORTEZ", "MILAY MIRANDA", "JORGE A RAMIREZ", "JOSE", "ANTONIO R CUBA", "TRAVIS JOSEY"];
-                    finalValues = [...new Set([...hardcoded, ...dynamicValues])];
+                    // Use dynamic currentDrivers instead of hardcoded list
+                    finalValues = [...new Set([...currentDrivers.map(d => d.name), ...dynamicValues])];
                 } else if (id === 'f-company') {
                     const hardcoded = ["RP TULIPAN", "JR SUPER CRAME", "CONTRACTOR", "ONLY SALES"];
                     finalValues = [...new Set([...hardcoded, ...dynamicValues])];
@@ -4501,6 +4917,12 @@
             
             if (window.loadTableData) {
                 await window.loadTableData();
+                // Load drivers and customers as well
+                if (window.loadDriversData) await window.loadDriversData();
+                if (window.loadCustomersData) await window.loadCustomersData();
+                if (window.loadPickupAddressesData) await window.loadPickupAddressesData();
+                if (window.loadCompaniesData) await window.loadCompaniesData();
+                
                 // After data is loaded, if we are in reports, re-render
                 if (activeSection === 'reports') {
                     if (window.renderDriverLog) window.renderDriverLog();
@@ -4525,6 +4947,86 @@
             }
         });
     </script>
+
+    <!-- DRIVER MANAGEMENT MODAL -->
+    <div id="driver-manager-modal" class="simple-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Manage Drivers List</h3>
+                <button onclick="closeDriverManager()" class="btn-close-modal">&times;</button>
+            </div>
+            <div id="driver-list-body" class="driver-list-container">
+                <!-- Drivers will be listed here -->
+            </div>
+            <div class="modal-footer">
+                <div class="add-driver-input-row">
+                    <input type="text" id="new-driver-name" placeholder="ENTER NEW DRIVER NAME...">
+                    <button onclick="addNewDriver()" class="btn-add-driver-confirm">ADD</button>
+                </div>
+                <p style="font-size: 0.65rem; color: #64748b; margin: 0;">* Tip: Deleting a driver only removes them from future entries.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOMER MANAGEMENT MODAL -->
+    <div id="customer-manager-modal" class="simple-modal">
+        <div class="modal-content" style="border-top-color: #3b82f6;">
+            <div class="modal-header">
+                <h3>Manage Customers List</h3>
+                <button onclick="closeCustomerManager()" class="btn-close-modal">&times;</button>
+            </div>
+            <div id="customer-list-body" class="driver-list-container">
+                <!-- Customers will be listed here -->
+            </div>
+            <div class="modal-footer">
+                <div class="add-driver-input-row">
+                    <input type="text" id="new-customer-name" placeholder="ENTER NEW CUSTOMER NAME...">
+                    <button onclick="addNewCustomer()" class="btn-add-driver-confirm" style="background: #3b82f6;">ADD</button>
+                </div>
+                <p style="font-size: 0.65rem; color: #64748b; margin: 0;">* Tip: Deleting a customer only removes them from future entries.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PICKUP ADDRESS MANAGEMENT MODAL -->
+    <div id="pickup-address-manager-modal" class="simple-modal">
+        <div class="modal-content" style="border-top-color: #10b981;">
+            <div class="modal-header">
+                <h3>Manage Pickup Addresses</h3>
+                <button onclick="closePickupAddressManager()" class="btn-close-modal">&times;</button>
+            </div>
+            <div id="pickup-address-list-body" class="driver-list-container">
+                <!-- Addresses will be listed here -->
+            </div>
+            <div class="modal-footer">
+                <div class="add-driver-input-row">
+                    <input type="text" id="new-pickup-address-name" placeholder="ENTER NEW ADDRESS...">
+                    <button onclick="addNewPickupAddress()" class="btn-add-driver-confirm" style="background: #10b981;">ADD</button>
+                </div>
+                <p style="font-size: 0.65rem; color: #64748b; margin: 0;">* Tip: Deleting an address only removes it from future entries.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMPANY MANAGEMENT MODAL -->
+    <div id="company-manager-modal" class="simple-modal">
+        <div class="modal-content" style="border-top-color: #1e40af;">
+            <div class="modal-header">
+                <h3>Manage Companies List</h3>
+                <button onclick="closeCompanyManager()" class="btn-close-modal">&times;</button>
+            </div>
+            <div id="company-list-body" class="driver-list-container">
+                <!-- Companies will be listed here -->
+            </div>
+            <div class="modal-footer">
+                <div class="add-driver-input-row">
+                    <input type="text" id="new-company-name" placeholder="ENTER NEW COMPANY NAME...">
+                    <button onclick="addNewCompany()" class="btn-add-driver-confirm" style="background: #1e40af;">ADD</button>
+                </div>
+                <p style="font-size: 0.65rem; color: #64748b; margin: 0;">* Tip: Deleting a company only removes it from future entries.</p>
+            </div>
+        </div>
+    </div>
 
 </body>
 
