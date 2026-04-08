@@ -249,3 +249,26 @@ async function migrateDataToSupabase() {
         else console.log("Trips migrated successfully!");
     }
 }
+
+// --- STORAGE HELPERS ---
+async function uploadReceipt(blob, filename) {
+    const filePath = `${filename}`;
+    const { data, error } = await db.storage
+        .from('receipts')
+        .upload(filePath, blob, {
+            cacheControl: '3600',
+            upsert: true
+        });
+
+    if (error) {
+        console.error('Error uploading to Supabase Storage:', error);
+        throw error;
+    }
+
+    // Get Public URL
+    const { data: { publicUrl } } = db.storage
+        .from('receipts')
+        .getPublicUrl(filePath);
+
+    return publicUrl;
+}

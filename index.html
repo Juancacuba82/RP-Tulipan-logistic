@@ -19,6 +19,10 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./supabase-client.js"></script>
+    <!-- PDF & Email Service Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         /* Force Sidebar Badge Layout (Bypassing CSS Cache) */
         .input-paid-wrap input[type="number"] {
@@ -166,6 +170,10 @@
                         class="fas fa-calendar-check"></i> DELIVERY CALENDAR</button>
             </div>
 
+            <button onclick="openEmailSettings()" id="btn-email-settings" class="btn-calendar" style="display: none; background: #475569; color: white; margin-right: 10px;">
+                <i class="fas fa-envelope-open-text"></i> EMAIL SETTINGS
+            </button>
+
             <button onclick="handleLogout()" id="btn-logout" class="btn-logout-header" style="display: none;">
                 <i class="fas fa-sign-out-alt"></i> LOGOUT
             </button>
@@ -248,10 +256,15 @@
                             <p class="trip-entry-subtitle">Fill in each block below, then save to the grid.</p>
                         </div>
                         <div class="header-actions">
-                            <button type="button" id="btn-archive-trip" onclick="addRow()" class="btn-add-sidebar btn-archive-order"
-                                title="Save trip to database">
-                                <i class="fas fa-save" aria-hidden="true"></i>
-                                <span class="btn-archive-order-label">Archive order</span>
+                            <div class="field-group">
+                                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#b91c1c; font-weight:900;">
+                                    <input type="checkbox" id="in-sendemail" style="width:18px; height:18px;">
+                                    SEND RECEIPT BY EMAIL?
+                                </label>
+                            </div>
+
+                            <button onclick="addRow()" class="btn-add-sidebar" id="btn-archive-order" style="margin-top: 15px;">
+                                <span class="btn-archive-order-label">Archive Order</span>
                             </button>
                         </div>
                     </div>
@@ -1524,7 +1537,8 @@
             // Hide restricted views from navigation & dashboard
             const adminOnlySelectors = [
                 'button[onclick*="profit-report"]',
-                '#nav-actions-container button[onclick*="profit-report"]'
+                '#nav-actions-container button[onclick*="profit-report"]',
+                '#btn-email-settings'
             ];
             
             const staffOnlySelectors = [
@@ -1604,6 +1618,23 @@
         }
         window.closeDriverManager = function() {
             document.getElementById('driver-manager-modal').style.display = 'none';
+        }
+
+        window.openEmailSettings = function () {
+            document.getElementById('ejs-public-key').value = localStorage.getItem('ejs_public_key') || '';
+            document.getElementById('ejs-service-id').value = localStorage.getItem('ejs_service_id') || '';
+            document.getElementById('ejs-template-id').value = localStorage.getItem('ejs_template_id') || '';
+            document.getElementById('email-settings-modal').style.display = 'block';
+        }
+        window.saveEmailSettings = function () {
+            localStorage.setItem('ejs_public_key', document.getElementById('ejs-public-key').value);
+            localStorage.setItem('ejs_service_id', document.getElementById('ejs-service-id').value);
+            localStorage.setItem('ejs_template_id', document.getElementById('ejs-template-id').value);
+            alert('Settings Saved Locally');
+            closeEmailSettings();
+        }
+        window.closeEmailSettings = function () {
+            document.getElementById('email-settings-modal').style.display = 'none';
         }
 
         async function loadDriversData() {
@@ -3088,8 +3119,17 @@
                  }
 
                 alert('¡ORDEN CONFIRMADA CORRECTAMENTE!');
-
                 console.log("Trip saved successfully to Supabase.");
+
+                // --- AUTOMATED EMAIL TRIGGER ---
+                const sendChecked = document.getElementById('in-sendemail')?.checked;
+                if (sendChecked) {
+                    if (window.generatePDFFromData) {
+                        window.generatePDFFromData(rowData).then(blob => {
+                            if (blob) window.sendReceiptEmail(rowData, blob);
+                        }).catch(e => console.error("Email trigger err:", e));
+                    }
+                }
 
                 resetForm();
                 await loadTableData();
@@ -5063,6 +5103,128 @@
                 `;
             }
 
+            // --- PDF & EMAIL UTILITIES ---
+            window.generatePDFFromData = async function (tripData) {
+                const renderContainer = document.getElementById('receipt-pdf-render');
+                if (!renderContainer || !window.html2canvas || !window.jspdf) {
+                    console.error("Missing libraries or render container for PDF.");
+                    return null;
+                }
+                
+                const tempDiv = document.createElement('div');
+                tempDiv.className = 'a4-paper';
+                renderContainer.appendChild(tempDiv);
+                
+                await renderReceiptToElement(tripData, tempDiv);
+
+                try {
+                    const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true, logging: false });
+                    const imgData = canvas.toDataURL('image/png');
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                    
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                    renderContainer.removeChild(tempDiv);
+                    return pdf.output('blob');
+                } catch (err) {
+                    console.error("PDF Fail:", err);
+                    if (tempDiv.parentNode) renderContainer.removeChild(tempDiv);
+                    return null;
+                }
+            }
+
+            async function renderReceiptToElement(trip, container) {
+                const takeTax = (trip[49] === true || trip[49] === 'true');
+                const taxRate = takeTax ? (parseFloat(trip[50]) || 0) : 0;
+                const hideBilling = (trip[51] === true || trip[51] === 'true');
+
+                const data = {
+                    date: trip[1] || '',
+                    order: trip[5] || '',
+                    cust: trip[11] || '',
+                    rel: trip[4] || '',
+                    cont: trip[3] || '',
+                    size: trip[2] || '',
+                    pickup: trip[7] || '',
+                    place: trip[8] || '',
+                    yard: parseFloat(trip[13]) || 0,
+                    storage: parseFloat(trip[27]) || 0,
+                    transp: parseFloat(trip[18]) || 0,
+                    sales: parseFloat(trip[20]) || 0,
+                    notes: trip[25] || ''
+                };
+
+                const total = data.yard + data.storage + data.transp + data.sales;
+                const taxVal = total * (taxRate / 100);
+                const finalTotal = total + taxVal;
+
+                container.innerHTML = `
+                    <div style="padding: 40px; font-family: 'Outfit', sans-serif;">
+                        <div style="display:flex; justify-content:space-between; border-bottom:3px solid #1e293b; padding-bottom:15px; margin-bottom:20px;">
+                            <div>
+                                <h1 style="color:#b91c1c; font-size: 1.8rem; margin:0; font-weight:900;">RP TULIPAN</h1>
+                                <p style="font-weight:900; color:#1e293b; margin:0;">TRANSPORT, INC.</p>
+                            </div>
+                            <div style="text-align:right;">
+                                <h2 style="color:#b91c1c; margin:0; font-size:1.5rem; font-weight:900;">RECEIPT</h2>
+                                <p style="margin:2px 0;">ORDER: <strong>${data.order}</strong></p>
+                                <p style="margin:2px 0;">DATE: <strong>${data.date}</strong></p>
+                            </div>
+                        </div>
+                        <div style="margin-top:20px; font-size: 0.9rem; line-height: 1.6;">
+                            <p><strong>Customer:</strong> ${data.cust}</p>
+                            <p><strong>Container:</strong> ${data.cont} (${data.size})</p>
+                            <p><strong>Release:</strong> ${data.rel}</p>
+                            <p><strong>From:</strong> ${data.pickup} <strong>To:</strong> ${data.place}</p>
+                        </div>
+                        <div style="margin-top:30px; border-top:2px solid #1e293b; padding-top:10px;">
+                            <h3 style="margin:0; font-size:1rem; color:#b91c1c;">Billing Summary</h3>
+                            <div style="display:flex; justify-content:space-between; margin-top:5px; font-weight:900; font-size:1.2rem;">
+                                <span>TOTAL DUE:</span>
+                                <span>$${finalTotal.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            window.sendReceiptEmail = async function (tripData, pdfBlob) {
+                const serviceId = localStorage.getItem('ejs_service_id');
+                const templateId = localStorage.getItem('ejs_template_id');
+                const publicKey = localStorage.getItem('ejs_public_key');
+                const emailTo = tripData[36];
+
+                if (!serviceId || !templateId || !publicKey || !emailTo || emailTo === '---') {
+                    console.log("Email skip: Incomplete config or no email.");
+                    return;
+                }
+
+                try {
+                    // 1. Upload to Supabase Storage first
+                    const orderNo = tripData[5] || 'OR';
+                    const fileName = `receipt_${orderNo.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+                    
+                    console.log("Uploading receipt to Supabase...");
+                    const publicUrl = await uploadReceipt(pdfBlob, fileName);
+                    console.log("Receipt uploaded! URL:", publicUrl);
+
+                    // 2. Send email with the URL link
+                    await emailjs.send(serviceId, templateId, {
+                        to_email: emailTo,
+                        customer_name: tripData[11] || 'Valued Customer',
+                        order_no: tripData[5] || '---',
+                        receipt_url: publicUrl // This is the new parameter
+                    }, publicKey);
+
+                    console.log("Email Sent via EmailJS with receipt link!");
+                } catch (e) { 
+                    console.error("Email/Upload Error:", e);
+                    alert("Error enviando el correo: " + e.message);
+                }
+            }
+
             window.printA4Document = function () {
                 const el = document.getElementById('receipt-a4');
                 if (!el) return;
@@ -5431,6 +5593,36 @@
         </div>
     </div>
 
+    <!-- Email JS Settings Modal -->
+    <div id="email-settings-modal" class="modal">
+        <div class="modal-content" style="max-width:400px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-envelope-config"></i> EMAILJS CONFIG</h3>
+                <span class="close" onclick="closeEmailSettings()">&times;</span>
+            </div>
+            <div style="padding:15px;">
+                <div class="field-item">
+                    <label>PUBLIC KEY (USER ID)</label>
+                    <input type="text" id="ejs-public-key" placeholder="Get from EmailJS Account">
+                </div>
+                <div class="field-item">
+                    <label>SERVICE ID</label>
+                    <input type="text" id="ejs-service-id" placeholder="e.g. service_xxxx">
+                </div>
+                <div class="field-item">
+                    <label>TEMPLATE ID</label>
+                    <input type="text" id="ejs-template-id" placeholder="e.g. template_xxxx">
+                </div>
+                <p style="font-size:0.7rem; color:#64748b; margin-top:10px;">
+                    *Make sure your template handles 'content' (base64) and 'to_email'.
+                </p>
+                <button onclick="saveEmailSettings()" class="btn-add-sidebar" style="margin-top:15px;">SAVE CONFIGURATION</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Rendering Container for PDF Generation -->
+    <div id="receipt-pdf-render" style="position:fixed; top:-9999px; left:-9999px; width:210mm; background:white;"></div>
 </body>
 
 </html>
