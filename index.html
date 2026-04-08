@@ -145,7 +145,7 @@
                 style="cursor: pointer; display: flex; align-items: center; gap: 15px;">
                 <img src="./assets/logo.png" alt="RP Tulipan Logo" class="navbar-logo-img"
                     style="width: 45px; height: auto; object-fit: contain;">
-                <span class="logo-text">RP TULIPAN</span>
+                <span class="logo-text">RP TULIPAN - SMART</span><button onclick="openSmartImporter()" style="background: #0ea5e9; color: white; border: none; padding: 5px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-left: 20px; display: inline-block !important;">IMPORT DATA ??</button>
             </div>
 
             <button class="mobile-toggle" id="hamburger-menu" aria-label="Toggle Menu"
@@ -5619,6 +5619,242 @@
             }
             window.loadFleetData = loadFleetData;
 
+
+            // ==========================================
+            //        🚀 SMART EXCEL IMPORTER LOGIC
+            // ==========================================
+            let importTarget = 'releases'; // Default
+            let pastedDataGrid = [];
+            
+            window.openSmartImporter = function() {
+                document.getElementById('smart-importer-modal').style.display = 'flex';
+                resetImporter();
+            }
+
+            window.closeSmartImporter = function() {
+                document.getElementById('smart-importer-modal').style.display = 'none';
+            }
+
+            window.setImportTarget = function(target) {
+                importTarget = target;
+                const btnRel = document.getElementById('target-rel');
+                const btnTrips = document.getElementById('target-trips');
+                
+                if (target === 'releases') {
+                    btnRel.classList.add('active');
+                    btnTrips.classList.remove('active');
+                } else {
+                    btnTrips.classList.add('active');
+                    btnRel.classList.remove('active');
+                }
+                // If data was already pasted, re-render mapping to show appropriate options
+                if (pastedDataGrid.length > 0) processPastedData();
+            }
+
+            window.resetImporter = function() {
+                document.getElementById('import-paste-area').value = '';
+                document.getElementById('mapping-container').innerHTML = '';
+                document.getElementById('importer-step-1').style.display = 'block';
+                document.getElementById('importer-step-2').style.display = 'none';
+                pastedDataGrid = [];
+            }
+
+            window.processPastedData = function() {
+                const raw = document.getElementById('import-paste-area').value.trim();
+                if (!raw) return;
+
+                // Excel uses Tabs (\t) for columns and Newlines (\n) for rows
+                const rows = raw.split(/\r?\n/).map(row => row.split('\t'));
+                if (rows.length === 0) return;
+
+                pastedDataGrid = rows;
+                renderMappingUI();
+                
+                document.getElementById('importer-step-1').style.display = 'none';
+                document.getElementById('importer-step-2').style.display = 'block';
+            }
+
+            function renderMappingUI() {
+                const container = document.getElementById('mapping-container');
+                const numCols = pastedDataGrid[0].length;
+                
+                // Define available fields based on target
+                let options = [];
+                if (importTarget === 'releases') {
+                    options = [
+                        { val: 'IGNORE', label: '❌ IGNORE' },
+                        { val: 'release_no', label: 'Release #' },
+                        { val: 'date', label: 'Date' },
+                        { val: 'type', label: 'Type (DRY/REF)' },
+                        { val: 'condition', label: 'Cond (NEW/USED)' },
+                        { val: 'city', label: 'City' },
+                        { val: 'depot', label: 'Depot Name' },
+                        { val: 'depot_address', label: 'Depot Address' },
+                        { val: 'qty_20', label: "Qty 20'" },
+                        { val: 'price_20', label: "$ Price 20'" },
+                        { val: 'qty_40', label: "Qty 40'" },
+                        { val: 'price_40', label: "$ Price 40'" },
+                        { val: 'qty_45', label: "Qty 45'" },
+                        { val: 'price_45', label: "$ Price 45'" },
+                        { val: 'seller', label: 'Seller' },
+                        { val: 'paid', label: 'Paid Status (True/False)' },
+                        { val: 'container_size', label: "Single Size (e.g. 40' HC)" }
+                    ];
+                } else {
+                    // Trips Fields (Simplified for key mapping)
+                    options = [
+                        { val: 'IGNORE', label: '❌ IGNORE' },
+                        { val: 'date', label: 'Date' },
+                        { val: 'n_cont', label: 'Cont #' },
+                        { val: 'size', label: 'Size' },
+                        { val: 'release_no', label: 'Release #' },
+                        { val: 'order_no', label: 'Order #' },
+                        { val: 'customer', label: 'Customer' },
+                        { val: 'city', label: 'City' },
+                        { val: 'pickup_address', label: 'Pickup From' },
+                        { val: 'delivery_place', label: 'Delivery To' },
+                        { val: 'amount', label: 'Sales/Amount ($)' },
+                        { val: 'driver', label: 'Driver Name' },
+                        { val: 'paid', label: 'Paid Status' }
+                    ];
+                }
+
+                let html = `<table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">`;
+                
+                // Header Row: Dropdowns
+                html += `<tr style="background: #f1f5f9; position: sticky; top: 0;">`;
+                for (let i = 0; i < numCols; i++) {
+                    html += `<th style="padding: 10px; border: 1px solid #cbd5e1;">
+                        <select class="map-select" data-col="${i}" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid #94a3b8; font-weight: bold; background: #fff;">
+                            ${options.map(opt => `<option value="${opt.val}">${opt.label}</option>`).join('')}
+                        </select>
+                    </th>`;
+                }
+                html += `</tr>`;
+
+                // Data Rows Preview (Max 10 for preview)
+                const previewRows = pastedDataGrid.slice(0, 10);
+                previewRows.forEach(row => {
+                    html += `<tr>`;
+                    for (let i = 0; i < numCols; i++) {
+                        html += `<td style="padding: 8px; border: 1px solid #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">${row[i] || ''}</td>`;
+                    }
+                    html += `</tr>`;
+                });
+                html += `</table>`;
+                
+                container.innerHTML = html;
+            }
+
+            window.executeFinalImport = async function() {
+                const selects = document.querySelectorAll('.map-select');
+                const mapping = {};
+                let hasSelection = false;
+                
+                selects.forEach(s => {
+                    if (s.value !== 'IGNORE') {
+                        mapping[s.getAttribute('data-col')] = s.value;
+                        hasSelection = true;
+                    }
+                });
+
+                if (!hasSelection) {
+                    alert("Please map at least one column before importing!");
+                    return;
+                }
+
+                if (!confirm(`Are you sure you want to import ${pastedDataGrid.length} records?`)) return;
+
+                const btn = document.querySelector('#smart-importer-modal .btn-add-sidebar[onclick*="executeFinalImport"]');
+                const originalText = btn ? btn.textContent : 'DO MAGIC';
+                if (btn) {
+                    btn.disabled = true;
+                    btn.textContent = 'WORKING MAGIC... 🪄';
+                }
+
+                try {
+                    const finalObjects = [];
+                    
+                    for (const row of pastedDataGrid) {
+                        const obj = {};
+                        let isHeader = false;
+
+                        for (let colIdx in mapping) {
+                            const fieldName = mapping[colIdx];
+                            let val = (row[colIdx] || '').trim();
+
+                            // 1. Detect if this is a header row (e.g., "Fecha" instead of "2024-01-01")
+                            if (fieldName === 'date' && val && isNaN(Date.parse(val))) {
+                                isHeader = true;
+                                break; 
+                            }
+
+                            // 2. Data Sanitization
+                            if (fieldName.includes('price') || fieldName.includes('qty') || fieldName === 'amount') {
+                                val = val.replace(/[^0-9.-]+/g,""); 
+                                val = parseFloat(val) || 0;
+                            } else if (fieldName === 'paid' || fieldName === 'status') {
+                                const lower = val.toLowerCase();
+                                val = (lower === 'paid' || lower === 'yes' || lower === 'true' || lower === '1' || lower === 'ok');
+                            }
+
+                            obj[fieldName] = val;
+                        }
+                        
+                        // Skip this row if it was identified as a header
+                        if (isHeader) continue;
+                        if (Object.keys(obj).length === 0) continue;
+
+                        // Special behavior for Releases: Calculate Initial Stock if not mapped
+                        if (importTarget === 'releases') {
+                            if (!obj.total_stock) {
+                                obj.total_stock = (parseInt(obj.qty_20) || 0) + (parseInt(obj.qty_40) || 0) + (parseInt(obj.qty_45) || 0);
+                            }
+                        } else {
+                            // Special behavior for TRIPS: Ensure trip_id and default mode
+                            if (!obj.trip_id) {
+                                obj.trip_id = 'TRIP-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+                            }
+                            if (!obj.service_mode) obj.service_mode = 'SALE';
+                        }
+                        
+                        finalObjects.push(obj);
+                    }
+
+                    if (finalObjects.length === 0) {
+                        alert("No valid data found to import (Check if you mapped the columns correctly).");
+                        return;
+                    }
+
+                    const tableName = importTarget === 'releases' ? 'releases' : 'trips';
+                    const { error } = await db.from(tableName).insert(finalObjects);
+                    
+                    if (error) {
+                        console.error("Database Insert Error:", error);
+                        throw new Error(`DATABASE ERROR (${error.code}): ${error.message} - ${error.details || ''}`);
+                    }
+
+                    alert(`🎯 SUCCESS! ${finalObjects.length} records imported correctly.`);
+                    closeSmartImporter();
+                    
+                    // Refresh relevant view
+                    if (importTarget === 'releases') {
+                        if (window.loadReleasesData) await window.loadReleasesData();
+                    } else {
+                        if (window.loadTableData) await window.loadTableData();
+                    }
+
+                } catch (err) {
+                    console.error("Import failed:", err);
+                    alert("Import failed: " + err.message);
+                } finally {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = originalText;
+                    }
+                }
+            }
+
             // Run initial load
             loadFleetData();
 
@@ -5670,7 +5906,47 @@
         });
     </script>
 
+    <!-- SMART EXCEL IMPORTER MODAL -->
+    <div id="smart-importer-modal" class="simple-modal">
+        <div class="modal-content" style="width: 1000px; max-width: 95%; border-top-color: #0ea5e9;">
+            <div class="modal-header">
+                <div>
+                    <h3 style="color: #0ea5e9;"><i class="fas fa-file-import"></i> Smart Excel Importer</h3>
+                    <p style="font-size: 0.75rem; color: #64748b; margin: 0;">Paste your spreadsheet data and map columns to database fields.</p>
+                </div>
+                <button onclick="closeSmartImporter()" class="btn-close-modal">&times;</button>
+            </div>
+            
+            <div class="importer-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px;">
+                <button id="target-rel" onclick="setImportTarget('releases')" class="btn-cancel active" style="flex: 1; padding: 12px; font-weight: 800;">IMPORT TO RELEASES</button>
+                <button id="target-trips" onclick="setImportTarget('trips')" class="btn-cancel" style="flex: 1; padding: 12px; font-weight: 800;">IMPORT TO TRIPS / TRUCKING</button>
+            </div>
+
+            <!-- STEP 1: PASTE -->
+            <div id="importer-step-1">
+                <label style="display: block; font-weight: 800; font-size: 0.8rem; margin-bottom: 10px; color: #1e293b;">1. PASTE DATA FROM EXCEL / SHEETS (Include headers if you want)</label>
+                <textarea id="import-paste-area" placeholder="Copy rows from Excel and paste them here..." style="width: 100%; height: 250px; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 15px; font-family: monospace; font-size: 0.8rem; outline: none; transition: border-color 0.3s;"></textarea>
+                <div style="margin-top: 20px; text-align: right;">
+                    <button onclick="processPastedData()" class="btn-add-sidebar" style="background: #0ea5e9; padding: 12px 30px;">NEXT: MAP COLUMNS <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- STEP 2: MAPPING -->
+            <div id="importer-step-2" style="display: none;">
+                <label style="display: block; font-weight: 800; font-size: 0.8rem; margin-bottom: 10px; color: #1e293b;">2. MAP COLUMNS TO DATABASE FIELDS</label>
+                <div id="mapping-container" style="max-height: 400px; overflow: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
+                    <!-- Mapping table generated by JS -->
+                </div>
+                <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <button onclick="resetImporter()" class="btn-cancel"><i class="fas fa-undo"></i> START OVER</button>
+                    <button onclick="executeFinalImport()" class="btn-add-sidebar" style="background: #059669; padding: 12px 40px; font-size: 1rem;">DO MAGIC: START IMPORT 🪄</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- DRIVER MANAGEMENT MODAL -->
+
     <div id="driver-manager-modal" class="simple-modal">
         <div class="modal-content">
             <div class="modal-header">
