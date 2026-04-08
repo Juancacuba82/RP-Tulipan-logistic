@@ -18,6 +18,30 @@ try {
     console.error("Supabase client failed to initialize:", e);
 }
 
+// --- AUTHENTICATION HELPERS ---
+async function signIn(email, password) {
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data;
+}
+
+async function signOut() {
+    const { error } = await db.auth.signOut();
+    if (error) throw error;
+}
+
+async function getSession() {
+    const { data: { session }, error } = await db.auth.getSession();
+    if (error) throw error;
+    return session;
+}
+
+async function getProfile(userId) {
+    const { data, error } = await db.from('profiles').select('*').eq('id', userId).single();
+    if (error) throw error;
+    return data;
+}
+
 async function getTrips() {
     try {
         const { data, error } = await db

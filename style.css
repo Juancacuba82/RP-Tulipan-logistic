@@ -161,6 +161,37 @@ main {
     display: none; /* Hidden on Desktop PC as requested */
 }
 
+.btn-logout-header {
+    background-color: #475569;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    z-index: 2001;
+    text-transform: uppercase;
+}
+
+.btn-logout-header:hover {
+    background-color: #334155;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+@media screen and (max-width: 768px) {
+    .btn-logout-header {
+        position: absolute;
+        top: 20px;
+        right: 80px; /* Adjust based on hamburger menu position */
+    }
+}
+
 /* Mobile Toggle (Hamburger) */
 .mobile-toggle {
     display: none;
