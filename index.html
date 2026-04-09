@@ -141,11 +141,11 @@
     <header class="navbar" id="header-nav">
         <div class="container-nav">
             <div class="navbar-logo"
-                onclick="closeMenu(); sessionStorage.setItem('activeSection', 'hero'); showView('hero')"
+                onclick="closeMenu(); localStorage.setItem('activeSection', 'hero'); showView('hero')"
                 style="cursor: pointer; display: flex; align-items: center; gap: 15px;">
                 <img src="./assets/logo.png" alt="RP Tulipan Logo" class="navbar-logo-img"
                     style="width: 45px; height: auto; object-fit: contain;">
-                <span class="logo-text">RP TULIPAN - SMART</span><button onclick="openSmartImporter()" style="background: #0ea5e9; color: white; border: none; padding: 5px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-left: 20px; display: inline-block !important;">IMPORT DATA ??</button>
+                <span class="logo-text">RP TULIPAN</span>
             </div>
 
             <button class="mobile-toggle" id="hamburger-menu" aria-label="Toggle Menu"
@@ -182,7 +182,7 @@
 
     <main>
         <!-- Auth / Login View -->
-        <section class="view-section" id="auth-view" style="display: flex; align-items: center; justify-content: center; background: var(--navy-blue);">
+        <section class="view-section" id="auth-view" style="display: none; align-items: center; justify-content: center; background: var(--navy-blue);">
             <div class="auth-card" style="background: white; padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); text-align: center;">
                 <h1 style="color: var(--corporate-red); margin-bottom: 10px; font-weight: 900;">RP TULIPAN</h1>
                 <p style="color: #64748b; margin-bottom: 30px; font-size: 0.9rem;">Please sign in to access the dashboard</p>
@@ -203,7 +203,7 @@
         </section>
 
         <!-- Home / Hero View -->
-        <section class="view-section hero" id="hero-view">
+        <section class="view-section hero" id="hero-view" style="display: none;">
             <div class="overlay"></div>
             <div class="hero-content">
                 <div class="branding">
@@ -349,6 +349,7 @@
                             <select id="in-city" required>
                                 <option value="" disabled selected>Select City</option>
                                 <option value="MIAMI">MIAMI</option>
+                                <option value="MEDLEY">MEDLEY</option>
                                 <option value="TAMPA">TAMPA</option>
                                 <option value="JACKSONVILLE">JACKSONVILLE</option>
                                 <option value="SAVANNAH">SAVANNAH</option>
@@ -517,7 +518,7 @@
                             <label class="sidebar-label-btn" style="background: #e2e8f0; color: #1e293b;">Billing on Receipt</label>
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <input type="checkbox" id="in-hideamounts" style="width:20px; height:20px; cursor:pointer;">
-                                <span style="font-size:0.75rem; color:#64748b; font-weight:bold;">Hide all prices & totals</span>
+                                <span style="font-size:0.75rem; color:#64748b; font-weight:bold;">Show all prices & totals on receipt</span>
                             </div>
                         </div>
                         <div class="form-group"><label class="sidebar-label-btn">Phone #</label><input type="text" id="in-phone"></div>
@@ -587,13 +588,6 @@
                                 <label>Driver</label>
                                 <select id="f-driver" onchange="applyAdvancedFilters()">
                                     <option value="">Select Driver</option>
-                                    <option value="LUIS GARRIDO">Luis Garrido</option>
-                                    <option value="ROBERT CORTEZ">Robert Cortez</option>
-                                    <option value="MILAY MIRANDA">Milay Miranda</option>
-                                    <option value="JORGE A RAMIREZ">Jorge A Ramirez</option>
-                                    <option value="JOSE">Jose</option>
-                                    <option value="ANTONIO R CUBA">Antonio R Cuba</option>
-                                    <option value="TRAVIS JOSEY">Travis Josey</option>
                                 </select>
                             </div>
 
@@ -842,6 +836,7 @@
                             <select id="rel-city">
                                 <option value="" disabled selected>Select City</option>
                                 <option value="MIAMI">MIAMI</option>
+                                <option value="MEDLEY">MEDLEY</option>
                                 <option value="TAMPA">TAMPA</option>
                                 <option value="JACKSONVILLE">JACKSONVILLE</option>
                                 <option value="SAVANNAH">SAVANNAH</option>
@@ -855,8 +850,15 @@
                                 <option value="BALTIMORE">BALTIMORE</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>DEPOT</label><input type="text" id="rel-depot"
-                                placeholder="Depot Name"></div>
+                        <div class="form-group">
+                            <label style="display: flex; justify-content: space-between; align-items: center;">
+                                DEPOT
+                                <button onclick="openDepotManager()" class="btn-manage-inline" style="font-size: 0.6rem; padding: 2px 5px;">Manage</button>
+                            </label>
+                            <select id="rel-depot">
+                                <option value="" disabled selected>Loading Depots...</option>
+                            </select>
+                        </div>
                         <div class="form-group">
                             <label style="display: flex; justify-content: space-between; align-items: center;">
                                 DEPOT ADDRESS
@@ -866,8 +868,15 @@
                                 <option value="" disabled selected>Select Depot Address</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>SELLER</label><input type="text" id="rel-seller"
-                                placeholder="Seller Name"></div>
+                        <div class="form-group">
+                            <label style="display: flex; justify-content: space-between; align-items: center;">
+                                SELLER
+                                <button onclick="openSellerManager()" class="btn-manage-inline" style="font-size: 0.6rem; padding: 2px 5px;">Manage</button>
+                            </label>
+                            <select id="rel-seller">
+                                <option value="" disabled selected>Loading Sellers...</option>
+                            </select>
+                        </div>
                     </div>
                 </aside>
 
@@ -882,7 +891,9 @@
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; width: 100%;">
                             <div class="filter-item">
                                 <label>Release #</label>
-                                <input type="text" id="rf-no" class="rel-filter-input" placeholder="Search..." oninput="applyReleasesFilters()">
+                                <select id="rf-no" class="rel-filter-input" onchange="applyReleasesFilters()">
+                                    <option value="">Loading...</option>
+                                </select>
                             </div>
                             <div class="filter-item">
                                 <label>Date From</label>
@@ -944,6 +955,8 @@
                                     <option value="TAMPA">TAMPA</option>
                                     <option value="JACKSONVILLE">JACKSONVILLE</option>
                                     <option value="SAVANNAH">SAVANNAH</option>
+                                    <option value="TITUSVILLE">TITUSVILLE</option>
+                                    <option value="MASCOTTE">MASCOTTE</option>
                                     <option value="ORLANDO">ORLANDO</option>
                                     <option value="ATLANTA">ATLANTA</option>
                                     <option value="CHARLESTON">CHARLESTON</option>
@@ -954,7 +967,9 @@
                             </div>
                             <div class="filter-item" style="flex: 1; min-width: 130px;">
                                 <label>Depot</label>
-                                <input type="text" id="rf-depot" class="rel-filter-input" placeholder="Depot..." oninput="applyReleasesFilters()">
+                                <select id="rf-depot" class="rel-filter-input" onchange="applyReleasesFilters()">
+                                    <option value="">ALL</option>
+                                </select>
                             </div>
                             <div class="filter-item" style="flex: 0.5; min-width: 80px;">
                                 <label>Stock</label>
@@ -962,9 +977,11 @@
                             </div>
                             <div class="filter-item" style="flex: 1; min-width: 130px;">
                                 <label>Seller</label>
-                                <input type="text" id="rf-seller" class="rel-filter-input" placeholder="Seller..." oninput="applyReleasesFilters()">
+                                <select id="rf-seller" class="rel-filter-input" onchange="applyReleasesFilters()">
+                                    <option value="">ALL</option>
+                                </select>
                             </div>
-                            <button onclick="resetReleasesFilters()" class="btn-cancel" style="height: 32px; font-size: 0.7rem; padding: 0 20px; border-radius: 6px;">RESET</button>
+                            <button onclick="resetReleasesFilters()" class="btn-cancel" style="height: 32px; font-size: 0.7rem; padding: 0 20px; border-radius: 6px;">Clear All Filters</button>
                         </div>
 
                         <!-- BOTTOM: Stats Row (Moved here per user request) -->
@@ -1128,13 +1145,6 @@
                                         <label style="font-size: 0.7rem; font-weight: 800; color: #1e293b;">DRIVER</label>
                                         <select id="filter-search" class="form-input" onchange="syncDriverNames(); renderDriverLog(); fetchHistory();" style="border: 1px solid #cbd5e1; height: 38px; border-radius: 6px; width: 100%;">
                                             <option value="">Select Driver</option>
-                                            <option value="LUIS GARRIDO">Luis Garrido</option>
-                                            <option value="ROBERT CORTEZ">Robert Cortez</option>
-                                            <option value="MILAY MIRANDA">Milay Miranda</option>
-                                            <option value="JORGE A RAMIREZ">Jorge A Ramirez</option>
-                                            <option value="JOSE">Jose</option>
-                                            <option value="ANTONIO R CUBA">Antonio R Cuba</option>
-                                            <option value="TRAVIS JOSEY">Travis Josey</option>
                                         </select>
                                     </div>
                                     <!-- Initial Date Group -->
@@ -1278,8 +1288,6 @@
                         </tr>
                     </table>
                 </div>
-            </div>
-            </div>
             </div>
 
             <!-- COMPACT ARCHIVE ACTION (Clean & Professional) -->
@@ -1437,13 +1445,6 @@
                             </div>
                             <div class="breakdown-item">
                                 <div class="item-label">
-                                    <span class="dot rentals"></span>
-                                    Total Rentas
-                                </div>
-                                <div class="item-value" id="val-rentals">$0.00</div>
-                            </div>
-                            <div class="breakdown-item">
-                                <div class="item-label">
                                     <span class="dot yard"></span>
                                     Total Yard Services
                                 </div>
@@ -1484,12 +1485,6 @@
                                 </div>
                             </div>
                             <div class="bar-group">
-                                <label>Rentas</label>
-                                <div class="bar-container">
-                                    <div id="bar-rentals" class="bar rentals" style="width: 0%"></div>
-                                </div>
-                            </div>
-                            <div class="bar-group">
                                 <label>Yard</label>
                                 <div class="bar-container">
                                     <div id="bar-yard" class="bar yard" style="width: 0%"></div>
@@ -1520,9 +1515,13 @@
         // or 'python -m http.server' in your terminal) instead of opening the file directly.
         
         // Supabase Instance is already 'db' from supabase-client.js
-        // No redundant initialization needed here.
-
         window.currentUserRole = null;
+
+        // GLOBAL ERROR CATCHER for debugging blank screens
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Global Error Detected:', msg, url, lineNo);
+            return false;
+        };
 
         // --- AUTHENTICATION & RBAC LOGIC ---
         async function handleLogin(e) {
@@ -1530,18 +1529,47 @@
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             const errorEl = document.getElementById('auth-error');
+            const btn = e.target.querySelector('button');
+            const originalText = btn.textContent;
+
+            errorEl.style.display = "none";
+            btn.textContent = "Checking credentials...";
+            btn.disabled = true;
 
             try {
-                const { user } = await signIn(email, password);
+                if (typeof db === 'undefined' || !db) {
+                     if (typeof supabase !== 'undefined') {
+                         window.db = supabase.createClient('https://xtrceqpuwqetzslwxxux.supabase.co', 'sb_publishable_Wt5TmlxBw3FOtZ_L_oWt0Q_RoMMVuni');
+                     } else {
+                         throw new Error("CONNECTION ERROR: Supabase library failed to load. Check your internet.");
+                     }
+                }
+                
+                console.log("Attempting sign in for:", email);
+                const result = await signIn(email, password);
+                const user = result.user || result.data?.user; 
+
                 if (user) {
-                    await checkAuth(); // This will fetch profile and show correct view
+                    console.log("User authenticated:", user.id);
+                    const success = await checkAuth(); 
+                    if (success) {
+                        showView('hero');
+                    } else {
+                        throw new Error("Authenticated, but profile fetch failed.");
+                    }
+                } else {
+                    throw new Error("Invalid response from login server.");
                 }
             } catch (err) {
-                console.error("Login error:", err);
+                console.error("Login failure details:", err);
+                const msg = err.message || err.error_description || "Authentication failed";
                 if (errorEl) {
-                    errorEl.textContent = "Error: " + (err.message || "Invalid credentials");
+                    errorEl.textContent = "ERROR: " + msg;
                     errorEl.style.display = "block";
                 }
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
             }
         }
         window.handleLogin = handleLogin;
@@ -1564,23 +1592,25 @@
             try {
                 const session = await getSession();
                 if (session && session.user) {
-                    const profile = await getProfile(session.user.id);
-                    window.currentUserRole = profile ? profile.role : 'user';
-                    window.currentDriverNameRef = profile ? profile.driver_name_ref : null;
+                    // Pre-fill user data even before profile loading
+                    window.currentUserRole = 'user'; 
                     
-                    // Hide/Show Admin only elements
+                    try {
+                        const profile = await getProfile(session.user.id);
+                        window.currentUserRole = profile ? profile.role : 'user';
+                        window.currentDriverNameRef = profile ? profile.driver_name_ref : null;
+                    } catch (pErr) {
+                        console.warn("Profile fetch failed, defaulting to 'user' role:", pErr);
+                    }
+                    
                     applyRoleRestrictions();
-                    
-                    const lastView = sessionStorage.getItem('activeSection') || 'hero';
-                    showView(lastView === 'auth' ? 'hero' : lastView);
                     return true;
                 } else {
-                    showView('auth');
+                    console.log("No active session found.");
                     return false;
                 }
             } catch (err) {
-                console.error("Auth check failed:", err);
-                showView('auth');
+                console.error("Critical Auth check failed:", err);
                 return false;
             }
         }
@@ -1594,7 +1624,7 @@
             const adminOnlySelectors = [
                 'button[onclick*="profit-report"]',
                 '#nav-actions-container button[onclick*="profit-report"]',
-                '#btn-email-settings'
+                // '#btn-email-settings'
             ];
             
             const staffOnlySelectors = [
@@ -1693,6 +1723,8 @@
             document.getElementById('email-settings-modal').style.display = 'none';
         }
 
+        // --- SMART IMPORTER LOGIC REMOVED ---
+
         async function loadDriversData() {
             if (!db) return;
             try {
@@ -1717,7 +1749,8 @@
 
         function refreshDriverSelects() {
             const sideSel = document.getElementById('in-driver');
-            const filterSel = document.getElementById('f-driver'); // If it exists in reports/history
+            const filterSel = document.getElementById('f-driver'); 
+            const reportFilterSel = document.getElementById('filter-search');
             
             const populate = (sel) => {
                 if (!sel) return;
@@ -1734,6 +1767,7 @@
             
             populate(sideSel);
             populate(filterSel);
+            populate(reportFilterSel);
         }
 
         function renderDriverManagerList() {
@@ -2044,7 +2078,227 @@
         }
         window.deletePickupAddress = deletePickupAddress;
 
+        // --- DEPOT MANAGEMENT LOGIC ---
+        let currentDepots = [];
+        window.openDepotManager = function() {
+            document.getElementById('depot-manager-modal').style.display = 'flex';
+            renderDepotManagerList();
+        }
+        window.closeDepotManager = function() {
+            document.getElementById('depot-manager-modal').style.display = 'none';
+        }
+
+        async function loadDepotsData() {
+            if (!db) return;
+            try {
+                const { data, error } = await db.from('depots').select('*').order('name', { ascending: true });
+                if (error) throw error;
+                
+                // One-time self-migration: Seed if empty
+                if (data.length === 0) {
+                    const seed = [
+                        "SOLO DEPOT", "FIT", "SOUTH FLORIDA", "SEABOARD", "MIAMI CONTAINER", "SEABOARD MARINE", "QUALITY CONTAINER", "DELIVERED", "ALVARO YARD", 
+                        "ORIAN YARD", "PARTICULAR", "KING OCEAN PORT", "SF INTERMODAL OPA LOCKA", "TITUSVILLE", "GET BUY", "MARITIME CONTAINER", "BLUE LINE EQUIPMENT", 
+                        "CMC DEPOT", "GENERAL TRANSPORT SERVICE", "GOLD COAST", "CONGLOBAL SAV", "CRIST CONT DEPOT", "ACE STEVEDORING", "CMC-RINCON-SAV", 
+                        "CONGLOBAL MONCRIEF DISMORE", "CONGLOBAL ALTA DR", "PICORP INC BALTIMORE", "PORT OF TAMPA"
+                    ];
+                    const seedObjs = seed.map(n => ({ name: n }));
+                    await db.from('depots').insert(seedObjs);
+                    return loadDepotsData();
+                }
+
+                currentDepots = data;
+                refreshDepotSelects();
+            } catch (err) {
+                console.error("Error loading depots:", err);
+            }
+        }
+        window.loadDepotsData = loadDepotsData;
+
+        function refreshDepotSelects() {
+            const relSel = document.getElementById('rel-depot');
+            const relFilterSel = document.getElementById('rf-depot');
+            
+            const populate = (sel, hasAll = false) => {
+                if (!sel) return;
+                const currentVal = sel.value;
+                sel.innerHTML = hasAll ? '<option value="">ALL</option>' : '<option value="" disabled selected>Select Depot</option>';
+                currentDepots.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.name;
+                    opt.textContent = d.name;
+                    sel.appendChild(opt);
+                });
+                if (currentVal) sel.value = currentVal;
+            };
+            
+            populate(relSel);
+            populate(relFilterSel, true);
+        }
+
+        function renderDepotManagerList() {
+            const container = document.getElementById('depot-list-body');
+            if (!container) return;
+            container.innerHTML = '';
+            currentDepots.forEach(d => {
+                const item = document.createElement('div');
+                item.className = 'driver-item';
+                item.innerHTML = `
+                    <span>${d.name}</span>
+                    <button onclick="deleteDepot('${d.id}')" class="btn-del-driver" title="Delete Depot">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        async function addNewDepot() {
+            const input = document.getElementById('new-depot-name');
+            const name = input.value.trim().toUpperCase();
+            if (!name) return;
+            
+            try {
+                const { error } = await db.from('depots').insert([{ name: name }]);
+                if (error) {
+                    if (error.code === '23505') alert("Depot already exists!");
+                    else throw error;
+                }
+                input.value = '';
+                await loadDepotsData();
+                renderDepotManagerList();
+            } catch (err) {
+                console.error("Failed to add depot:", err);
+                alert("Error adding depot.");
+            }
+        }
+        window.addNewDepot = addNewDepot;
+
+        async function deleteDepot(id) {
+            if (!confirm("Are you sure you want to remove this depot?")) return;
+            try {
+                const { error } = await db.from('depots').delete().eq('id', id);
+                if (error) throw error;
+                await loadDepotsData();
+                renderDepotManagerList();
+            } catch (err) {
+                console.error("Failed to delete depot:", err);
+            }
+        }
+        window.deleteDepot = deleteDepot;
+
+        // --- SELLER MANAGEMENT LOGIC ---
+        let currentSellers = [];
+        window.openSellerManager = function() {
+            document.getElementById('seller-manager-modal').style.display = 'flex';
+            renderSellerManagerList();
+        }
+        window.closeSellerManager = function() {
+            document.getElementById('seller-manager-modal').style.display = 'none';
+        }
+
+        async function loadSellersData() {
+            if (!db) return;
+            try {
+                const { data, error } = await db.from('sellers').select('*').order('name', { ascending: true });
+                if (error) throw error;
+                
+                // One-time self-migration: Seed if empty
+                if (data.length === 0) {
+                    const seed = [
+                        "ALBARO", "GN CONTAINERS", "PARTICULAR", "NORTH ATLANTIC", "GRAND PACIFIC", "GLOBAL CONTAINER", "BLUE SKY", 
+                        "SF INTERMODAL", "QUALITY TITUSVILLE", "CCP CONTAINER", "FLORENS", "ECOTAINER", "DINA'S CONTAINER", "JORGE PERUANO", 
+                        "NICK ANGEL", "SEACO", "ELIO", "NORGE", "YOSVANY", "JAIDEN TRANSPORT", "PAINT", "CARU CONT", "PAINT PURCHASE", 
+                        "PAINT LABOR", "NOMINA OFFICE", "SALARY", "ORBION CONTAINERS", "NOMINA", "RIO CONTAINER", "YXBOXX", "FLCHR"
+                    ];
+                    const seedObjs = seed.map(n => ({ name: n }));
+                    await db.from('sellers').insert(seedObjs);
+                    return loadSellersData();
+                }
+
+                currentSellers = data;
+                refreshSellerSelects();
+            } catch (err) {
+                console.error("Error loading sellers:", err);
+            }
+        }
+        window.loadSellersData = loadSellersData;
+
+        function refreshSellerSelects() {
+            const relSel = document.getElementById('rel-seller');
+            const relFilterSel = document.getElementById('rf-seller');
+            
+            const populate = (sel, hasAll = false) => {
+                if (!sel) return;
+                const currentVal = sel.value;
+                sel.innerHTML = hasAll ? '<option value="">ALL</option>' : '<option value="" disabled selected>Select Seller</option>';
+                currentSellers.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.name;
+                    opt.textContent = s.name;
+                    sel.appendChild(opt);
+                });
+                if (currentVal) sel.value = currentVal;
+            };
+            
+            populate(relSel);
+            populate(relFilterSel, true);
+        }
+
+        function renderSellerManagerList() {
+            const container = document.getElementById('seller-list-body');
+            if (!container) return;
+            container.innerHTML = '';
+            currentSellers.forEach(s => {
+                const item = document.createElement('div');
+                item.className = 'driver-item';
+                item.innerHTML = `
+                    <span>${s.name}</span>
+                    <button onclick="deleteSeller('${s.id}')" class="btn-del-driver" title="Delete Seller">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        async function addNewSeller() {
+            const input = document.getElementById('new-seller-name');
+            const name = input.value.trim().toUpperCase();
+            if (!name) return;
+            
+            try {
+                const { error } = await db.from('sellers').insert([{ name: name }]);
+                if (error) {
+                    if (error.code === '23505') alert("Seller already exists!");
+                    else throw error;
+                }
+                input.value = '';
+                await loadSellersData();
+                renderSellerManagerList();
+            } catch (err) {
+                console.error("Failed to add seller:", err);
+                alert("Error adding seller.");
+            }
+        }
+        window.addNewSeller = addNewSeller;
+
+        async function deleteSeller(id) {
+            if (!confirm("Are you sure you want to remove this seller?")) return;
+            try {
+                const { error } = await db.from('sellers').delete().eq('id', id);
+                if (error) throw error;
+                await loadSellersData();
+                renderSellerManagerList();
+            } catch (err) {
+                console.error("Failed to delete seller:", err);
+            }
+        }
+        window.deleteSeller = deleteSeller;
+
         // --- COMPANY MANAGEMENT LOGIC ---
+
+
         let currentCompanies = [];
         window.openCompanyManager = function() {
             document.getElementById('company-manager-modal').style.display = 'flex';
@@ -2502,75 +2756,66 @@
             }
         };
 
-        function showView(view) {
-            console.log("Navigating to:", view);
+        function showView(viewId) {
+            console.log("Navigating to:", viewId);
             
-            // Force Auth if not logged in
-            if (!window.currentUserRole && view !== 'auth') {
-                view = 'auth';
-            }
-            
-            // Restrict views for non-admins
-            if (window.currentUserRole !== 'admin') {
-                let allowed = ['hero', 'auth'];
-                if (window.currentUserRole === 'driver') {
-                    allowed.push('docs');
-                } else {
-                    allowed.push('fleet', 'reports', 'releases', 'docs', 'calendar', 'expenses');
-                }
-                
-                if (!allowed.includes(view)) {
-                    alert("Access Denied: Administrative area restricted.");
-                    view = 'hero';
-                }
-            }
-
-            sessionStorage.setItem('activeSection', view);
-
-            // 1. Reset Scroll IMMEDIATELY
-            window.scrollTo(0, 0);
-
-            // 2. Hide ALL sections with strict display:none and class hidden
+            // Safe reference to sections
             const sections = document.querySelectorAll('.view-section');
-            sections.forEach(v => {
-                v.classList.add('hidden');
-                v.style.display = 'none';
+            if (!sections.length) return console.error("No sections found with .view-section");
+
+            // 1. Determine final view based on auth
+            let finalView = viewId;
+            if (!window.currentUserRole && finalView !== 'auth') {
+                console.log("Forcing Auth view.");
+                finalView = 'auth';
+            }
+
+            // 2. Hide ALL sections
+            sections.forEach(s => {
+                s.classList.add('hidden');
+                s.style.setProperty('display', 'none', 'important');
             });
 
-            // 3. Identification of target section
-            const targetId = view.endsWith('-view') ? view : view + '-view';
+            // 3. Resolve target ID
+            const targetId = finalView.endsWith('-view') ? finalView : finalView + '-view';
             const target = document.getElementById(targetId);
 
             if (target) {
                 target.classList.remove('hidden');
-                // Use block for most sections, or flex if needed by component
-                target.style.display = (view === 'hero') ? 'block' : 'block';
-
-                // Special case for navbar styling
-                if (view === 'hero') {
-                    header.classList.remove('navbar-fixed-solid');
-                } else {
-                    header.classList.add('navbar-fixed-solid');
-                }
-
-                // 4. Trigger specific loads
-                if (view === 'docs') {
-                    if (window.loadDocTrips) window.loadDocTrips();
-                } else if (view === 'reports') {
-                    if (window.renderDriverLog) window.renderDriverLog();
-                    if (window.fetchHistory) window.fetchHistory();
-                } else if (view === 'calendar') {
-                    if (window.loadTableData) window.loadTableData();
-                    if (window.updateFleetSelectors) window.updateFleetSelectors();
-                    if (window.loadReleasesData) window.loadReleasesData();
-                } else if (view === 'fleet') {
-                    if (window.loadFleetData) window.loadFleetData();
-                } else if (view === 'profit-report') {
-                    if (window.renderProfitReport) window.renderProfitReport();
-                }
+                // Use flex for auth centering, block for others. 
+                // Using setProperty to ensure it overrides any other inline style.
+                const displayType = (finalView === 'auth') ? 'flex' : 'block';
+                target.style.setProperty('display', displayType, 'important');
                 
-                // Always ensure drivers are loaded
-                if (window.loadDriversData) window.loadDriversData();
+                // Navbar styling
+                if (header) {
+                    if (finalView === 'hero') header.classList.remove('navbar-fixed-solid');
+                    else header.classList.add('navbar-fixed-solid');
+                }
+
+                if (finalView !== 'auth') localStorage.setItem('activeSection', finalView);
+                window.scrollTo(0, 0);
+
+                // 4. Trigger specific loads with safety timeout
+                setTimeout(() => {
+                    if (finalView === 'docs') {
+                        if (window.loadDocTrips) window.loadDocTrips();
+                    } else if (finalView === 'reports') {
+                        if (window.renderDriverLog) window.renderDriverLog();
+                        if (window.fetchHistory) window.fetchHistory();
+                    } else if (finalView === 'calendar') {
+                        if (window.loadTableData) window.loadTableData();
+                        if (window.updateFleetSelectors) window.updateFleetSelectors();
+                        if (window.loadReleasesData) window.loadReleasesData();
+                    } else if (finalView === 'fleet') {
+                        if (window.loadFleetData) window.loadFleetData();
+                    } else if (finalView === 'profit-report') {
+                        if (window.renderProfitReport) window.renderProfitReport();
+                    }
+                    
+                    // Always ensure drivers are loaded
+                    if (window.loadDriversData) window.loadDriversData();
+                }, 50);
             } else {
                 console.warn("View not found:", targetId);
             }
@@ -2712,26 +2957,27 @@
 
                 // Merge with Hardcoded values if applicable
                 if (id === 'f-city') {
-                    const hardcoded = ["MIAMI", "TAMPA", "JACKSONVILLE", "SAVANNAH", "TITUSVILLE", "MASCOTTE", "ORLANDO", "ATLANTA", "CHARLESTON", "NEWARK", "SUMMERVILLE", "BALTIMORE"];
+                    const hardcoded = ["MIAMI", "MEDLEY", "TAMPA", "JACKSONVILLE", "SAVANNAH", "TITUSVILLE", "MASCOTTE", "ORLANDO", "ATLANTA", "CHARLESTON", "NEWARK", "SUMMERVILLE", "BALTIMORE"];
                     finalValues = [...new Set([...hardcoded, ...dynamicValues])];
                 } else if (id === 'f-size') {
                     const hardcoded = ["40' HC", "40' STD", "40' DD", "40' OS", "45' HC", "20' STD", "20' HC", "20' DD", "20' OS"];
                     finalValues = [...new Set([...hardcoded, ...dynamicValues])];
                 } else if (id === 'f-customer') {
-
-                    const hardcoded = ["ANTONIO RENT", "RICHARD HAYNES", "MARK MORRINSON", "KEMOY", "GLOBAL CONTAINER & CHASSIS", "PROSTAR GROUP CONTAINER", "MAREX ROAD SERVICES", "ZUM SHIPPING"];
-                    finalValues = [...new Set([...hardcoded, ...dynamicValues])];
+                    const dynamicCustomers = currentCustomers.map(c => c.name);
+                    finalValues = [...new Set([...dynamicCustomers, ...dynamicValues])];
                 } else if (id === 'f-driver') {
-                    // Use dynamic currentDrivers instead of hardcoded list
                     finalValues = [...new Set([...currentDrivers.map(d => d.name), ...dynamicValues])];
                 } else if (id === 'f-company') {
-                    const hardcoded = ["RP TULIPAN", "JR SUPER CRAME", "CONTRACTOR", "ONLY SALES"];
-                    finalValues = [...new Set([...hardcoded, ...dynamicValues])];
+                    const dynamicCompanies = currentCompanies.map(c => c.name);
+                    finalValues = [...new Set([...dynamicCompanies, ...dynamicValues])];
                 } else {
                     finalValues = dynamicValues;
                 }
 
                 finalValues.sort();
+
+                // Preserve the currently selected value before rebuilding options
+                const currentVal = select.value;
 
                 // Build options list
                 const firstOption = select.options[0];
@@ -2744,6 +2990,11 @@
                     opt.textContent = val;
                     select.appendChild(opt);
                 });
+
+                // Restore the selected value if it still exists in the new options
+                if (currentVal) {
+                    select.value = currentVal;
+                }
             }
         }
         function applyAdvancedFilters() {
@@ -2927,21 +3178,8 @@
                 'in-showtax', 'in-taxpercent', 'in-hideamounts'
             ];
 
-            // 0. UNIQUE CONTAINER VALIDATION
-            const ncontRaw = document.getElementById('in-ncont')?.value || '';
-            const ncontTrim = ncontRaw.trim().toUpperCase();
-            if (ncontTrim && ncontTrim !== '---' && ncontTrim !== '') {
-                const isDuplicate = currentTrips.some((t, idx) => {
-                    const existingNcont = (t[3] || '').toString().trim().toUpperCase();
-                    return existingNcont === ncontTrim && (editingIndex === null || idx !== editingIndex);
-                });
-                if (isDuplicate) {
-                    alert(`¡ERROR: El contenedor ${ncontTrim} ya existe en otra orden! No se permiten duplicados.`);
-                    isSaving = false;
-                    restoreTripArchiveButtonUI();
-                    return;
-                }
-            }
+            // 0. UNIQUE CONTAINER VALIDATION REMOVED
+
 
             // 1. GRANULAR INVENTORY VALIDATION (BLOQUEO POR MEDIDA + TIPO + CONDICIÓN)
             const relSel = document.getElementById('in-release-sel');
@@ -3287,11 +3525,19 @@
                 if (relSel) {
                     const currentVal = relSel.value;
                     relSel.innerHTML = '<option value="" disabled selected>Select Release...</option>';
-                    const uniqueReleases = [...new Set(currentReleases.map(r => r[0]))].sort();
-                    uniqueReleases.forEach(rel => {
+                    
+                    // Sort releases by number before displaying
+                    const sortedReleases = [...currentReleases].sort((a, b) => (a[0] || '').localeCompare(b[0] || ''));
+                    
+                    sortedReleases.forEach(r => {
+                        const relNo = r[0] || '---';
+                        const city = r[6] || '---';
+                        const size = r[16] || '---';
+                        const displayText = `${relNo} - ${size} - ${city}`;
+
                         const opt = document.createElement('option');
-                        opt.value = rel;
-                        opt.textContent = rel;
+                        opt.value = relNo; 
+                        opt.textContent = displayText;
                         relSel.appendChild(opt);
                     });
                     if (currentVal) relSel.value = currentVal;
@@ -3382,9 +3628,47 @@
 
             window.refreshTripArchiveStockUi = validateStockUI;
 
+            const autoPopulateFromRelease = () => {
+                const selectedRel = relSel.value;
+                if (!selectedRel || selectedRel === '---') return;
+                
+                // Find the first matching release to pull data from
+                const matchingRow = currentReleases.find(r => r[0] === selectedRel);
+                if (matchingRow) {
+                    // 1. Auto-fill City (index 6)
+                    const inCity = document.getElementById('in-city');
+                    if (inCity) inCity.value = matchingRow[6] || '';
+
+                    // 2. Auto-fill Size (index 16)
+                    const inSize = document.getElementById('in-size');
+                    if (inSize && matchingRow[16] && matchingRow[16] !== '---') {
+                        inSize.value = matchingRow[16];
+                    }
+
+                    // 3. Auto-fill Pickup From (index 4 - Depot Name)
+                    const inPickup = document.getElementById('in-pickup');
+                    if (inPickup) inPickup.value = matchingRow[4] || '';
+
+                    // 5. Auto-fill Type (index 2)
+                    const inType = document.getElementById('in-rel-type');
+                    if (inType) inType.value = matchingRow[2] || 'DRY';
+
+                    // 6. Auto-fill Condition (index 3)
+                    const inCond = document.getElementById('in-rel-condition');
+                    if (inCond) inCond.value = matchingRow[3] || 'USED';
+                }
+                // Trigger stock validation after auto-filling
+                validateStockUI();
+            };
+
             const changeElements = [relSel, relMan, inSizeSelect, relType, relCond];
             changeElements.forEach(el => {
-                if (el) el.addEventListener('change', validateStockUI);
+                if (el) {
+                    el.addEventListener('change', (e) => {
+                        if (el === relSel) autoPopulateFromRelease();
+                        else validateStockUI();
+                    });
+                }
             });
 
             const updateReleaseSizes = () => {
@@ -3606,6 +3890,7 @@
 
         let isLoadingTable = false;
         async function loadTableData() {
+            window.loadTableData = loadTableData;
             if (isLoadingTable) return;
             isLoadingTable = true;
 
@@ -3784,7 +4069,7 @@
         async function resetReportFilters() {
             // RELOAD AS ULTIMATE RESET:
             // This clears the manual calculator, JS variables and resets input fields
-            // The app will stay on "reports" view thanks to sessionStorage persistence.
+            // The app will stay on "reports" view thanks to localStorage persistence.
             window.location.reload();
         }
 
@@ -4301,25 +4586,6 @@
         }
         window.deleteSettlement = deleteSettlement;
 
-        // Initialize state on load
-        window.addEventListener('DOMContentLoaded', () => {
-            loadTableData();
-            loadReleasesData();
-            loadExpensesData();
-            renderDriverLog();
-            updateReleaseDatalist();
-            updateAddressDatalist();
-
-            // --- PERSISTENCE LOGIC (Anti-F5) ---
-            const savedSection = sessionStorage.getItem('activeSection') || 'hero';
-            showView(savedSection);
-
-            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            let initialOrd = '';
-            for (let i = 0; i < 4; i++) initialOrd += chars.charAt(Math.floor(Math.random() * chars.length));
-            document.getElementById('in-order').value = 'ORD-' + initialOrd;
-
-            // New logic for Release Row addition
             // New logic for Release Row addition (SUPABASE)
             window.addReleaseRow = async () => {
                 const relNo = document.getElementById('rel-no-releases').value;
@@ -4549,6 +4815,7 @@
         window.togglePickupAddressMode = togglePickupAddressMode;
 
         async function loadReleasesData() {
+            window.loadReleasesData = loadReleasesData;
             const body = document.getElementById('releases-body');
             if (!body) return;
 
@@ -4556,6 +4823,7 @@
                 const data = await getReleases();
                 currentReleases = data.map(mapReleaseToArray);
                 renderReleasesTable();
+                refreshReleaseNoFilter(); // Update the filter dropdown
             } catch (err) {
                 console.error("Error loading releases:", err);
             }
@@ -4783,6 +5051,30 @@
         }
         window.applyReleasesFilters = applyReleasesFilters;
 
+        function refreshReleaseNoFilter() {
+            const sel = document.getElementById('rf-no');
+            if (!sel || !currentReleases) return;
+            const currentVal = sel.value;
+            
+            // Get unique Release Numbers from index 0
+            const uniqueReleases = [...new Set(currentReleases.map(r => (r[0] || '').trim()))]
+                                    .filter(r => r !== '' && r !== '---')
+                                    .sort();
+            
+            sel.innerHTML = '<option value="">ALL</option>';
+            uniqueReleases.forEach(rel => {
+                const opt = document.createElement('option');
+                opt.value = rel;
+                opt.textContent = rel;
+                sel.appendChild(opt);
+            });
+            
+            if (currentVal && uniqueReleases.includes(currentVal)) {
+                sel.value = currentVal;
+            }
+        }
+        window.refreshReleaseNoFilter = refreshReleaseNoFilter;
+
         window.resetReleasesFilters = function() {
             ['rf-no', 'rf-date-from', 'rf-date-to', 'rf-type', 'rf-cond', 'rf-size', 'rf-paid', 'rf-city', 'rf-depot', 'rf-stock', 'rf-seller'].forEach(id => {
                 const el = document.getElementById(id);
@@ -4826,6 +5118,7 @@
             };
 
             async function loadExpensesData() {
+                window.loadExpensesData = loadExpensesData;
                 const body = document.getElementById('expenses-body');
                 if (!body) return;
 
@@ -4966,7 +5259,7 @@
                     }
                 });
 
-                const totalRevenue = totals.sales + totals.rentals + totals.yard + totals.collects + totals.tulipan + totals.contractor;
+                const totalRevenue = totals.sales + totals.yard + totals.collects + totals.tulipan + totals.contractor;
                 const totalGlobalExpenses = totals.expenses + totals.releases;
                 const netProfit = totalRevenue - totalGlobalExpenses;
 
@@ -4989,7 +5282,6 @@
 
                 // 5. Update Breakdown List
                 document.getElementById('val-sales').textContent = `$${totals.sales.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
-                document.getElementById('val-rentals').textContent = `$${totals.rentals.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
                 document.getElementById('val-yard').textContent = `$${totals.yard.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
 
                 document.getElementById('val-tulipan').textContent = `$${totals.tulipan.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
@@ -4998,9 +5290,8 @@
                 document.getElementById('val-releases').textContent = `$${totals.releases.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
 
                 // 6. Update Simple Bar Chart
-                const maxVal = Math.max(totals.sales, totals.rentals, totals.yard, totals.tulipan, totals.contractor, totals.releases, 1);
+                const maxVal = Math.max(totals.sales, totals.yard, totals.tulipan, totals.contractor, totals.releases, 1);
                 document.getElementById('bar-sales').style.width = `${(totals.sales / maxVal) * 100}%`;
-                document.getElementById('bar-rentals').style.width = `${(totals.rentals / maxVal) * 100}%`;
                 document.getElementById('bar-yard').style.width = `${(totals.yard / maxVal) * 100}%`;
                 document.getElementById('bar-tulipan').style.width = `${(totals.tulipan / maxVal) * 100}%`;
                 document.getElementById('bar-contractor').style.width = `${(totals.contractor / maxVal) * 100}%`;
@@ -5047,7 +5338,18 @@
                 }
 
                 list.innerHTML = '';
-                currentTrips.slice().reverse().forEach(trip => {
+
+                // Custom sorting for drivers: based on numeric prefix in Notes (index 25)
+                const sortedTrips = [...currentTrips].sort((a, b) => {
+                    const getOrder = (trip) => {
+                        const note = trip[25] || '';
+                        const match = note.trim().match(/^(\d+)\./);
+                        return match ? parseInt(match[1]) : 999999; // Trips without numbers go last
+                    };
+                    return getOrder(a) - getOrder(b);
+                });
+
+                sortedTrips.forEach(trip => {
                     const id = (trip[0] || '').toString().toLowerCase();
                     const date = trip[1] || '';
                     const cont = (trip[3] || '').toLowerCase();
@@ -5062,7 +5364,9 @@
                     let matchesDriver = true;
                     if (window.currentUserRole === 'driver') {
                         const drvRef = (window.currentDriverNameRef || '').toLowerCase();
-                        matchesDriver = (drv === drvRef);
+                        const isMyTrip = (drv === drvRef);
+                        const isComplete = (trip[41] === 'PAID');
+                        matchesDriver = isMyTrip && !isComplete;
                     }
 
                     if (matchesSearch && matchesDate && matchesDriver) {
@@ -5071,8 +5375,13 @@
                         // Highlight if currently selected
                         if (window.currentDocTrip && window.currentDocTrip[0] === trip[0]) div.classList.add('active');
                         
+                        // Extract order from note for visual label
+                        const note = trip[25] || '';
+                        const match = note.trim().match(/^(\d+)\./);
+                        const orderLabel = match ? `[${match[1]}] ` : '';
+
                         div.innerHTML = `
-                            <h4>${trip[5] && trip[5] !== '---' ? 'Order ' + trip[5] : 'Trip'} · ${trip[1] || '—'}</h4>
+                            <h4>${orderLabel}${trip[5] && trip[5] !== '---' ? 'Order ' + trip[5] : 'Trip'} · ${trip[1] || '—'}</h4>
                             <p style="font-weight:bold; color:#1e293b;">${trip[17] || 'No Driver'}</p>
                             <p>${trip[3] || 'No Cont'} | ${trip[11] || 'No Cust'}</p>
                             <p style="font-size:0.55rem; color:#64748b;">Truck: ${trip[37] || 'N/A'} | Trailer: ${trip[38] || 'N/A'}</p>
@@ -5106,7 +5415,7 @@
                 // Tax settings are now pulled directly from the trip data (indices 49 and 50)
                 const takeTax = (trip[49] === true || trip[49] === 'true');
                 const taxRate = takeTax ? (parseFloat(trip[50]) || 0) : 0;
-                const hideBilling = (trip[51] === true || trip[51] === 'true');
+                const showBilling = (trip[51] === true || trip[51] === 'true');
 
                 const data = {
                     date: (trip[1] && trip[1] !== '---') ? trip[1] : '',
@@ -5125,7 +5434,7 @@
                     transp: parseFloat(trip[18]) || 0, // Transport Fee mapped from trip data
                     sales: parseFloat(trip[20]) || 0,  // Sales Price mapped from trip data
                     taxRate: taxRate,
-                    hideBilling: hideBilling,
+                    showBilling: showBilling,
                     driver: (trip[17] && trip[17] !== '---') ? trip[17] : '',
                     notes: (trip[25] && trip[25] !== '---') ? trip[25] : '',
                     cond: {
@@ -5135,7 +5444,8 @@
                         new: (trip[25] || '').toUpperCase().includes('NEW'),
                         holes: (trip[25] || '').toUpperCase().includes('NO HOLES'),
                         doors: (trip[25] || '').toUpperCase().includes('DOORS OK')
-                    }
+                    },
+                    status: (trip[34] === 'PAID' || trip[33] === 'PAID' || trip[32] === 'PAID' ? 'PAID' : 'PENDING_PAYMENT')
                 };
 
                 const subtotal = data.yard + data.storage + data.transp + data.sales;
@@ -5145,7 +5455,12 @@
                 const hasReceiptBody = data.date || data.order || data.cont;
 
                 const headerHtml = `
-                    <div class="receipt-header">
+                    <div class="receipt-header" style="position: relative;">
+                        <!-- Payment Status Badge (Centered) -->
+                        <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); padding: 6px 16px; border-radius: 4px; font-size: 0.8rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; z-index: 10;
+                            ${data.status === 'PAID' ? 'background: #dcfce7; color: #166534; border: 2px solid #166534;' : 'background: #fee2e2; color: #991b1b; border: 2px solid #991b1b;'}">
+                            ${data.status === 'PAID' ? '<i class="fas fa-check-circle"></i> PAID' : '<i class="fas fa-clock"></i> PENDING TO PAY'}
+                        </div>
                         <div class="receipt-logo-area">
                             <h1 style="color:#b91c1c; font-size: 1.8rem; letter-spacing:-1px;">RP TULIPAN</h1>
                             <p style="font-weight:900; color:#1e293b; margin-top:-5px;">TRANSPORT, INC.</p>
@@ -5218,7 +5533,7 @@
                 if (taxVal > 0) billingRows += `<tr><td>Taxes (${data.taxRate}%)</td><td style="text-align:right;">$${taxVal.toFixed(2)}</td></tr>`;
 
                 let billingSectionHtml = '';
-                if (total > 0 && !data.hideBilling) {
+                if (total > 0 && data.showBilling) {
                     billingSectionHtml = `
                         <div class="receipt-section-title">Billing Summary</div>
                         <table class="receipt-table">
@@ -5609,6 +5924,7 @@
             };
 
             async function loadFleetData() {
+                window.loadFleetData = loadFleetData;
                 try {
                     const data = await getFleet();
                     currentFleet = data.map(mapFleetToUI);
@@ -5620,20 +5936,12 @@
             window.loadFleetData = loadFleetData;
 
 
-            // ==========================================
-            //        🚀 SMART EXCEL IMPORTER LOGIC
-            // ==========================================
-            let importTarget = 'releases'; // Default
-            let pastedDataGrid = [];
-            
-            window.openSmartImporter = function() {
-                document.getElementById('smart-importer-modal').style.display = 'flex';
-                resetImporter();
-            }
+            // --- SMART IMPORTER LOGIC REMOVED ---
 
-            window.closeSmartImporter = function() {
-                document.getElementById('smart-importer-modal').style.display = 'none';
-            }
+
+            
+            // Importer functions removed
+
 
             window.setImportTarget = function(target) {
                 importTarget = target;
@@ -5674,77 +5982,8 @@
                 document.getElementById('importer-step-2').style.display = 'block';
             }
 
-            function renderMappingUI() {
-                const container = document.getElementById('mapping-container');
-                const numCols = pastedDataGrid[0].length;
-                
-                // Define available fields based on target
-                let options = [];
-                if (importTarget === 'releases') {
-                    options = [
-                        { val: 'IGNORE', label: '❌ IGNORE' },
-                        { val: 'release_no', label: 'Release #' },
-                        { val: 'date', label: 'Date' },
-                        { val: 'type', label: 'Type (DRY/REF)' },
-                        { val: 'condition', label: 'Cond (NEW/USED)' },
-                        { val: 'city', label: 'City' },
-                        { val: 'depot', label: 'Depot Name' },
-                        { val: 'depot_address', label: 'Depot Address' },
-                        { val: 'qty_20', label: "Qty 20'" },
-                        { val: 'price_20', label: "$ Price 20'" },
-                        { val: 'qty_40', label: "Qty 40'" },
-                        { val: 'price_40', label: "$ Price 40'" },
-                        { val: 'qty_45', label: "Qty 45'" },
-                        { val: 'price_45', label: "$ Price 45'" },
-                        { val: 'seller', label: 'Seller' },
-                        { val: 'paid', label: 'Paid Status (True/False)' },
-                        { val: 'container_size', label: "Single Size (e.g. 40' HC)" }
-                    ];
-                } else {
-                    // Trips Fields (Simplified for key mapping)
-                    options = [
-                        { val: 'IGNORE', label: '❌ IGNORE' },
-                        { val: 'date', label: 'Date' },
-                        { val: 'n_cont', label: 'Cont #' },
-                        { val: 'size', label: 'Size' },
-                        { val: 'release_no', label: 'Release #' },
-                        { val: 'order_no', label: 'Order #' },
-                        { val: 'customer', label: 'Customer' },
-                        { val: 'city', label: 'City' },
-                        { val: 'pickup_address', label: 'Pickup From' },
-                        { val: 'delivery_place', label: 'Delivery To' },
-                        { val: 'amount', label: 'Sales/Amount ($)' },
-                        { val: 'driver', label: 'Driver Name' },
-                        { val: 'paid', label: 'Paid Status' }
-                    ];
-                }
+            // renderMappingUI removed
 
-                let html = `<table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">`;
-                
-                // Header Row: Dropdowns
-                html += `<tr style="background: #f1f5f9; position: sticky; top: 0;">`;
-                for (let i = 0; i < numCols; i++) {
-                    html += `<th style="padding: 10px; border: 1px solid #cbd5e1;">
-                        <select class="map-select" data-col="${i}" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid #94a3b8; font-weight: bold; background: #fff;">
-                            ${options.map(opt => `<option value="${opt.val}">${opt.label}</option>`).join('')}
-                        </select>
-                    </th>`;
-                }
-                html += `</tr>`;
-
-                // Data Rows Preview (Max 10 for preview)
-                const previewRows = pastedDataGrid.slice(0, 10);
-                previewRows.forEach(row => {
-                    html += `<tr>`;
-                    for (let i = 0; i < numCols; i++) {
-                        html += `<td style="padding: 8px; border: 1px solid #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">${row[i] || ''}</td>`;
-                    }
-                    html += `</tr>`;
-                });
-                html += `</table>`;
-                
-                container.innerHTML = html;
-            }
 
             window.executeFinalImport = async function() {
                 const selects = document.querySelectorAll('.map-select');
@@ -5858,40 +6097,67 @@
             // Run initial load
             loadFleetData();
 
-        });
-
         document.addEventListener('DOMContentLoaded', async () => {
-            // Check auth FIRST
-            const isLoggedIn = await checkAuth();
-            if (!isLoggedIn) return;
+            // 1. Initial Logic: Read last section
+            let activeSection = localStorage.getItem('activeSection') || 'hero';
+            if (activeSection === 'auth') activeSection = 'hero';
 
-            const activeSection = sessionStorage.getItem('activeSection') || 'hero';
-            
-            // INITIAL DATA FETCH (Critical for reports persistence)
-            if (window.renderDriverLog) {
-                const logBody = document.getElementById('dl-body');
-                if (logBody) logBody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 20px; color: #64748b;">Loading driver data...</td></tr>';
-            }
-            
-            if (window.loadTableData) {
-                await window.loadTableData();
-                // Load drivers and customers as well
-                if (window.loadDriversData) await window.loadDriversData();
-                if (window.loadCustomersData) await window.loadCustomersData();
-                if (window.loadPickupAddressesData) await window.loadPickupAddressesData();
-                if (window.loadCompaniesData) await window.loadCompaniesData();
-                
-                // After data is loaded, if we are in reports, re-render
-                if (activeSection === 'reports') {
-                    if (window.renderDriverLog) window.renderDriverLog();
-                    if (window.fetchHistory) window.fetchHistory();
-                }
-            }
-            
+            // 2. Immediate Show (Don't wait for data/auth yet)
+            // Fix F5 Flicker: temporarily fake the role to bypass the auth check in showView
+            // The real auth check will run below and correct it in 0.5s.
+            window.currentUserRole = 'loading'; 
             showView(activeSection);
-            
-            // Forced Initial Fetch (For historical data)
-            if (window.fetchHistory) window.fetchHistory();
+
+            // 3. Auth Check in background
+            let loggedIn = false;
+            // Ensure we start with a clean state
+            document.body.style.background = '#f0f2f5'; 
+
+            try {
+                loggedIn = await checkAuth();
+            } catch (authErr) {
+                console.error("Auth check failed:", authErr);
+            }
+
+            if (loggedIn) {
+                showView(activeSection);
+            } else {
+                showView('auth');
+            }
+
+            // Safety check: if no view is visible after 2 seconds, force auth
+            setTimeout(() => {
+                const visible = Array.from(document.querySelectorAll('.view-section')).some(s => s.style.display !== 'none');
+                if (!visible) {
+                    console.warn("Emergency: No view visible. Forcing Auth View.");
+                    const av = document.getElementById('auth-view');
+                    if (av) {
+                        av.classList.remove('hidden');
+                        av.style.setProperty('display', 'flex', 'important');
+                    }
+                }
+            }, 3000);
+
+            // 4. Background Loading (Parallel)
+            const loaders = [
+                () => window.loadTableData?.(),
+                () => window.loadDriversData?.(),
+                () => window.loadCustomersData?.(),
+                () => window.loadPickupAddressesData?.(),
+                () => window.loadCompaniesData?.(),
+                () => window.loadDepotsData?.(),
+                () => window.loadSellersData?.(),
+                () => window.loadFleetData?.(),
+                () => window.loadReleasesData?.()
+            ];
+
+            // Run loaders all at once for maximum speed
+            Promise.allSettled(loaders.map(f => f())).then(() => {
+                console.log("All background data loaded.");
+            });
+
+            // 5. Global Cleanup
+            window.currentUserRole = window.currentUserRole || 'staff';
         });
 
         window.addEventListener('scroll', () => {
@@ -5907,43 +6173,7 @@
     </script>
 
     <!-- SMART EXCEL IMPORTER MODAL -->
-    <div id="smart-importer-modal" class="simple-modal">
-        <div class="modal-content" style="width: 1000px; max-width: 95%; border-top-color: #0ea5e9;">
-            <div class="modal-header">
-                <div>
-                    <h3 style="color: #0ea5e9;"><i class="fas fa-file-import"></i> Smart Excel Importer</h3>
-                    <p style="font-size: 0.75rem; color: #64748b; margin: 0;">Paste your spreadsheet data and map columns to database fields.</p>
-                </div>
-                <button onclick="closeSmartImporter()" class="btn-close-modal">&times;</button>
-            </div>
-            
-            <div class="importer-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px;">
-                <button id="target-rel" onclick="setImportTarget('releases')" class="btn-cancel active" style="flex: 1; padding: 12px; font-weight: 800;">IMPORT TO RELEASES</button>
-                <button id="target-trips" onclick="setImportTarget('trips')" class="btn-cancel" style="flex: 1; padding: 12px; font-weight: 800;">IMPORT TO TRIPS / TRUCKING</button>
-            </div>
-
-            <!-- STEP 1: PASTE -->
-            <div id="importer-step-1">
-                <label style="display: block; font-weight: 800; font-size: 0.8rem; margin-bottom: 10px; color: #1e293b;">1. PASTE DATA FROM EXCEL / SHEETS (Include headers if you want)</label>
-                <textarea id="import-paste-area" placeholder="Copy rows from Excel and paste them here..." style="width: 100%; height: 250px; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 15px; font-family: monospace; font-size: 0.8rem; outline: none; transition: border-color 0.3s;"></textarea>
-                <div style="margin-top: 20px; text-align: right;">
-                    <button onclick="processPastedData()" class="btn-add-sidebar" style="background: #0ea5e9; padding: 12px 30px;">NEXT: MAP COLUMNS <i class="fas fa-arrow-right"></i></button>
-                </div>
-            </div>
-
-            <!-- STEP 2: MAPPING -->
-            <div id="importer-step-2" style="display: none;">
-                <label style="display: block; font-weight: 800; font-size: 0.8rem; margin-bottom: 10px; color: #1e293b;">2. MAP COLUMNS TO DATABASE FIELDS</label>
-                <div id="mapping-container" style="max-height: 400px; overflow: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
-                    <!-- Mapping table generated by JS -->
-                </div>
-                <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
-                    <button onclick="resetImporter()" class="btn-cancel"><i class="fas fa-undo"></i> START OVER</button>
-                    <button onclick="executeFinalImport()" class="btn-add-sidebar" style="background: #059669; padding: 12px 40px; font-size: 1rem;">DO MAGIC: START IMPORT 🪄</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- SMART EXCEL IMPORTER MODAL REMOVED -->
 
     <!-- DRIVER MANAGEMENT MODAL -->
 
@@ -6007,6 +6237,46 @@
         </div>
     </div>
 
+    <!-- SELLER MANAGEMENT MODAL -->
+    <div id="seller-manager-modal" class="simple-modal">
+        <div class="modal-content" style="border-top-color: #f59e0b;">
+            <div class="modal-header">
+                <h3>Manage Sellers List</h3>
+                <button onclick="closeSellerManager()" class="btn-close-modal">&times;</button>
+            </div>
+            <div id="seller-list-body" class="driver-list-container">
+                <!-- Sellers will be listed here -->
+            </div>
+            <div class="modal-footer">
+                <div class="add-driver-input-row">
+                    <input type="text" id="new-seller-name" placeholder="ENTER NEW SELLER NAME...">
+                    <button onclick="addNewSeller()" class="btn-add-driver-confirm" style="background: #f59e0b;">ADD</button>
+                </div>
+                <p style="font-size: 0.65rem; color: #64748b; margin: 0;">* Tip: Deleting a seller only removes it from future entries.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEPOT MANAGEMENT MODAL -->
+    <div id="depot-manager-modal" class="simple-modal">
+        <div class="modal-content" style="border-top-color: #6366f1;">
+            <div class="modal-header">
+                <h3>Manage Depots List</h3>
+                <button onclick="closeDepotManager()" class="btn-close-modal">&times;</button>
+            </div>
+            <div id="depot-list-body" class="driver-list-container">
+                <!-- Depots will be listed here -->
+            </div>
+            <div class="modal-footer">
+                <div class="add-driver-input-row">
+                    <input type="text" id="new-depot-name" placeholder="ENTER NEW DEPOT NAME...">
+                    <button onclick="addNewDepot()" class="btn-add-driver-confirm" style="background: #6366f1;">ADD</button>
+                </div>
+                <p style="font-size: 0.65rem; color: #64748b; margin: 0;">* Tip: Deleting a depot only removes it from future entries.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- COMPANY MANAGEMENT MODAL -->
     <div id="company-manager-modal" class="simple-modal">
         <div class="modal-content" style="border-top-color: #1e40af;">
@@ -6028,11 +6298,11 @@
     </div>
 
     <!-- Email JS Settings Modal -->
-    <div id="email-settings-modal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width:400px;">
+    <div id="email-settings-modal" class="simple-modal" style="display: none;">
+        <div class="modal-content" style="max-width:400px; border-top-color: #475569;">
             <div class="modal-header">
-                <h3><i class="fas fa-envelope-config"></i> EMAILJS CONFIG</h3>
-                <span class="close" onclick="closeEmailSettings()">&times;</span>
+                <h3><i class="fas fa-envelope"></i> EMAILJS CONFIG</h3>
+                <button onclick="closeEmailSettings()" class="btn-close-modal">&times;</button>
             </div>
             <div style="padding:15px;">
                 <div class="field-item">

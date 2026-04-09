@@ -158,7 +158,15 @@ main {
 }
 
 .nav-actions {
-    display: none; /* Hidden on Desktop PC as requested */
+    display: flex; /* Enabled to allow quick navigation between views */
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-actions .btn-calendar {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    border-width: 1px;
 }
 
 .btn-logout-header {
