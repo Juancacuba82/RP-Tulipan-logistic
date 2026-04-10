@@ -480,7 +480,7 @@
                         <div class="form-group" id="release-group-container">
                             <label class="sidebar-label-btn">Release #</label>
                             <div class="hybrid-input-wrapper">
-                                <select id="in-release-sel" onchange="validateStockUI()">
+                                <select id="in-release-sel" onchange="if(window.autoPopulateFromRelease) window.autoPopulateFromRelease()">
                                     <option value="" disabled selected>Select Release...</option>
                                 </select>
                                 <input type="text" id="in-release" placeholder="Type Release..." style="display:none;">
@@ -499,17 +499,17 @@
                                 <div class="trip-release-cell">
                                     <label class="trip-field-label" for="in-rel-type">Type</label>
                                     <select id="in-rel-type" class="trip-select" required>
-                                        <option value="" disabled selected>Choose typeâ€¦</option>
-                                        <option value="DRY">DRY (Calor ðŸ”¥)</option>
-                                        <option value="REEFER">REEFER (FrÃ­o â„ï¸)</option>
+                                        <option value="" disabled selected>Choose type...</option>
+                                        <option value="DRY">DRY (Heat 🔥)</option>
+                                        <option value="REEFER">REEFER (Cold ❄️)</option>
                                     </select>
                                 </div>
                                 <div class="trip-release-cell">
                                     <label class="trip-field-label" for="in-rel-condition">Condition</label>
                                     <select id="in-rel-condition" class="trip-select" required>
-                                        <option value="" disabled selected>Choose conditionâ€¦</option>
-                                        <option value="NEW">NEW (Sparkles âœ¨)</option>
-                                        <option value="USED">USED (Tools ðŸ”§)</option>
+                                        <option value="" disabled selected>Choose condition...</option>
+                                        <option value="NEW">NEW (Sparkles ✨)</option>
+                                        <option value="USED">USED (Tools 🔧)</option>
                                     </select>
                                 </div>
                             </div>

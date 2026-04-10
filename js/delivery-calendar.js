@@ -428,6 +428,12 @@
                         const opt = document.createElement('option');
                         opt.value = relNo;
                         opt.textContent = displayText;
+                        // Data attributes for immediate population
+                        opt.dataset.size = size;
+                        opt.dataset.city = city;
+                        opt.dataset.type = r[2] || 'DRY';
+                        opt.dataset.cond = r[3] || 'USED';
+                        opt.dataset.pickup = r[4] || '---';
                         relSel.appendChild(opt);
                     });
                     if (currentVal) relSel.value = currentVal;
@@ -519,43 +525,74 @@
             window.refreshTripArchiveStockUi = validateStockUI;
 
             const autoPopulateFromRelease = () => {
-                const selectedRel = relSel.value;
+                const relSel = document.getElementById('in-release-sel');
+                const relMan = document.getElementById('in-release');
+                const isListMode = relSel && relSel.style.display !== 'none';
+                const selectedRel = isListMode ? relSel.value : (relMan ? relMan.value : '');
+                
                 if (!selectedRel || selectedRel === '---') return;
 
-                // Find the first matching release to pull data from
-                const matchingRow = currentReleases.find(r => r[0] === selectedRel);
-                if (matchingRow) {
-                    // 1. Auto-fill City (index 6)
-                    const inCity = document.getElementById('in-city');
-                    if (inCity) inCity.value = matchingRow[6] || '';
+                let rowData = null;
 
-                    // 2. Auto-fill Size (index 16)
+                // 1. Try to get data from the selected OPTION (most reliable and fast)
+                if (isListMode && relSel.selectedIndex > 0) {
+                    const opt = relSel.options[relSel.selectedIndex];
+                    if (opt.dataset && opt.dataset.size) {
+                        rowData = {
+                            city: opt.dataset.city,
+                            size: opt.dataset.size,
+                            pickup: opt.dataset.pickup,
+                            type: opt.dataset.type,
+                            cond: opt.dataset.cond
+                        };
+                    }
+                }
+
+                // 2. Fallback to searching the array (Manual mode or if attributes failed)
+                if (!rowData && typeof currentReleases !== 'undefined') {
+                    const currentSize = document.getElementById('in-size')?.value || '';
+                    const match = currentReleases.find(r => r[0] === selectedRel && r[16] === currentSize) 
+                               || currentReleases.find(r => r[0] === selectedRel);
+                    if (match) {
+                        rowData = {
+                            city: match[6],
+                            size: match[16],
+                            pickup: match[4],
+                            type: match[2],
+                            cond: match[3]
+                        };
+                    }
+                }
+
+                if (rowData) {
+                    // Update form elements
+                    const inCity = document.getElementById('in-city');
+                    if (inCity) inCity.value = rowData.city || '';
+
                     const inSize = document.getElementById('in-size');
-                    if (inSize && matchingRow[16] && matchingRow[16] !== '---') {
-                        inSize.value = matchingRow[16];
+                    if (inSize && rowData.size && rowData.size !== '---') {
+                        inSize.value = rowData.size;
                     }
 
-                    // 3. Auto-fill Pickup From (index 4 - Depot Name)
                     const inPickup = document.getElementById('in-pickup');
-                    if (inPickup) inPickup.value = matchingRow[4] || '';
+                    if (inPickup) inPickup.value = rowData.pickup || '';
 
-                    // 5. Auto-fill Type (index 2)
                     const inType = document.getElementById('in-rel-type');
-                    if (inType) inType.value = matchingRow[2] || 'DRY';
+                    if (inType) inType.value = rowData.type || 'DRY';
 
-                    // 6. Auto-fill Condition (index 3)
                     const inCond = document.getElementById('in-rel-condition');
-                    if (inCond) inCond.value = matchingRow[3] || 'USED';
+                    if (inCond) inCond.value = rowData.cond || 'USED';
                 }
-                // Trigger stock validation after auto-filling
-                validateStockUI();
+                
+                if (window.validateStockUI) window.validateStockUI();
             };
+            window.autoPopulateFromRelease = autoPopulateFromRelease;
 
             const changeElements = [relSel, relMan, inSizeSelect, relType, relCond];
             changeElements.forEach(el => {
                 if (el) {
                     el.addEventListener('change', (e) => {
-                        if (el === relSel) autoPopulateFromRelease();
+                        if (el === relSel || el === inSizeSelect) autoPopulateFromRelease();
                         else validateStockUI();
                     });
                 }
@@ -793,6 +830,9 @@
 
             const logisticsBody = document.getElementById('table-body');
             if (!logisticsBody) { isLoadingTable = false; return; }
+            
+            // Re-bind sidebar lookups if needed (failsafe for early script execution)
+            if (typeof setupReleaseValidation === 'function') setupReleaseValidation();
 
             // Fetch from Supabase FIRST
             try {
