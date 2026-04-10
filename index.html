@@ -920,10 +920,17 @@
                             <input type="date" id="trip-to-date" class="form-input"
                                 style="padding: 4px; font-size: 0.75rem;" onchange="loadDocTrips()">
                         </div>
-                        <label style="font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; display: block;">SEARCH
-                            ORDER / CONT# / CUSTOMER / DRIVER</label>
-                        <input type="text" id="trip-search-input" class="form-input" placeholder="Search trips..."
-                            oninput="loadDocTrips()">
+
+                        <label style="font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; display: block;">FILTER BY DRIVER</label>
+                        <select id="docs-driver-dropdown" class="form-input" style="padding: 4px; font-size: 0.75rem; max-width: 100%;" onchange="loadDocTrips()">
+                            <option value="">All Drivers</option>
+                        </select>
+                        <label style="font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; margin-top: 10px; display: block;">FILTER BY STATUS</label>
+                        <select id="docs-status-dropdown" class="form-input" style="padding: 4px; font-size: 0.75rem; max-width: 100%;" onchange="loadDocTrips()">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                        </select>
                     </div>
                     <div id="trip-list-scroll" class="trip-list-scroll">
                         <!-- Populated via JS -->
@@ -2067,6 +2074,19 @@
             populate(sideSel);
             populate(filterSel);
             populate(reportFilterSel);
+            
+            const docsFilterSel = document.getElementById('docs-driver-dropdown');
+            if (docsFilterSel) {
+                const currentVal = docsFilterSel.value;
+                docsFilterSel.innerHTML = '<option value="">All Drivers</option>';
+                currentDrivers.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.name;
+                    opt.textContent = d.name;
+                    docsFilterSel.appendChild(opt);
+                });
+                if (currentVal) docsFilterSel.value = currentVal;
+            }
         }
 
         function renderDriverManagerList() {
@@ -5840,7 +5860,8 @@
         window.currentDocTrip = null;
 
         window.loadDocTrips = async function () {
-            const search = (document.getElementById('trip-search-input')?.value || '').toLowerCase();
+            const docsDriverFilter = (document.getElementById('docs-driver-dropdown')?.value || '').toLowerCase();
+            const docsStatusFilter = (document.getElementById('docs-status-dropdown')?.value || '').toLowerCase();
             const fromDate = document.getElementById('trip-from-date')?.value;
             const toDate = document.getElementById('trip-to-date')?.value;
             const list = document.getElementById('trip-list-scroll');
@@ -5877,19 +5898,32 @@
                 const drv = (trip[17] || '').toLowerCase(); // Index 17: Driver
                 const ord = (trip[5] || '').toLowerCase();  // Index 5: Order
 
-                const matchesSearch = !search || id.includes(search) || cont.includes(search) || cust.includes(search) || drv.includes(search) || ord.includes(search);
+                const yardAmt = parseFloat(trip[13]) || 0;
+                const storageAmt = parseFloat(trip[27]) || 0;
+                const transpAmt = parseFloat(trip[18]) || 0;
+                const salesAmt = parseFloat(trip[20]) || 0;
+                let isPending = false;
+                if (yardAmt > 0 && trip[30] !== 'PAID') isPending = true;
+                if (storageAmt > 0 && trip[31] !== 'PAID') isPending = true;
+                if (transpAmt > 0 && trip[32] !== 'PAID') isPending = true;
+                if (salesAmt > 0 && trip[33] !== 'PAID') isPending = true;
+                const computedStatus = isPending ? 'pending' : 'paid';
+
+
+                const dropdownDriverMatch = !docsDriverFilter || drv === docsDriverFilter || drv.includes(docsDriverFilter);
+                const dropdownStatusMatch = !docsStatusFilter || computedStatus === docsStatusFilter;
                 const matchesDate = (!fromDate || date >= fromDate) && (!toDate || date <= toDate);
 
                 // DRIVER RESTRICTION: Only show their own trips
-                let matchesDriver = true;
+                let roleDriverMatch = true;
                 if (window.currentUserRole === 'driver') {
                     const drvRef = (window.currentDriverNameRef || '').toLowerCase();
                     const isMyTrip = (drv === drvRef);
                     const isComplete = (trip[41] === 'PAID');
-                    matchesDriver = isMyTrip && !isComplete;
+                    roleDriverMatch = isMyTrip && !isComplete;
                 }
 
-                if (matchesSearch && matchesDate && matchesDriver) {
+                if (matchesDate && roleDriverMatch && dropdownDriverMatch && dropdownStatusMatch) {
                     const div = document.createElement('div');
                     div.className = 'trip-item';
                     // Highlight if currently selected
@@ -5959,7 +5993,11 @@
                     holes: (trip[25] || '').toUpperCase().includes('NO HOLES'),
                     doors: (trip[25] || '').toUpperCase().includes('DOORS OK')
                 },
-                status: (trip[34] === 'PAID' || trip[33] === 'PAID' || trip[32] === 'PAID' ? 'PAID' : 'PENDING_PAYMENT')
+                status: (trip[34] === 'PAID' || trip[33] === 'PAID' || trip[32] === 'PAID' ? 'PAID' : 'PENDING_PAYMENT'),
+                yardStatus: trip[30] === 'PAID' ? 'PAID' : 'PENDING',
+                storageStatus: trip[31] === 'PAID' ? 'PAID' : 'PENDING',
+                transpStatus: trip[32] === 'PAID' ? 'PAID' : 'PENDING',
+                salesStatus: trip[33] === 'PAID' ? 'PAID' : 'PENDING'
             };
 
             const subtotal = data.yard + data.storage + data.transp + data.sales;
@@ -6004,13 +6042,15 @@
                 `;
             }
 
+            const bBadge = (st) => `<span style="font-size:0.65rem; font-weight:bold; padding:2px 6px; border-radius:4px; margin-right:8px; display:inline-block; vertical-align:middle; ${st==='PAID' ? 'background:#dcfce7; color:#166534; border:1px solid #166534;' : 'background:#fee2e2; color:#991b1b; border:1px solid #991b1b;'}">${st}</span>`;
+            
             // Billing Rows
             let billingRows = '';
-            if (data.yard > 0) billingRows += `<tr><td>Yard Loading / Interchange Fee</td><td style="text-align:right;">$${data.yard.toFixed(2)}</td></tr>`;
-            if (data.storage > 0) billingRows += `<tr><td>Storage / Rental Fee</td><td style="text-align:right;">$${data.storage.toFixed(2)}</td></tr>`;
-            if (data.transp > 0) billingRows += `<tr><td>Transport Fee</td><td style="text-align:right;">$${data.transp.toFixed(2)}</td></tr>`;
-            if (data.sales > 0) billingRows += `<tr><td>Container Sales</td><td style="text-align:right;">$${data.sales.toFixed(2)}</td></tr>`;
-            if (taxVal > 0) billingRows += `<tr><td>Taxes (${data.taxRate}%)</td><td style="text-align:right;">$${taxVal.toFixed(2)}</td></tr>`;
+            if (data.yard > 0) billingRows += `<tr><td>Yard Loading / Interchange Fee</td><td style="text-align:right; vertical-align:middle;">${bBadge(data.yardStatus)}$${data.yard.toFixed(2)}</td></tr>`;
+            if (data.storage > 0) billingRows += `<tr><td>Storage / Rental Fee</td><td style="text-align:right; vertical-align:middle;">${bBadge(data.storageStatus)}$${data.storage.toFixed(2)}</td></tr>`;
+            if (data.transp > 0) billingRows += `<tr><td>Transport Fee</td><td style="text-align:right; vertical-align:middle;">${bBadge(data.transpStatus)}$${data.transp.toFixed(2)}</td></tr>`;
+            if (data.sales > 0) billingRows += `<tr><td>Container Sales</td><td style="text-align:right; vertical-align:middle;">${bBadge(data.salesStatus)}$${data.sales.toFixed(2)}</td></tr>`;
+            if (taxVal > 0) billingRows += `<tr><td>Taxes (${data.taxRate}%)</td><td style="text-align:right; vertical-align:middle;">$${taxVal.toFixed(2)}</td></tr>`;
 
             let billingSectionHtml = '';
             if (total > 0 && data.showBilling) {
@@ -6040,10 +6080,6 @@
 
             const headerHtml = `
                 <div class="receipt-header" style="position: relative;">
-                    <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); padding: 6px 16px; border-radius: 4px; font-size: 0.8rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; z-index: 10;
-                        ${data.status === 'PAID' ? 'background: #dcfce7; color: #166534; border: 2px solid #166534;' : 'background: #fee2e2; color: #991b1b; border: 2px solid #991b1b;'}">
-                        ${data.status === 'PAID' ? 'PAID' : 'PENDING TO PAY'}
-                    </div>
                     <div class="receipt-logo-area">
                         <h1 style="color:#b91c1c; font-size: 1.8rem; letter-spacing:-1px; margin:0;">RP TULIPAN</h1>
                         <p style="font-weight:900; color:#1e293b; margin-top:-5px; margin-bottom:5px;">TRANSPORT, INC.</p>
