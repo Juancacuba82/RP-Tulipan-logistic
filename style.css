@@ -604,6 +604,18 @@ main {
 
 .btn-cancel:hover { background-color: #cbd5e1; }
 
+/* Force Note column wrapping in expenses history */
+.drivers-report-table td:nth-child(5) {
+    min-width: 220px !important;
+    max-width: 250px !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+    padding: 10px !important;
+}
+
 .sidebar-header {
     padding: 20px;
     border-bottom: 1px solid #edf2f7;

@@ -470,17 +470,46 @@
         // EXPENSE MANAGEMENT LOGIC
         window.toggleOtherExpense = () => {
             const cat = document.getElementById('exp-category').value;
-            document.getElementById('group-exp-other').style.display = (cat === 'Other') ? 'block' : 'none';
+            const groupOther = document.getElementById('group-exp-other');
+            const groupDriver = document.getElementById('group-exp-driver');
+            
+            if (groupOther) groupOther.style.display = (cat === 'Other') ? 'block' : 'none';
+            
+            if (groupDriver) {
+                const showDriver = (cat === 'Payments to Drivers');
+                groupDriver.style.display = showDriver ? 'block' : 'none';
+                
+                if (showDriver) {
+                    // Populate driver list if empty or need refresh
+                    const drvSel = document.getElementById('exp-driver');
+                    if (drvSel && window.currentDrivers) {
+                        const currentVal = drvSel.value;
+                        drvSel.innerHTML = '<option value="" disabled selected>Select Driver...</option>';
+                        window.currentDrivers.forEach(d => {
+                            const opt = document.createElement('option');
+                            opt.value = d.name;
+                            opt.textContent = d.name;
+                            drvSel.appendChild(opt);
+                        });
+                        if (currentVal) drvSel.value = currentVal;
+                    }
+                }
+            }
         };
 
         window.addExpenseRow = async () => {
             const date = document.getElementById('exp-date').value || '---';
             const cat = document.getElementById('exp-category').value;
             const otherVal = document.getElementById('exp-other-desc').value;
+            const driverVal = document.getElementById('exp-driver')?.value || '';
             const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
             const note = document.getElementById('exp-note').value || '---';
 
-            const desc = (cat === 'Other') ? otherVal : cat;
+            let desc = (cat === 'Other') ? otherVal : cat;
+            if (cat === 'Payments to Drivers' && driverVal) {
+                desc = `${cat} - ${driverVal}`;
+            }
+
             const rowData = [date, cat, desc, `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, note];
 
             try {

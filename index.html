@@ -811,7 +811,7 @@
                             <div class="filter-item">
                                 <label>Driver</label>
                                 <select id="f-driver" onchange="applyAdvancedFilters()">
-                                    <option value="">Select Driver</option>
+                                    <option value="">All Drivers</option>
                                 </select>
                             </div>
 
@@ -1694,17 +1694,24 @@
                                 <option value="Service/Repairs">Service / Repairs</option>
                                 <option value="Tolls">Tolls / Sunpass</option>
                                 <option value="Insurance">Insurance</option>
+                                <option value="Payments to Drivers">Payments to Drivers</option>
                                 <option value="Payroll">Payroll (Workers)</option>
                                 <option value="Utilities">Utilities / Rent</option>
                                 <option value="Taxes/Licenses">Taxes / Licenses</option>
                                 <option value="Other">Other (Special)</option>
                             </select>
                         </div>
+                        <div class="form-group" id="group-exp-driver" style="display: none;">
+                            <label>DRIVER</label>
+                            <select id="exp-driver">
+                                <option value="" disabled selected>Select Driver...</option>
+                            </select>
+                        </div>
                         <div class="form-group" id="group-exp-other" style="display: none;">
                             <label>DESCRIPTION (OTHER)</label>
                             <input type="text" id="exp-other-desc" placeholder="Specify expense type">
                         </div>
-                        <div class="form-group"><label>AMOUNT ($)</label><input type="number" id="exp-amount" value="0">
+                        <div class="form-group"><label>AMOUNT ($)</label><input type="number" id="exp-amount" placeholder="0">
                         </div>
                         <div class="form-group"><label>DETAILS / NOTE</label><textarea id="exp-note"
                                 style="width: 100%; height: 80px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px;"></textarea>
@@ -1790,7 +1797,7 @@
                             <div class="breakdown-item">
                                 <div class="item-label">
                                     <span class="dot sales"></span>
-                                    Total Ventas
+                                    Total Sales Profit
                                 </div>
                                 <div class="item-value" id="val-sales">$0.00</div>
                             </div>
@@ -1810,19 +1817,43 @@
                             </div>
                             <div class="breakdown-item">
                                 <div class="item-label">
+                                    <span class="dot" style="background: #3b82f6;"></span>
+                                    JR SUPER CRAME Profit
+                                </div>
+                                <div class="item-value" id="val-jr">$0.00</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="item-label">
                                     <span class="dot" style="background: #a855f7;"></span>
                                     CONTRACTOR Profit
                                 </div>
                                 <div class="item-value" id="val-contractor">$0.00</div>
                             </div>
-                            <div class="breakdown-item"
-                                style="border-top: 1px dashed #e2e8f0; margin-top: 10px; padding-top: 10px;">
-                                <div class="item-label" style="color: #be185d; font-weight: 700;">
+                            <div class="breakdown-item" style="border-top: 1px dashed #e2e8f0; margin-top: 15px; padding-top: 15px;">
+                                <div class="item-label" style="font-weight: 800; color: #1e293b; text-transform: uppercase; font-size: 0.75rem;">
+                                    Costs & Expenses
+                                </div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="item-label">
+                                    <span class="dot" style="background: #94a3b8;"></span>
+                                    Business Expenses
+                                </div>
+                                <div class="item-value" id="val-expenses" style="color: #ef4444;">$0.00</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="item-label">
+                                    <span class="dot" style="background: #f87171;"></span>
+                                    Driver Payouts
+                                </div>
+                                <div class="item-value" id="val-payouts" style="color: #ef4444;">$0.00</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="item-label">
                                     <span class="dot" style="background: #be185d;"></span>
                                     Container Purchases
                                 </div>
-                                <div class="item-value" id="val-releases" style="color: #be185d; font-weight: 700;">
-                                    $0.00</div>
+                                <div class="item-value" id="val-releases" style="color: #ef4444;">$0.00</div>
                             </div>
                         </div>
                     </div>
@@ -1832,7 +1863,7 @@
                         <h3>Revenue Distribution</h3>
                         <div class="simple-bar-chart">
                             <div class="bar-group">
-                                <label>Ventas</label>
+                                <label>Sales Profit</label>
                                 <div class="bar-container">
                                     <div id="bar-sales" class="bar sales" style="width: 0%"></div>
                                 </div>
@@ -1850,9 +1881,21 @@
                                 </div>
                             </div>
                             <div class="bar-group">
+                                <label>JR Super Crame</label>
+                                <div class="bar-container">
+                                    <div id="bar-jr" class="bar" style="width: 0%; background: #3b82f6;"></div>
+                                </div>
+                            </div>
+                            <div class="bar-group">
                                 <label>Contractor</label>
                                 <div class="bar-container">
                                     <div id="bar-contractor" class="bar" style="width: 0%; background: #a855f7;"></div>
+                                </div>
+                            </div>
+                            <div class="bar-group">
+                                <label>Total Expenses</label>
+                                <div class="bar-container">
+                                    <div id="bar-expenses" class="bar" style="width: 0%; background: #ef4444;"></div>
                                 </div>
                             </div>
                         </div>
@@ -2251,7 +2294,14 @@
                     } else if (finalView === 'fleet') {
                         if (window.loadFleetData) window.loadFleetData();
                     } else if (finalView === 'profit-report') {
-                        if (window.renderProfitReport) window.renderProfitReport();
+                        (async () => {
+                            if (window.loadExpensesData) await window.loadExpensesData();
+                            if (window.loadReleasesData) await window.loadReleasesData();
+                            if (window.loadTableData) await window.loadTableData();
+                            if (window.renderProfitReport) window.renderProfitReport();
+                        })();
+                    } else if (finalView === 'expenses') {
+                        if (window.loadExpensesData) window.loadExpensesData();
                     }
 
                     // Always ensure drivers are loaded

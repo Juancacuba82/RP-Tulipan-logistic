@@ -49,6 +49,14 @@
             }
             isSaving = true;
 
+            const compVal = document.getElementById('in-company').value;
+            if (!compVal || compVal === '---') {
+                alert("ERROR: Debes seleccionar una compañía para poder crear o guardar la orden.");
+                isSaving = false;
+                restoreTripArchiveButtonUI();
+                return;
+            }
+
             if (editingIndex === null) {
                 // Only auto-generate Order if user hasn't typed one
                 const ordInput = document.getElementById('in-order');

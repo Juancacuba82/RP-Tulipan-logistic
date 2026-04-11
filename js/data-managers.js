@@ -42,6 +42,7 @@
                 }
 
                 currentDrivers = data;
+                window.currentDrivers = data;
                 refreshDriverSelects();
             } catch (err) {
                 console.error("Error loading drivers:", err);
@@ -54,10 +55,10 @@
             const filterSel = document.getElementById('f-driver');
             const reportFilterSel = document.getElementById('filter-search');
 
-            const populate = (sel) => {
+            const populate = (sel, isFilter = false) => {
                 if (!sel) return;
                 const currentVal = sel.value;
-                sel.innerHTML = '<option value="" disabled selected>Select Driver</option>';
+                sel.innerHTML = isFilter ? '<option value="">All Drivers</option>' : '<option value="" disabled selected>Select Driver</option>';
                 currentDrivers.forEach(d => {
                     const opt = document.createElement('option');
                     opt.value = d.name;
@@ -67,9 +68,9 @@
                 if (currentVal) sel.value = currentVal;
             };
 
-            populate(sideSel);
-            populate(filterSel);
-            populate(reportFilterSel);
+            populate(sideSel, false);
+            populate(filterSel, true);
+            populate(reportFilterSel, true);
             
             const docsFilterSel = document.getElementById('docs-driver-dropdown');
             if (docsFilterSel) {
@@ -172,10 +173,10 @@
             const sideSel = document.getElementById('in-customer-sel');
             const filterSel = document.getElementById('f-customer');
 
-            const populate = (sel) => {
+            const populate = (sel, isFilter = false) => {
                 if (!sel) return;
                 const currentVal = sel.value;
-                sel.innerHTML = '<option value="" disabled selected>Select Customer</option>';
+                sel.innerHTML = isFilter ? '<option value="">All Customers</option>' : '<option value="" disabled selected>Select Customer</option>';
                 currentCustomers.forEach(c => {
                     const opt = document.createElement('option');
                     opt.value = c.name;
@@ -186,8 +187,8 @@
                 if (currentVal) sel.value = currentVal;
             };
 
-            populate(sideSel);
-            populate(filterSel);
+            populate(sideSel, false);
+            populate(filterSel, true);
 
             // Auto-fill email when selecting a customer
             if (sideSel && !sideSel.dataset.listenerAdded) {
@@ -649,10 +650,10 @@
             const sideSel = document.getElementById('in-company');
             const filterSel = document.getElementById('f-company');
 
-            const populate = (sel) => {
+            const populate = (sel, isFilter = false) => {
                 if (!sel) return;
                 const currentVal = sel.value;
-                sel.innerHTML = '<option value="" disabled selected>Select Company</option>';
+                sel.innerHTML = isFilter ? '<option value="">All Companies</option>' : '<option value="" disabled selected>Select Company</option>';
                 currentCompanies.forEach(c => {
                     const opt = document.createElement('option');
                     opt.value = c.name;
@@ -662,8 +663,8 @@
                 if (currentVal) sel.value = currentVal;
             };
 
-            populate(sideSel);
-            populate(filterSel);
+            populate(sideSel, false);
+            populate(filterSel, true);
         }
 
         function renderCompanyManagerList() {
@@ -915,7 +916,7 @@
             return [
                 e.date || '---', e.category || '---', e.description || '---',
                 `$${(e.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`, e.note || '---',
-                e.expense_id
+                e.id
             ];
         }
 
