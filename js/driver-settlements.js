@@ -335,7 +335,7 @@
                     <td style="color: #475569;">${fDate(s.start_date)}</td>
                     <td style="color: #475569;">${fDate(s.end_date)}</td>
                     <td style="color: #64748b; font-size: 0.85rem;">${agingText}</td>
-                    <td style="font-weight: 800; color: ${balanceColor}; font-size: 1.1rem;">
+                    <td style="font-weight: 800; color: ${balanceColor}; font-size: 1.1rem; text-align: center !important;">
                         $${balance.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
                     </td>
                     ${window.currentUserRole !== 'driver' ? `
