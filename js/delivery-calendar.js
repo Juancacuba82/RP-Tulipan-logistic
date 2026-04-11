@@ -1,3 +1,35 @@
+// --- UI STATE FOR TRIP ENTRY ---
+let editingIndex = null;
+let editingTripDbId = null;
+
+function getTripArchiveButton() {
+    return document.getElementById('btn-archive-order');
+}
+
+function setTripArchiveButton(opts) {
+    const btn = getTripArchiveButton();
+    if (!btn) return;
+    const span = btn.querySelector('.btn-archive-order-label');
+    if (opts.disabled !== undefined) btn.disabled = opts.disabled;
+    if (opts.opacity !== undefined) btn.style.opacity = String(opts.opacity);
+    if (opts.label !== undefined && span) span.textContent = opts.label;
+    if (opts.isUpdate === true) btn.classList.add('btn-update');
+    else if (opts.isUpdate === false) btn.classList.remove('btn-update');
+    if (opts.title !== undefined) btn.title = opts.title || '';
+}
+
+function restoreTripArchiveButtonUI() {
+    const isEdit = (editingIndex !== null);
+    setTripArchiveButton({
+        disabled: false,
+        opacity: 1,
+        label: isEdit ? 'Update order' : 'Archive Order',
+        isUpdate: isEdit,
+        title: isEdit ? 'Save changes to this trip' : 'Save trip to database'
+    });
+}
+window.restoreTripArchiveButtonUI = restoreTripArchiveButtonUI;
+
 // --- IMMEDIATE SYNC FOR EDIT MODE ---
         async function syncImmediate(fieldName, value) {
             if (editingIndex === null) return;
@@ -362,14 +394,17 @@
             }
         }
 
-        function resetForm() {
+        function startNewOrder() {
+            console.log("Starting a new order entry (clearing state)...");
             editingIndex = null;
             editingTripDbId = null;
 
+            // 1. Text, Number, and Date Inputs
             const fieldsToClear = [
                 'in-ncont', 'in-release', 'in-order', 'in-delivery', 'in-miles',
                 'in-yardrate', 'in-priceperday', 'in-rate', 'in-sales', 'in-amount',
-                'in-phone', 'in-note', 'in-mrate', 'in-taxpercent', 'in-company'
+                'in-phone', 'in-note', 'in-mrate', 'in-taxpercent', 'in-paiddriver',
+                'in-pickup', 'in-customer', 'in-email'
             ];
 
             fieldsToClear.forEach(id => {
@@ -377,13 +412,26 @@
                 if (el) {
                     if (id === 'in-taxpercent') {
                         el.value = '7';
+                    } else if (['in-yardrate', 'in-priceperday', 'in-rate', 'in-sales', 'in-amount', 'in-miles', 'in-paiddriver', 'in-mrate'].includes(id)) {
+                        el.value = '0';
                     } else {
-                        el.value = (id.includes('rate') || id === 'in-sales' || id === 'in-amount' || id === 'in-miles') ? '0' : '';
+                        el.value = '';
                     }
                 }
             });
 
-            // Reset checkboxes
+            // 2. Select Dropdowns
+            const selectsToReset = [
+                'in-size', 'in-rel-type', 'in-rel-condition', 'in-city', 
+                'in-pickup-sel', 'in-customer-sel', 'in-doors', 'in-company', 
+                'in-driver', 'in-paytype', 'in-release-sel'
+            ];
+            selectsToReset.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.selectedIndex = 0;
+            });
+
+            // 3. Checkboxes
             const checks = [
                 'in-flag1', 'in-flag2', 'in-flag3', 'in-yardpaid', 'in-rentpaid',
                 'in-ratepaid', 'in-salespaid', 'in-amountpaid', 'in-yard-cash',
@@ -391,28 +439,49 @@
             ];
             checks.forEach(id => {
                 const el = document.getElementById(id);
-                if (el) {
-                    el.checked = false;
-                }
+                if (el) el.checked = false;
             });
 
-            // Reset display states
-            toggleYardRate();
-            toggleTransport();
-            toggleSalesPrice();
-            updateStatusColor('PEND');
+            // 4. Special Dates (Reset to empty or today)
+            const dates = ['in-dateout', 'in-sdaterent', 'in-nextdue'];
+            dates.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            const mainDate = document.getElementById('in-date');
+            if (mainDate) mainDate.value = new Date().toISOString().split('T')[0];
 
-            // Set default date to today
-            const dt = document.getElementById('in-date');
-            if (dt) dt.value = new Date().toISOString().split('T')[0];
+            // 5. Reset UI display states (Toggles)
+            if (typeof toggleYardRate === 'function') toggleYardRate();
+            else if (window.toggleYardRate) window.toggleYardRate();
 
-            if (document.getElementById('in-release-sel')) toggleReleaseMode('list');
-            if (document.getElementById('in-pickup-sel')) togglePickupAddressMode('list');
-            if (document.getElementById('in-customer-sel')) toggleCustomerMode('list');
+            if (typeof toggleTransport === 'function') toggleTransport();
+            else if (window.toggleTransport) window.toggleTransport();
 
-            restoreTripArchiveButtonUI();
+            if (typeof toggleSalesPrice === 'function') toggleSalesPrice();
+            else if (window.toggleSalesPrice) window.toggleSalesPrice();
+
+            if (typeof updateStatusColor === 'function') updateStatusColor('PEND');
+            else if (window.updateStatusColor) window.updateStatusColor('PEND');
+
+            // Hybrid mode resets
+            if (typeof toggleReleaseMode === 'function') toggleReleaseMode('list');
+            if (typeof togglePickupAddressMode === 'function') togglePickupAddressMode('list');
+            if (typeof toggleCustomerMode === 'function') toggleCustomerMode('list');
+
+            // Clear net pay info text
+            const netPayEl = document.getElementById('net-pay-info');
+            if (netPayEl) netPayEl.textContent = '';
+
+            // 6. Restore Button UI
+            // 6. Restore Button UI and Clear Selection
+            window.selectedTripIds = []; // DESELECT any selected orders
+            if (typeof loadTableData === 'function') loadTableData();
+            
+            if (typeof restoreTripArchiveButtonUI === 'function') restoreTripArchiveButtonUI();
         }
-        window.resetForm = resetForm;
+        window.startNewOrder = startNewOrder;
+        window.resetForm = startNewOrder; // Alias for safety
 
         window.addRow = addRow;
 

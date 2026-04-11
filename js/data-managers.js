@@ -614,7 +614,6 @@
 
         // --- COMPANY MANAGEMENT LOGIC ---
 
-
         let currentCompanies = [];
         window.openCompanyManager = function () {
             document.getElementById('company-manager-modal').style.display = 'flex';
@@ -826,9 +825,6 @@
             }
         };
 
-
-
-
         function calculateFinalPay(company, grossPay) {
             if (company === 'RP TULIPAN' || company === 'JR SUPER CRAME') {
                 return grossPay * 0.3;
@@ -841,40 +837,12 @@
         let currentReleases = []; // Cache from Supabase
         let currentExpenses = []; // Cache from Supabase
         let currentFleet = []; // Cache from Supabase
-        let editingIndex = null;
-        let editingTripDbId = null;
         let editingReleaseId = null;
-
-        function getTripArchiveButton() {
-            return document.getElementById('btn-archive-order');
-        }
-
-        function setTripArchiveButton(opts) {
-            const btn = getTripArchiveButton();
-            if (!btn) return;
-            const span = btn.querySelector('.btn-archive-order-label');
-            if (opts.disabled !== undefined) btn.disabled = opts.disabled;
-            if (opts.opacity !== undefined) btn.style.opacity = String(opts.opacity);
-            if (opts.label !== undefined && span) span.textContent = opts.label;
-            if (opts.isUpdate === true) btn.classList.add('btn-update');
-            else if (opts.isUpdate === false) btn.classList.remove('btn-update');
-            if (opts.title !== undefined) btn.title = opts.title || '';
-        }
-
-        function restoreTripArchiveButtonUI() {
-            const isEdit = editingIndex !== null;
-            setTripArchiveButton({
-                disabled: false,
-                opacity: 1,
-                label: isEdit ? 'Update order' : 'Archive Order',
-                isUpdate: isEdit,
-                title: isEdit ? 'Save changes to this trip' : 'Save trip to database'
-            });
-        }
 
         function newTripIdForDb() {
             return 'TRIP-' + Date.now().toString().slice(-6);
         }
+        window.newTripIdForDb = newTripIdForDb;
 
         // --- FLEET DATA MAPPERS ---
         function mapFleetToUI(f) {
