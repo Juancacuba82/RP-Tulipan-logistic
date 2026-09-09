@@ -16,6 +16,15 @@ function openCustomReceiptModal() {
     document.getElementById('cr-cc-fee').checked = false;
     document.getElementById('cr-tax-rate').checked = false;
     document.getElementById('cr-payments').value = '0';
+
+    const includeEl = document.getElementById('cr-include-finance');
+    if (includeEl) includeEl.checked = false;
+    const pendingRadio = document.querySelector('input[name="cr-pay-status"][value="PENDING"]');
+    if (pendingRadio) pendingRadio.checked = true;
+    if (typeof toggleCustomReceiptFinanceOptions === 'function') toggleCustomReceiptFinanceOptions();
+
+    const btnSave = document.getElementById('btn-save-cr');
+    if (btnSave) btnSave.style.display = '';
     
     customReceiptItems = [];
     addCustomReceiptItem(); // Add one empty row by default
@@ -24,6 +33,145 @@ function openCustomReceiptModal() {
     
     document.getElementById('custom-receipt-modal').style.display = 'block';
 }
+
+function toggleCustomReceiptFinanceOptions() {
+    const includeEl = document.getElementById('cr-include-finance');
+    const options = document.getElementById('cr-finance-options');
+    if (!options) return;
+    options.style.display = includeEl && includeEl.checked ? 'block' : 'none';
+}
+
+function parseCustomReceiptContact(raw) {
+    if (!raw) return {};
+    if (typeof raw === 'object') return raw;
+    const text = String(raw).trim();
+    if (text.startsWith('{')) {
+        try { return JSON.parse(text); } catch (e) { return { email: raw }; }
+    }
+    return { email: raw };
+}
+
+function getCustomReceiptBookedAmount(receipt, totals) {
+    if (totals) {
+        return (parseFloat(totals.subtotal) || 0) + (parseFloat(totals.taxAmount) || 0) + (parseFloat(totals.ccFee) || 0);
+    }
+    const parsed = parseCustomReceiptContact(receipt && receipt.customer_contact);
+    if (parsed.posted_amount != null && parsed.posted_amount !== '') {
+        return parseFloat(parsed.posted_amount) || 0;
+    }
+    const sub = parseFloat(receipt && receipt.subtotal) || 0;
+    const tax = parseFloat(receipt && receipt.tax) || 0;
+    const cc = parseFloat(receipt && receipt.cc_fee) || 0;
+    return sub + tax + cc;
+}
+
+function buildCustomArInvoiceNo(orderNo, date) {
+    const raw = (orderNo || '').toString().trim();
+    if (raw) {
+        return raw.toUpperCase().startsWith('DOCS-') ? raw : ('DOCS-' + raw);
+    }
+    const d = (date || new Date().toISOString().split('T')[0]).replace(/-/g, '');
+    return 'DOCS-' + d + '-' + Math.floor(1000 + Math.random() * 9000);
+}
+
+window.parseCustomReceiptFinance = function (receipt) {
+    const parsed = parseCustomReceiptContact(receipt && receipt.customer_contact);
+    return {
+        include: parsed.include_in_finance === true,
+        status: parsed.finance_status || 'PENDING',
+        arInvoiceNumber: parsed.ar_invoice_number || '',
+        postedAmount: getCustomReceiptBookedAmount(receipt),
+        paymentMethod: parsed.payment_method || ''
+    };
+};
+
+window.loadCustomReceiptsForProfit = async function (dateFrom, dateTo) {
+    try {
+        const sc = window.db || (typeof db !== 'undefined' ? db : null);
+        if (!sc) return 0;
+        const { data, error } = await sc.from('custom_receipts').select('*');
+        if (error) {
+            console.warn('[CustomReceipts] Profit load skipped:', error.message);
+            return 0;
+        }
+        let sum = 0;
+        (data || []).forEach(r => {
+            const fin = window.parseCustomReceiptFinance(r);
+            if (!fin.include) return;
+            const d = (r.date || '').toString();
+            if (dateFrom && d && d < dateFrom) return;
+            if (dateTo && d && d > dateTo) return;
+            sum += fin.postedAmount || 0;
+        });
+        return sum;
+    } catch (err) {
+        console.warn('[CustomReceipts] Profit load error:', err.message);
+        return 0;
+    }
+};
+
+window.deleteCustomReceipt = async function (receiptId, evt) {
+    if (evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+    }
+    if (typeof window.isAdmin === 'function' ? !window.isAdmin() : (window.currentUserRole || '').toLowerCase().trim() !== 'admin') {
+        alert('Acceso denegado: Solo los administradores pueden eliminar registros.');
+        return;
+    }
+    if (!receiptId) return;
+
+    try {
+        const sc = window.db || (typeof db !== 'undefined' ? db : null);
+        if (!sc) throw new Error('DB not available');
+
+        const { data: rows, error: fetchErr } = await sc.from('custom_receipts').select('*').eq('id', receiptId).limit(1);
+        if (fetchErr) throw fetchErr;
+        const receipt = rows && rows[0];
+        if (!receipt) {
+            alert('Receipt not found.');
+            return;
+        }
+
+        const fin = window.parseCustomReceiptFinance(receipt);
+        let msg = 'Delete this custom receipt? This cannot be edited — you will need to create it again.';
+        if (fin.include) {
+            msg = 'Delete this receipt from Docs, Accounts Receivable, and Profit';
+            msg += ', and remove any Cash Ledger payments with this invoice number';
+            msg += '?\n\nInvoice: ' + (fin.arInvoiceNumber || receipt.order_no || receiptId);
+        }
+        if (!confirm(msg)) return;
+
+        const invNo = fin.arInvoiceNumber || '';
+        if (invNo) {
+            await sc.from('receivables_invoices')
+                .update({
+                    is_deleted: true,
+                    deleted_at: new Date().toISOString(),
+                    deleted_by: window.userEmail || window.userName || 'Unknown'
+                })
+                .eq('invoice_number', invNo)
+                .eq('service_type', 'CUSTOM');
+
+            const { error: ledErr } = await sc.from('cash_ledger').delete().eq('referencia', invNo);
+            if (ledErr) console.warn('[CustomReceipts] Ledger cleanup:', ledErr.message);
+        }
+
+        const { error: delErr } = await sc.from('custom_receipts').delete().eq('id', receiptId);
+        if (delErr) throw delErr;
+
+        if (typeof window.loadDocTrips === 'function') {
+            await window.loadDocTrips(true);
+        }
+        if (typeof window.loadAccountingData === 'function') {
+            try { await window.loadAccountingData(true); } catch (e) {}
+        }
+        alert('Custom receipt deleted.');
+    } catch (err) {
+        console.error('[CustomReceipts] Delete failed:', err);
+        alert('Failed to delete receipt: ' + (err.message || err));
+    }
+};
 
 function closeCustomReceiptModal() {
     document.getElementById('custom-receipt-modal').style.display = 'none';
@@ -330,30 +478,71 @@ async function saveAndPreviewCustomReceipt() {
     try {
         const companyKey = document.getElementById('cr-company').value;
         const date = document.getElementById('cr-date').value;
-        const orderNo = document.getElementById('cr-order').value;
+        let orderNo = document.getElementById('cr-order').value;
         const customer = document.getElementById('cr-customer').value;
         const contactName = document.getElementById('cr-contact-name').value;
         const address = document.getElementById('cr-address').value;
         const phone = document.getElementById('cr-phone').value;
         const email = document.getElementById('cr-email').value;
         const totals = updateCustomReceiptTotals();
-        
-        // Pack extra contact details into JSON to avoid database migration
+        const includeFinance = !!(document.getElementById('cr-include-finance') && document.getElementById('cr-include-finance').checked);
+        const payStatusEl = document.querySelector('input[name="cr-pay-status"]:checked');
+        const payStatus = includeFinance ? ((payStatusEl && payStatusEl.value) || 'PENDING') : '';
+        const bookedAmount = getCustomReceiptBookedAmount(null, totals);
+
+        let paymentSplit = null;
+        let arInvoiceNo = '';
+        let arMethod = '';
+        let amountPaid = 0;
+
+        if (includeFinance) {
+            if (bookedAmount <= 0) {
+                alert('Enter at least one item with a cost before including this invoice in Accounts Rec. and Profit.');
+                return;
+            }
+            if (!customer || !customer.trim()) {
+                alert('Enter a customer name before including this invoice in Accounts Rec.');
+                return;
+            }
+            arInvoiceNo = buildCustomArInvoiceNo(orderNo, date);
+            if (!orderNo) {
+                orderNo = arInvoiceNo;
+                document.getElementById('cr-order').value = orderNo;
+            }
+            if (payStatus === 'PAID') {
+                if (typeof window.showSplitPaymentModal !== 'function') {
+                    alert('Payment window is not available. Save as Pending, or try again after opening Rentals once.');
+                    return;
+                }
+                paymentSplit = await window.showSplitPaymentModal(bookedAmount);
+                if (!paymentSplit) return;
+                amountPaid = (parseFloat(paymentSplit.cashAmt) || 0) + (parseFloat(paymentSplit.bankAmt) || 0);
+                if ((parseFloat(paymentSplit.cashAmt) || 0) > 0 && (parseFloat(paymentSplit.bankAmt) || 0) > 0) arMethod = 'Split';
+                else if ((parseFloat(paymentSplit.cashAmt) || 0) > 0) arMethod = 'Cash';
+                else arMethod = 'Bank';
+            }
+        }
+
+        // Pack extra contact + finance flags into JSON (no extra table columns)
         const contactData = JSON.stringify({
             email: email,
             contact_name: contactName,
             address: address,
-            phone: phone
+            phone: phone,
+            include_in_finance: includeFinance,
+            finance_status: includeFinance ? (payStatus === 'PAID' ? 'PAID' : 'PENDING') : '',
+            payment_method: arMethod,
+            ar_invoice_number: arInvoiceNo,
+            posted_amount: includeFinance ? bookedAmount : 0
         });
         
-        // Prepare data for Supabase
         const payload = {
             company: companyKey,
             date: date,
             order_no: orderNo,
             customer_name: customer,
             customer_contact: contactData,
-            items: customReceiptItems, // JSONB in Supabase
+            items: customReceiptItems,
             subtotal: totals.subtotal,
             tax: totals.taxAmount,
             cc_fee: totals.ccFee,
@@ -361,17 +550,62 @@ async function saveAndPreviewCustomReceipt() {
             total: totals.totalDue
         };
         
-        // Ensure supabase client is available
         const sc = window.db || (typeof db !== 'undefined' ? db : (typeof supabase !== 'undefined' ? supabase : null));
         if (sc) {
             console.log("Saving to Supabase 'custom_receipts'...", payload);
             const { error } = await sc.from('custom_receipts').insert([payload]);
             if (error) {
                 console.warn("Could not save to Supabase. This might happen if the table 'custom_receipts' is not created yet.", error);
+                alert('Could not save the receipt: ' + (error.message || 'unknown error'));
+                return;
+            }
+        }
+
+        if (includeFinance) {
+            if (window.addInvoiceToReceivables) {
+                const detailsHtml = `
+                    <div style="font-size:0.85rem; color:#475569;">
+                        <strong>Custom Invoice</strong><br>
+                        <strong>Order:</strong> ${orderNo || arInvoiceNo}<br>
+                        <strong>Date:</strong> ${date || ''}
+                    </div>
+                `;
+                await window.addInvoiceToReceivables(
+                    customer,
+                    arInvoiceNo,
+                    bookedAmount,
+                    detailsHtml,
+                    [],
+                    'CUSTOM',
+                    amountPaid,
+                    arMethod
+                );
+            }
+            if (payStatus === 'PAID' && paymentSplit && window.logCashTransaction) {
+                const desc = 'Payment for Invoice ' + arInvoiceNo;
+                if ((parseFloat(paymentSplit.cashAmt) || 0) > 0) {
+                    await window.logCashTransaction({
+                        tipo: 'ingreso',
+                        metodo: 'cash',
+                        monto: paymentSplit.cashAmt,
+                        descripcion: desc + ' (CASH)',
+                        referencia: arInvoiceNo,
+                        cliente: customer
+                    });
+                }
+                if ((parseFloat(paymentSplit.bankAmt) || 0) > 0) {
+                    await window.logCashTransaction({
+                        tipo: 'ingreso',
+                        metodo: 'bank',
+                        monto: paymentSplit.bankAmt,
+                        descripcion: desc + ' (BANK)',
+                        referencia: arInvoiceNo,
+                        cliente: customer
+                    });
+                }
             }
         }
         
-        // Success (even if saving failed, we still preview and print)
         previewCustomReceipt();
         document.getElementById('cr-preview-modal').style.display = 'block';
         
@@ -430,27 +664,11 @@ window.viewCustomReceiptHistory = function(receiptData) {
     document.getElementById('cr-order').value = receiptData.order_no || '';
     document.getElementById('cr-customer').value = receiptData.customer_name || '';
     
-    // Parse contact details if stored as JSON
-    let contactData = receiptData.customer_contact || '';
-    if (contactData.startsWith('{')) {
-        try {
-            const parsed = JSON.parse(contactData);
-            document.getElementById('cr-email').value = parsed.email || '';
-            document.getElementById('cr-contact-name').value = parsed.contact_name || '';
-            document.getElementById('cr-address').value = parsed.address || '';
-            document.getElementById('cr-phone').value = parsed.phone || '';
-        } catch (e) {
-            document.getElementById('cr-email').value = contactData;
-            document.getElementById('cr-contact-name').value = '';
-            document.getElementById('cr-address').value = '';
-            document.getElementById('cr-phone').value = '';
-        }
-    } else {
-        document.getElementById('cr-email').value = contactData;
-        document.getElementById('cr-contact-name').value = '';
-        document.getElementById('cr-address').value = '';
-        document.getElementById('cr-phone').value = '';
-    }
+    const parsedContact = parseCustomReceiptContact(receiptData.customer_contact);
+    document.getElementById('cr-email').value = parsedContact.email || (typeof receiptData.customer_contact === 'string' && !String(receiptData.customer_contact).startsWith('{') ? receiptData.customer_contact : '');
+    document.getElementById('cr-contact-name').value = parsedContact.contact_name || '';
+    document.getElementById('cr-address').value = parsedContact.address || '';
+    document.getElementById('cr-phone').value = parsedContact.phone || '';
     
     // Reverse engineer tax/fees or just set them to trigger correct totals
     document.getElementById('cr-cc-fee').checked = parseFloat(receiptData.cc_fee) > 0;

@@ -55,15 +55,31 @@
                         return;
                     }
                     
+                    const isAdminUser = typeof window.isAdmin === 'function'
+                        ? window.isAdmin()
+                        : (window.currentUserRole || '').toLowerCase().trim() === 'admin';
+
                     data.forEach(receipt => {
                         const div = document.createElement('div');
                         div.className = 'trip-item';
                         const compName = receipt.company === 'supercrane' ? 'JR Super Crane' : 'RP Tulipan';
+                        const fin = window.parseCustomReceiptFinance
+                            ? window.parseCustomReceiptFinance(receipt)
+                            : { include: false };
+                        const badge = fin.include
+                            ? '<span style="font-size:0.7rem; font-weight:800; color:#0369a1;">IN PROFIT / AR</span>'
+                            : '<span style="font-size:0.7rem; font-weight:700; color:#64748b;">DOC ONLY</span>';
+                        const safeId = String(receipt.id || '').replace(/'/g, '');
+                        const delBtn = isAdminUser && safeId
+                            ? `<button type="button" onclick="event.stopPropagation(); window.deleteCustomReceipt('${safeId}', event)" style="margin-top:8px; background:#fee2e2; color:#991b1b; border:none; border-radius:6px; padding:4px 10px; font-size:0.72rem; font-weight:800; cursor:pointer;"><i class="fas fa-trash-alt"></i> DELETE</button>`
+                            : '';
                         div.innerHTML = `
                             <h4>Custom Receipt · ${receipt.date}</h4>
                             <p style="font-weight:bold; color:#1e293b;">${receipt.customer_name || 'No Customer'}</p>
                             <p>${compName} | ${receipt.order_no || 'No Order#'}</p>
                             <p style="font-size:0.8rem; color:#16a34a; font-weight: bold;">Total: $${parseFloat(receipt.total || 0).toFixed(2)}</p>
+                            <p style="margin:4px 0 0 0;">${badge}</p>
+                            ${delBtn}
                         `;
                         div.onclick = () => {
                             if(window.viewCustomReceiptHistory) {

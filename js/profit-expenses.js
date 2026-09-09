@@ -412,6 +412,7 @@
                 contractor: 0,   // Contractor transport revenue
                 storageTulipan: 0, // Accrued RPTulipan yard (days + lifts)
                 storageYard: 0,    // Accrued Storage Yard (days + lifts)
+                customInvoices: 0, // Marked custom receipts from Docs
                 expenses: 0,     // Business expenses
                 releases: 0      // Informational: total container purchase cost in COMPLETE orders
             };
@@ -570,8 +571,12 @@
                 });
             }
 
+            if (typeof window.loadCustomReceiptsForProfit === 'function') {
+                totals.customInvoices = await window.loadCustomReceiptsForProfit(dateFrom || '', dateTo || '');
+            }
+
             // 3. Final Summaries
-            const totalRevenue = (totals.tulipan || 0) + (totals.jr || 0) + (totals.contractor || 0) + (totals.sales || 0) + (totals.yard || 0) + (totals.rentals || 0) + (totals.storageTulipan || 0) + (totals.storageYard || 0);
+            const totalRevenue = (totals.tulipan || 0) + (totals.jr || 0) + (totals.contractor || 0) + (totals.sales || 0) + (totals.yard || 0) + (totals.rentals || 0) + (totals.storageTulipan || 0) + (totals.storageYard || 0) + (totals.customInvoices || 0);
             const totalGlobalExpenses = (totals.expenses || 0) + (totals.releases || 0);
             const netProfit = totalRevenue - totalGlobalExpenses;
 
@@ -614,6 +619,7 @@
             document.getElementById('val-contractor').textContent = `$${totals.contractor.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
             if (document.getElementById('val-storage-rptulipan')) document.getElementById('val-storage-rptulipan').textContent = `$${totals.storageTulipan.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
             if (document.getElementById('val-storage-yard'))      document.getElementById('val-storage-yard').textContent      = `$${totals.storageYard.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+            if (document.getElementById('val-custom-invoices'))   document.getElementById('val-custom-invoices').textContent   = `$${(totals.customInvoices || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
             
             // Total row (sum of all revenue)
             if (document.getElementById('val-revenue-total')) document.getElementById('val-revenue-total').textContent = `$${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
@@ -622,7 +628,7 @@
             if (document.getElementById('val-releases')) document.getElementById('val-releases').textContent = `$${totals.releases.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
 
             // 6. Update Bar Chart
-            const maxVal = Math.max(totalRevenue, totals.sales, totals.yard, totals.rentals, totals.tulipan, totals.jr, totals.contractor, totals.storageTulipan, totals.storageYard, totalGlobalExpenses, totals.releases, 1);
+            const maxVal = Math.max(totalRevenue, totals.sales, totals.yard, totals.rentals, totals.tulipan, totals.jr, totals.contractor, totals.storageTulipan, totals.storageYard, totals.customInvoices || 0, totalGlobalExpenses, totals.releases, 1);
             if (document.getElementById('bar-sales'))      document.getElementById('bar-sales').style.width      = `${(totals.sales / maxVal) * 100}%`;
             if (document.getElementById('bar-yard'))       document.getElementById('bar-yard').style.width       = `${(totals.yard / maxVal) * 100}%`;
             if (document.getElementById('bar-rentals'))    document.getElementById('bar-rentals').style.width    = `${(totals.rentals / maxVal) * 100}%`;
@@ -631,6 +637,7 @@
             if (document.getElementById('bar-contractor')) document.getElementById('bar-contractor').style.width = `${(totals.contractor / maxVal) * 100}%`;
             if (document.getElementById('bar-storage-rptulipan')) document.getElementById('bar-storage-rptulipan').style.width = `${(totals.storageTulipan / maxVal) * 100}%`;
             if (document.getElementById('bar-storage-yard'))      document.getElementById('bar-storage-yard').style.width      = `${(totals.storageYard / maxVal) * 100}%`;
+            if (document.getElementById('bar-custom-invoices'))   document.getElementById('bar-custom-invoices').style.width   = `${((totals.customInvoices || 0) / maxVal) * 100}%`;
             if (document.getElementById('bar-expenses'))   document.getElementById('bar-expenses').style.width   = `${(totalGlobalExpenses / maxVal) * 100}%`;
             if (document.getElementById('bar-releases'))   document.getElementById('bar-releases').style.width   = `${(totals.releases / maxVal) * 100}%`;
             } catch (err) {

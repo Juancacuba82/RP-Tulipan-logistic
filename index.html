@@ -30,10 +30,10 @@
     <script src="./js/delivery-calendar.js?v=1705" defer></script>
     <script src="./js/driver-settlements.js?v=1702" defer></script>
     <script src="./js/releases.js?v=1701" defer></script>
-    <script src="./js/profit-expenses.js?v=1703" defer></script>
+    <script src="./js/profit-expenses.js?v=1704" defer></script>
 
-    <script src="./js/docs-receipts.js?v=1701" defer></script>
-    <script src="./js/custom-receipts.js?v=3" defer></script>
+    <script src="./js/docs-receipts.js?v=1702" defer></script>
+    <script src="./js/custom-receipts.js?v=4" defer></script>
     <script src="./js/email-service.js?v=10" defer></script>
     <script src="./js/fleet.js?v=1701" defer></script>
     <script src="./js/tasks.js?v=11" defer></script>
@@ -4055,6 +4055,13 @@
                                 </div>
                                 <div class="item-value" id="val-storage-yard">$0.00</div>
                             </div>
+                            <div class="breakdown-item">
+                                <div class="item-label">
+                                    <span class="dot" style="background: #0ea5e9;"></span>
+                                    Custom Invoices
+                                </div>
+                                <div class="item-value" id="val-custom-invoices">$0.00</div>
+                            </div>
                             <div class="breakdown-item"
                                 style="border-top: 2px solid #1e293b; margin-top: 12px; padding-top: 12px;">
                                 <div class="item-label"
@@ -4139,6 +4146,12 @@
                                 <div class="bar-container">
                                     <div id="bar-storage-yard" class="bar" style="width: 0%; background: #10b981;">
                                     </div>
+                                </div>
+                            </div>
+                            <div class="bar-group">
+                                <label>Custom Invoices</label>
+                                <div class="bar-container">
+                                    <div id="bar-custom-invoices" class="bar" style="width: 0%; background: #0ea5e9;"></div>
                                 </div>
                             </div>
                             <!-- Expenses section: margin-top accounts for TOTAL row + Costs & Expenses header on the left -->
@@ -9464,6 +9477,26 @@
                         <span style="font-weight: 900; color: #1e293b; font-size: 1.1rem;">Balance Due:</span>
                         <span style="font-weight: 900; color: #b91c1c; font-size: 1.1rem;" id="cr-balance-due">$0.00</span>
                     </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 16px;">
+                <label for="cr-include-finance" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="cr-include-finance" onchange="toggleCustomReceiptFinanceOptions()" style="width: 18px; height: 18px; margin-top: 2px; cursor: pointer;">
+                    <span>
+                        <span style="font-weight: 800; color: #166534; display: block;">Include in Accounts Rec. &amp; Profit Report</span>
+                        <span style="font-size: 0.8rem; color: #64748b;">Leave unchecked if this is only a PDF. Mark it only when this invoice should appear in receivables and profit.</span>
+                    </span>
+                </label>
+                <div id="cr-finance-options" style="display: none; margin-top: 14px; padding-top: 12px; border-top: 1px solid #bbf7d0;">
+                    <div style="font-weight: 700; color: #1e293b; margin-bottom: 8px;">Payment status</div>
+                    <label style="display: inline-flex; align-items: center; gap: 6px; margin-right: 18px; cursor: pointer; font-weight: 600; color: #334155;">
+                        <input type="radio" name="cr-pay-status" value="PENDING" checked> Pending (customer owes)
+                    </label>
+                    <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; color: #334155;">
+                        <input type="radio" name="cr-pay-status" value="PAID"> Paid Now
+                    </label>
+                    <p style="margin: 10px 0 0 0; font-size: 0.8rem; color: #64748b;">Pending goes to Accounts Rec. as due. Paid Now also records Cash/Bank in the Cash Ledger. Profit counts the invoice either way. This cannot be edited later — only an admin can delete it.</p>
                 </div>
             </div>
 
